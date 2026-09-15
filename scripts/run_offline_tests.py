@@ -33,6 +33,7 @@ MODULES: tuple[str, ...] = (
     "scripts.test_boundary_review",
     "scripts.test_impact_ui",
     "scripts.test_galaxy_focus",
+    "scripts.test_law_domains",
     "scripts.test_law_universe",
     "scripts.test_related_relation_types",
     "scripts.test_parallel_matrix",
