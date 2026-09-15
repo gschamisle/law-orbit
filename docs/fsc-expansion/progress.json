@@ -1,5 +1,5 @@
 {
-  "status": "implementation_draft",
+  "status": "completed",
   "source_branch": "codex/precise-citation-impact",
   "source_sha": "329d7ec5e055f1c81821aa3d89db9553cc119a3b",
   "work_branch": "codex/fsc-expansion-draft",
@@ -8,16 +8,19 @@
     "docs/fsc-expansion/plan.md",
     "docs/fsc-expansion/inventory.md",
     "core/law_domains.py",
-    "scripts/test_law_domains.py"
+    "scripts/test_law_domains.py",
+    "scripts/run_offline_tests.py"
   ],
   "validation": {
     "new_registry_unit_tests": "4 passed in isolated local reconstruction",
-    "full_offline_suite": "pending GitHub branch CI after commit"
+    "full_offline_suite": "not run: this automation has no repository checkout and a Git-data ref update did not create a GitHub Actions run",
+    "github_readback": "verified core/law_domains.py from the work branch after commit"
   },
   "remaining": [
     "Resolve the full 117-item FSC inventory to official IDs and effective editions",
     "Collect FSC administrative rules via admrul without name synthesis",
     "Identify the official FSS rule corpus before ingesting FSS-issued rules",
-    "Generalize universe_builder focus category after the inventory is verified"
+    "Generalize universe_builder focus category after the inventory is verified",
+    "Run the repository's full offline suite in a normal checkout before merge"
   ]
 }
