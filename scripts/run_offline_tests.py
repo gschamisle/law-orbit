@@ -29,10 +29,13 @@ MODULES: tuple[str, ...] = (
     "scripts.test_related_article_27",
     "scripts.test_review_queue",
     "scripts.test_citation_graph",
+    "scripts.test_citation_scope",
+    "scripts.test_boundary_review",
+    "scripts.test_impact_ui",
+    "scripts.test_galaxy_focus",
+    "scripts.test_law_universe",
     "scripts.test_related_relation_types",
     "scripts.test_parallel_matrix",
-    "scripts.test_opinion_source",
-    "scripts.test_opinion_cluster",
 )
 
 

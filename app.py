@@ -13,7 +13,7 @@ from config import (
 )
 from ui import (
     amendment_review_ui, article_relations_ui, law_map_ui, new_article_ui,
-    opinion_ui, stage1_draft, stage2_crossref, stage3_output,
+    stage1_draft, stage2_crossref, stage3_output,
 )
 from ui.styles import inject_global_css
 
@@ -37,7 +37,7 @@ st.markdown(f"""
   {_logo_html}
   <div class="mofe-app-title">
     <h1>이번 세제개편안, 이렇게 하려는거 맞아?</h1>
-    <p>빠진 조문, 국민의견, 조문 관계를 대조합니다.</p>
+    <p>개정안을 검토하고, 연결된 법령과 조문을 탐색합니다.</p>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -45,7 +45,7 @@ st.markdown(f"""
 law_api_key = LAW_API_KEY
 openai_api_key = OPENAI_API_KEY
 
-# 안 쓰는 키를 요구하지 않는다. 기본 3개 탭은 OpenAI를 부르지 않으므로,
+# 안 쓰는 키를 요구하지 않는다. 기본 2개 탭은 OpenAI를 부르지 않으므로,
 # 조문안 작성 탭을 켰을 때만 OPENAI_API_KEY를 따진다.
 _missing = [n for n, v in (("LAW_API_KEY", law_api_key),) if not v]
 if ENABLE_DRAFT_TAB and not openai_api_key:
@@ -93,11 +93,9 @@ with _fresh_col:
 # 아이콘은 Material Symbols(:material/…:). 이모지는 OS·글꼴마다 모양과 폭이 달라
 # 정렬이 흔들리고 디자인 토큰으로 색을 맞출 수 없다.
 #
-# 기본 화면은 이 셋뿐이다. 발표된 개정안을 읽고 → 국민의견을 읽고 → 법 사이
-# 관계를 보는, 하나로 이어지는 묶음이고 셋 다 LLM 없이 돈다.
+# 기본 화면은 개정안 검토와 법령 관계 탐색이다. 두 화면 모두 LLM 없이 동작한다.
 _TABS: list[tuple[str, object]] = [
     (":material/fact_check: 개정안 검토", amendment_review_ui),
-    (":material/forum: 입법예고 의견", opinion_ui),
     (":material/hub: 세법 관계도", law_map_ui),
 ]
 # 아래부터는 플래그로 감춘다(config 참고). 코드는 그대로 두고 노출만 끈다.

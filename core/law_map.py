@@ -17,6 +17,7 @@ from collections import Counter
 from pathlib import Path
 
 from core import law_abbrev
+from core.law_universe import load_graph
 
 ROOT = Path(__file__).resolve().parents[1]
 _GRAPH = ROOT / "data" / "law-citation-graph.json"
@@ -45,16 +46,21 @@ def build(
     당연해서 정보가 없는데, 건수가 압도적이라(조특령→조특법 2,728건) 나머지를
     전부 가린다. 법령군 간 관계만 남겨야 '어디까지 번지는가'가 보인다.
     """
-    edges = json.loads(_GRAPH.read_text(encoding="utf-8"))["edges"]
+    graph = load_graph()
+    edges = graph['edges']
+    catalog = set(graph.get('laws',[]))
     pair: Counter[tuple[str, str]] = Counter()
     size: Counter[str] = Counter()
     for e in edges:
         a, b = str(e.get("source_law", "")), str(e.get("target_law", ""))
         if not a or not b:
             continue
+        if b not in catalog:
+            continue
         if laws and (a not in laws or b not in laws):
             continue
         size[a] += 1
+        size[b] += 0
         if a == b:
             continue
         if cross_family_only and family(a) == family(b):
@@ -109,10 +115,10 @@ def render_svg(data: dict, width: int = 1000, height: int = 1000) -> str:
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" '
         f'width="100%" role="img" aria-label="법령 간 인용 관계도">',
         '<style>'
-        '.nm{font:600 13px Pretendard,sans-serif}'
-        '.ct{font:10.5px Pretendard,sans-serif;fill:#52627a}'
-        '.hd{font:700 15px Pretendard,sans-serif;fill:#0f172a}'
-        '.lg{font:11px Pretendard,sans-serif;fill:#52627a}'
+        '.nm{font:600 13px "Nanum Myeongjo",serif}'
+        '.ct{font:10.5px "Nanum Myeongjo",serif;fill:#52627a}'
+        '.hd{font:700 15px "Nanum Myeongjo",serif;fill:#0f172a}'
+        '.lg{font:11px "Nanum Myeongjo",serif;fill:#52627a}'
         '</style>',
         f'<rect width="{width}" height="{height}" fill="#ffffff"/>',
         f'<text class="hd" x="{width/2:.0f}" y="34" text-anchor="middle">'
