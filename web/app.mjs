@@ -6,7 +6,8 @@ let saved={};try{saved=JSON.parse(localStorage.getItem(stateKey)||'{}');}catch{}
 function persist(){if(!domain)return;try{saved[domain]=state;localStorage.setItem(stateKey,JSON.stringify(saved));localStorage.setItem(stateKey+':active',domain);}catch{}}
 function note(message,error=false){$('notice').hidden=!message;$('notice').textContent=message;$('notice').className=error?'error':'';}
 function error(err){note(err?.message||'자료를 불러오지 못했습니다.',true);}
-function busy(value){for(const id of ['sector','region','law','article','reference','save-law'])$(id).disabled=value;}
+function busy(value){for(const id of ['sector','region','law','article','reference','save-law','overview','body-query'])$(id).disabled=value;$('reference-form').querySelector('button').disabled=value;}
+function cancelSave(){saveController?.abort();saveController=null;$('save-law').textContent='이 법령 오프라인 저장';}
 function text(tag,value,cls=''){const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;}
 function link(url,label){const href=safeLink(url);if(!href)return text('span','공식 출처 확인 필요','muted');const e=text('a',label);e.href=href;e.target='_blank';e.rel='noopener noreferrer';return e;}
 function option(value,label){const e=text('option',label);e.value=value;return e;}
@@ -30,7 +31,7 @@ function domainButtons(){
  $('domains').replaceChildren(...manifest.domains.map(d=>{const b=text('button',d.title);b.type='button';b.setAttribute('aria-current',d.id===domain?'page':'false');b.onclick=()=>navigate(d.id);return b;}));
 }
 async function navigate(id,overrides={}){
- persist();domain=id;state={sector:'all',region:'',law:'',query:'',reference:'',direction:'both',review:true,broad:false,...saved[id],...overrides};const token=++epoch;busy(true);note('');doc=detail=wanted=null;regional=null;
+ cancelSave();persist();domain=id;state={sector:'all',region:'',law:'',query:'',reference:'',direction:'both',review:true,broad:false,...saved[id],...overrides};const token=++epoch;busy(true);note('');doc=detail=wanted=null;regional=null;
  $('article-content').replaceChildren(text('p','법령 자료를 불러오고 있습니다.','muted'));$('evidence').replaceChildren();$('outside').replaceChildren();$('evidence-count').textContent='';domainButtons();
  try{
   const entry=manifest.domains.find(d=>d.id===id);if(!entry)throw Error('지원하지 않는 분야입니다.');
@@ -51,7 +52,7 @@ async function navigate(id,overrides={}){
 }
 async function openLaw(id,reference='',token=++epoch){
  const entry=lookup.get(id);if(!entry){error(Error('이 범위에 수집되지 않은 법령입니다.'));return;}
- busy(true);note('');$('article-content').replaceChildren(text('p','조문 자료를 불러오고 있습니다.','muted'));$('evidence').replaceChildren();$('outside').replaceChildren();detail=wanted=null;
+ cancelSave();busy(true);note('');$('article-content').replaceChildren(text('p','조문 자료를 불러오고 있습니다.','muted'));$('evidence').replaceChildren();$('outside').replaceChildren();detail=wanted=null;
  try{
   const loaded=await data(entry.file);if(token!==epoch)return;doc=loaded;state.law=id;state.query='';$('body-query').value='';
   if(!$('law').querySelector(`option[value="${id}"]`))$('law').prepend(option(id,entry.label+' · 분야 밖 관련 법령'));$('law').value=id;
@@ -136,13 +137,13 @@ for(const id of ['direction','review','broad'])$(id).onchange=()=>{limit=40;rend
 $('overview').onclick=()=>showMap(sectorMap());
 window.addEventListener('message',e=>{const frame=$('map-host').querySelector('iframe');if(e.origin!==location.origin||e.source!==frame?.contentWindow||e.data?.type!=='galaxy-select')return;follow(e.data.law,e.data.jo,e.data.region||'');});
 $('save-law').onclick=async()=>{
- if(!doc)return;if(saveController){saveController.abort();return;}saveController=new AbortController();const id=doc.meta.id,entry=lookup.get(id),refs=[manifest.domains.find(d=>d.id===domain).catalog,(regional||catalog).overview,entry.file,...entry.parts];
+ if(!doc)return;if(saveController){saveController.abort();return;}saveController=new AbortController();const controller=saveController;const id=doc.meta.id,entry=lookup.get(id),refs=[manifest.domains.find(d=>d.id===domain).catalog,(regional||catalog).overview,entry.file,...entry.parts];
  if(state.region)refs.push(catalog.regions.find(r=>r.id===state.region).catalog);
  const unique=[...new Map(refs.map(r=>[r.url,r])).values()];$('save-law').textContent='저장 멈추기';
- try{await saveAll(unique,(i,n)=>{$('download-state').textContent=`${displayLaw(entry)} 자료 저장 중 · ${i}/${n}`;},saveController.signal);
+ try{await saveAll(unique,(i,n)=>{if(controller===saveController)$('download-state').textContent=`${displayLaw(entry)} 자료 저장 중 · ${i}/${n}`;},controller.signal);if(controller!==saveController)return;
   const verified=await Promise.all(unique.map(cached));
-  const registration=await navigator.serviceWorker?.getRegistration();if(!registration?.active){$('download-state').textContent='자료는 저장했지만 오프라인 화면 준비가 끝나지 않았습니다. 연결된 상태에서 한 번 새로고침해 주세요.';return;}$('download-state').textContent=verified.every(Boolean)?`${displayLaw(entry)} 본문·인용 근거 저장 완료. 연결 대상의 본문은 해당 법령을 열 때 받습니다.`:'일부 자료를 저장하지 못했습니다. 저장 공간·인터넷 연결을 확인해 주세요.';
- }catch(err){error(err);}finally{saveController=null;$('save-law').textContent='이 법령 오프라인 저장';}
+  const registration=await navigator.serviceWorker?.getRegistration();if(controller!==saveController)return;if(!registration?.active){$('download-state').textContent='자료는 저장했지만 오프라인 화면 준비가 끝나지 않았습니다. 연결된 상태에서 한 번 새로고침해 주세요.';return;}$('download-state').textContent=verified.every(Boolean)?`${displayLaw(entry)} 본문·인용 근거 저장 완료. 연결 대상의 본문은 해당 법령을 열 때 받습니다.`:'일부 자료를 저장하지 못했습니다. 저장 공간·인터넷 연결을 확인해 주세요.';
+ }catch(err){if(controller===saveController)error(err);}finally{if(controller===saveController){saveController=null;$('save-law').textContent='이 법령 오프라인 저장';}}
 };
 $('coverage-open').onclick=()=>{
  const content=$('coverage-copy');content.replaceChildren(text('p',`${$('heading').textContent} · 수집 기준 ${catalog?.built_at||''}`),text('p',catalog?.coverage||''),text('p','항·호·목 범위를 포함한 저장 인용을 대조합니다. 새 항 신설의 취지 추론·의미상 유사성·신설 조문 검토는 이 무료 열람 버전에 포함하지 않습니다.'),text('p','이 웹사이트는 공개 법령 본문과 분석 결과만 제공합니다. 법제처 API 인증값이나 개정안 업로드 기능은 포함하지 않습니다.'));
