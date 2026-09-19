@@ -123,7 +123,7 @@ class ProcurementTests(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         app=AppTest.from_string('from unittest.mock import patch\nfrom pathlib import Path\nfrom ui import procurement_map_ui as u\nwith patch.object(u,"BUNDLE",Path("output/nonexistent-procurement-test.json")):\n u.render()').run()
         self.assertFalse(app.exception)
-        self.assertEqual(app.info[0].value,'조달·계약 데이터 미수집')
+        self.assertEqual(app.info[0].value,'조달계약 데이터 미수집')
 
 
 if __name__=='__main__':unittest.main()

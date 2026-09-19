@@ -1,4 +1,4 @@
-"""세법은하 — 수집 본문과 조문 연결 탐색.
+"""국세 은하 — 수집 본문과 조문 연결 탐색.
 
 발표 후 공개된 정보만 다루므로 LLM도 API 키도 필요 없다. 인용 그래프만 읽는다.
 """
@@ -95,7 +95,7 @@ def _render_galaxy() -> None:
             st.info("역인용의 범위와 나가는 인용의 출처 항·호·목을 대조합니다. 상위 단위의 공통 문구와 한정·제외 조건은 점선으로 표시합니다.")
     with st.expander("연결 설정"):
         external = st.checkbox("외부 법령 연결 포함", True, key='lm_external',
-                               help='세법과 직접 연결된 상법·자본시장법 등 외부 법령을 함께 봅니다.')
+                               help='국세 법령과 직접 연결된 상법·자본시장법 등 외부 법령을 함께 봅니다.')
         if result:
             review = st.checkbox("문맥·출처 확인 후보 포함", True, key="lm_focus_review")
             if result.get('broad_rows'):
@@ -116,7 +116,7 @@ def _render_galaxy() -> None:
             st.info("현재 조건에 맞는 저장 인용이 없습니다. 연결이 없거나 조문이 존재하지 않는다는 뜻은 아닙니다.")
     components.html(render_html(data, height=740), height=760, scrolling=False)
     st.download_button("은하 내려받기",
-                       render_page(data).encode("utf-8"), "조문연결은하.html" if result else "법령은하.html",
+                       render_page(data).encode("utf-8"), "국세 은하-조문연결.html" if result else "국세 은하.html",
                        "text/html", key="lm_g_dl")
     if result:
         st.caption("민트: 선택 조문 → 인용 대상 · 금색: 인용 출처 → 선택 조문 · 분홍 점선: 문맥·출처 확인. "
@@ -147,14 +147,14 @@ def _render_galaxy() -> None:
 def _source_info(graph: dict) -> None:
     tax_laws = set(graph.get('tax_laws', graph.get('laws', [])))
     laws = graph.get('laws', [])
-    st.caption(f"수집 기준 {graph['built_at']} · 세법령 {len(tax_laws)}개 · 외부 법령 {len(laws)-len(tax_laws)}개")
-    st.caption('세법과 인용·역인용이 확인된 외부 법령만 기본 지도에 표시합니다. 숨긴 법령의 수집 본문은 보관합니다.')
+    st.caption(f"수집 기준 {graph['built_at']} · 국세 법령 {len(tax_laws)}개 · 외부 법령 {len(laws)-len(tax_laws)}개")
+    st.caption('국세 법령과 인용·역인용이 확인된 외부 법령만 기본 지도에 표시합니다. 숨긴 법령의 수집 본문은 보관합니다.')
     st.caption('법령 약칭은 세제개편안 상세본의 표기를 따릅니다. 표시 거리는 법적 영향의 크기를 뜻하지 않습니다.')
     if graph.get('catalog'):
-        with st.expander(f"수록 범위 · 세법령 {len(tax_laws)}개 + 외부 법령 {len(laws)-len(tax_laws)}개"):
+        with st.expander(f"수록 범위 · 국세 법령 {len(tax_laws)}개 + 외부 법령 {len(laws)-len(tax_laws)}개"):
             st.write(graph.get('coverage_note',''))
             st.caption(f"수집일 {graph['built_at']} · 국가법령정보센터 시행일 기준 본문. 매일 새 시행 여부 확인 · 월요일 전체 갱신(노트북과 Codex 실행 중).")
-            st.dataframe([{'법령':l['name'], '구분':'세법령' if l['category']=='tax' else '외부 법령',
+            st.dataframe([{'법령':l['name'], '구분':'국세 법령' if l['category']=='tax' else '외부 법령',
                            '시행일':l['effective'], '공포일':l.get('promulgated','')} for l in graph['catalog']],
                          hide_index=True, width='stretch')
             if graph.get('outside_scope'):

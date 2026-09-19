@@ -71,7 +71,7 @@ class IsolationTests(unittest.TestCase):
 
     def test_domain_title_and_font_are_shared(self):
         html = render_html(present(overview(graph=fixture()['graph'])))
-        self.assertIn('금융법 은하', html)
+        self.assertIn('금융 은하', html)
         self.assertIn("font-family:'MaruBuri'", html)
         self.assertIn("font-family:'Pretendard'", html)
         self.assertIn('data:font/woff2;base64,', html)
@@ -117,7 +117,7 @@ class UiTests(unittest.TestCase):
             with patch.object(fsc_map_ui, 'BUNDLE', bundle):
                 app = AppTest.from_file('app.py', default_timeout=45).run()
                 self.assertFalse(app.exception, str(app.exception))
-                self.assertTrue(any(t.label == '금융법' for t in app.tabs))
+                self.assertTrue(any(t.label == '금융' for t in app.tabs))
                 self.assertTrue(app.get('file_uploader'))
                 app.text_input(key='lm_focus_ref').set_value('16')
                 app.button(key='lm_focus_run').click().run()

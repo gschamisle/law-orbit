@@ -107,7 +107,7 @@ class HousingTests(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         app=AppTest.from_string('from unittest.mock import patch\nfrom pathlib import Path\nfrom ui import housing_map_ui as u\nwith patch.object(u,"BUNDLE",Path("output/missing-housing-test.json")):\n u.render()').run()
         self.assertFalse(app.exception)
-        self.assertEqual(app.info[0].value,'국토·건축·주택 데이터 미수집')
+        self.assertEqual(app.info[0].value,'국토건축주택 데이터 미수집')
 
     def test_palette_stable_across_filters(self):
         from core.law_galaxy import build

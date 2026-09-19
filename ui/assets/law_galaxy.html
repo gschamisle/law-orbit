@@ -1,4 +1,4 @@
-<section id="galaxy-wrap" style="height:__H__px" aria-label="세법 은하 탐색기">
+<section id="galaxy-wrap" style="height:__H__px" aria-label="국세 은하 탐색기">
 <style>
 #galaxy-wrap{position:relative;isolation:isolate;overflow:hidden;background:#051e22;color:#e8f0fa;border:1px solid #31534c;border-radius:18px;font-family:'MaruBuri',serif;min-height:620px;color-scheme:dark}
 #galaxy-wrap,#galaxy-wrap *{font-family:'MaruBuri',serif!important}#galaxy-wrap *{box-sizing:border-box}#galaxy-wrap:fullscreen{height:100vh!important;border-radius:0}
@@ -71,7 +71,7 @@
 }
 </style>
 <canvas id="galaxy" tabindex="0" aria-label="한 손가락 또는 드래그로 회전, 두 손가락 벌리기 또는 스크롤로 확대·축소. 방향키로 회전, 더하기와 빼기로 확대. 법령 선택 목록으로도 탐색할 수 있습니다."></canvas>
-<header class="g-hero"><div class="g-eyebrow"><span class="g-live"></span><span id="g-domain">TAX LAW / RELATION ATLAS</span></div><h2 id="g-title">세법 은하</h2><p id="g-subtitle">조문에서 법령으로, 법령에서 다음 영향으로.</p></header>
+<header class="g-hero"><div class="g-eyebrow"><span class="g-live"></span><span id="g-domain">TAX LAW / RELATION ATLAS</span></div><h2 id="g-title">국세 은하</h2><p id="g-subtitle">조문에서 법령으로, 법령에서 다음 영향으로.</p></header>
 <div class="g-controls"><button id="g-reset" type="button">전체 보기</button><button id="g-motion" type="button" aria-pressed="false">움직임 멈춤</button><button id="g-full" type="button">전체 화면</button><div class="g-sound-group"><button id="g-sound" type="button" aria-pressed="false" title="낮은 바탕음과 별을 지날 때의 작은 반짝임 소리">소리 켜기</button><button id="g-volume-toggle" type="button" class="g-volume-trigger" aria-label="소리 크기 조절" aria-expanded="false" aria-controls="g-volume-popover" hidden>음량</button><label id="g-volume-popover" class="g-volume" hidden>소리 크기 <output id="g-volume-value">12%</output><input id="g-volume" aria-label="은하 소리 크기" type="range" min="0" max="30" step="1" value="12"></label></div></div>
 <button id="g-info-toggle" type="button" class="g-info-toggle" aria-expanded="false" aria-controls="g-info-panel">법령·조문 정보</button>
 <aside id="g-info-panel" class="g-panel" aria-label="법령·조문 정보" hidden><div class="g-panel-heading"><strong>법령·조문 정보</strong><button id="g-info-close" type="button" aria-label="법령·조문 정보 닫기">닫기</button></div><small id="g-mode">EXPLORE THE CONNECTIONS</small><label for="g-select" style="display:block;font-size:10px;color:#94a9be;margin-top:14px">탐색할 법령·조문</label><select id="g-select"><option value="">전체 연결 보기</option></select><div id="g-details"></div></aside>
@@ -109,13 +109,13 @@ infoToggle.onclick=()=>setInfoOpen(infoPanel.hidden);
 $('g-info-close').onclick=()=>setInfoOpen(false,true);
 root.addEventListener('keydown',e=>{if(e.key==='Escape'&&!infoPanel.hidden){e.preventDefault();e.stopPropagation();setInfoOpen(false,true)}},true);
 root.addEventListener('pointerdown',e=>{if(!infoPanel.hidden&&!infoPanel.contains(e.target)&&!infoToggle.contains(e.target))setInfoOpen(false)});
-root.setAttribute('aria-label',(D.galaxy_title||'세법 은하')+' 탐색기');
+root.setAttribute('aria-label',(D.galaxy_title||'국세 은하')+' 탐색기');
 if(fsc)$('g-domain').textContent='FINANCIAL LAW / RELATION ATLAS';
 if(localTax)$('g-domain').textContent='LOCAL TAX / RELATION ATLAS';
 if(environment)$('g-domain').textContent='ENVIRONMENT / CHEMICAL SAFETY';
 if(housing)$('g-domain').textContent='LAND / BUILDING / HOUSING';
 if(procurement)$('g-domain').textContent='PUBLIC PROCUREMENT / RELATION ATLAS';
-$('g-title').textContent=boundary?'신설 항, 넓어지는 궤도':spotlight?'한 조문이 잇는 은하':impact?'한 조문, 연결된 우주':(D.galaxy_title||'세법 은하');
+$('g-title').textContent=boundary?'신설 항, 넓어지는 궤도':spotlight?'한 조문이 잇는 은하':impact?'한 조문, 연결된 우주':(D.galaxy_title||'국세 은하');
 $('g-subtitle').textContent=boundary?`${D.example?'가상 예시 · ':''}${D.target} · ${D.change_summary}`:spotlight?`${D.target} · ${D.direction}`:impact?D.target:'법령 사이를 흐르는 인용의 궤도를 탐색하세요.';
 $('g-mode').textContent=boundary?'CITATION SCOPE / REVIEW':spotlight?'CITATIONS / BOTH DIRECTIONS':impact?'AMENDMENT IMPACT / 01':(environment?'ENVIRONMENT / ATLAS':housing?'LAND & HOUSING / ATLAS':procurement?'PROCUREMENT / ATLAS':localTax?'LOCAL TAX / ATLAS':fsc?'FSC LAW / ATLAS':'KOREAN TAX LAW / ATLAS');
 $('g-footnote').textContent=`${D.built_at||'저장 그래프'} 기준 · ${boundary?'점선은 범위·문맥 검토 후보입니다':impact?'직접 연결 · 화살표는 인용 방향':'법령군별 색상 · 화면상 거리는 법적 영향의 크기가 아닙니다'}`;

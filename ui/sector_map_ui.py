@@ -15,7 +15,7 @@ def snapshot(path, stamp, domain):
 
 
 @st.cache_data(show_spinner=False)
-def overview(path, stamp, sector, domain, palette_version='families-v2'):
+def overview(path, stamp, sector, domain, palette_version='families-v4-domain-labels'):
     from core.law_galaxy import build
     graph=snapshot(path,stamp,domain)['graph']
     return APIS[domain].present(build(2,160,include_external=False,graph=sector_graph(graph,sector)),graph,sector)

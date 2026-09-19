@@ -133,7 +133,7 @@ def _parallel_block(texts: list[tuple[str, str]]) -> None:
 def render(law_api_key: str = "", openai_api_key: str = "") -> None:
     st.markdown('<div class="mofe-section-header">개정안 불러오기</div>', unsafe_allow_html=True)
     st.caption('여러 개정안을 함께 올리면 법안 사이의 정비 여부까지 대조합니다.')
-    st.caption('자동 검토 지원 범위: 세법 개정안 · 금융법 개정안은 아직 지원하지 않습니다.')
+    st.caption('현재 국세 개정안만 지원합니다. 수집된 국세 인용 자료와 병행개정 대응표를 기준으로 검토합니다.')
 
     uploads = st.file_uploader(
         "개정법률안 파일 (여러 개 가능)", type=list(_SUPPORTED),

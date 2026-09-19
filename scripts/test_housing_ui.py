@@ -33,7 +33,7 @@ class HousingUI(unittest.TestCase):
         app=AppTest.from_file('app.py',default_timeout=60).run()
         self.assertFalse(app.exception,str(app.exception))
         uploader=app.get('file_uploader')[0].proto.id
-        self.assertIn('국토·건축·주택',[t.label for t in app.tabs])
+        self.assertIn('국토건축주택',[t.label for t in app.tabs])
         self.assertEqual(app.radio(key='housing_sector').value,'planning')
         app.text_input(key='lm_library_query').set_value('배당금')
         app.text_input(key='pc_national_library_query').set_value('부정당')

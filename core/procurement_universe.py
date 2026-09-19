@@ -94,10 +94,10 @@ def mark_sector(result, graph, sector):
     return result
 
 
-def present(data, graph, sector, *, domain="procurement", title="조달·계약 은하", sectors=SECTORS):
+def present(data, graph, sector, *, domain="procurement", title="조달계약 은하", sectors=SECTORS):
     from core.law_map import family
     data = deepcopy(data)
-    data.update(domain=domain, galaxy_title=title + (' · '+sectors[sector] if sector!='all' else ''))
+    data.update(domain=domain, galaxy_title=title + (' ('+sectors[sector]+')' if sector!='all' else ''))
     catalog = {d['name']:d for d in graph['catalog']}
     palette = ('#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed',
                '#cedc80','#ffa58e','#91a1ff','#e1a6e8','#7de0e2','#f1ce84',

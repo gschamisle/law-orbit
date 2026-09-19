@@ -123,7 +123,7 @@ class EnvironmentTests(unittest.TestCase):
         from streamlit.testing.v1 import AppTest
         app=AppTest.from_string('from unittest.mock import patch\nfrom pathlib import Path\nfrom ui import environment_map_ui as u\nwith patch.object(u,"BUNDLE",Path("output/missing-environment-test.json")):\n u.render()').run()
         self.assertFalse(app.exception)
-        self.assertEqual(app.info[0].value,'환경·화학안전 데이터 미수집')
+        self.assertEqual(app.info[0].value,'환경화학안전 데이터 미수집')
 
     def test_palette_stable(self):
         from core.law_galaxy import build

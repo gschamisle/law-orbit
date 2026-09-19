@@ -55,4 +55,4 @@ def external_evidence(graph: dict, law: str, reference: str) -> list[dict]:
 
 
 def present(data: dict) -> dict:
-    return {**data, 'domain': 'fsc', 'galaxy_title': '금융법 은하'}
+    return {**data, 'domain': 'fsc', 'galaxy_title': '금융 은하'}

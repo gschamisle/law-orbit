@@ -9,7 +9,7 @@ APP_TITLE = '이 조문 건드리면 다 죽는 거야'
 st.set_page_config(page_title=APP_TITLE, page_icon='✦', layout='wide', initial_sidebar_state='expanded')
 inject_global_css()
 
-pages = [('galaxy', '법령은하', None), ('review', '개정안 검토', amendment_review_ui)]
+pages = [('galaxy', '법령은하', None), ('review', '개정안 검토 (국세)', amendment_review_ui)]
 if ENABLE_WIP_TABS:
     pages += [('relations', '조문 연관 조회', article_relations_ui), ('new_article', '신설 조문 검토', new_article_ui)]
 if ENABLE_DRAFT_TAB:
@@ -29,8 +29,8 @@ with st.sidebar:
     st.markdown('<div class="atlas-sidebar-note">조문을 따라가면<br>다음에 살펴볼 법이 보입니다.</div>', unsafe_allow_html=True)
     with st.popover('자료 관리', width='stretch'):
         with st.container(key='atlas_data_tools'):
-            st.markdown('<p class="atlas-data-copy">수집된 본문과 연결 지도는 오프라인에서도 볼 수 있습니다.<br>현행본 대조는 세법 추적 목록을 법제처와 비교합니다. 이 버튼은 저장 자료를 변경하지 않습니다.</p>', unsafe_allow_html=True)
-            check = st.button('세법 현행본 대조', disabled=not bool(LAW_API_KEY), key='check_freshness', width='content')
+            st.markdown('<p class="atlas-data-copy">수집된 본문과 연결 지도는 오프라인에서도 볼 수 있습니다.<br>현행본 대조는 국세 추적 목록을 법제처와 비교합니다. 이 버튼은 저장 자료를 변경하지 않습니다.</p>', unsafe_allow_html=True)
+            check = st.button('국세 현행본 대조', disabled=not bool(LAW_API_KEY), key='check_freshness', width='content')
             if not LAW_API_KEY:
                 st.info('현행본 대조에는 법제처 API 연결 설정이 필요합니다.')
             if check:
@@ -50,7 +50,7 @@ with st.sidebar:
                 if changes:
                     st.warning('수집 판본과 다른 법령: ' + ', '.join(c['name'] for c in changes))
                 else:
-                    st.success('비교한 세법 추적 목록이 현행본과 일치합니다.')
+                    st.success('비교한 국세 추적 목록이 현행본과 일치합니다.')
     st.markdown('<div class="atlas-sidebar-footer"><span>●</span> 수집 자료로 탐색 중</div>', unsafe_allow_html=True)
 
 # Keep page widgets mounted, like native tabs, so switching the sidebar does not
@@ -63,11 +63,11 @@ with st.container(key='page_galaxy'):
       <h1>하나의 조문,<br class="atlas-mobile-break"><em> 이어지는 법령.</em></h1>
       <p>개정하기 전에, 이 조문이 연결한 세계부터 살펴보세요.</p>
     </header>''', unsafe_allow_html=True)
-    tax, finance, local_tax, procurement, housing, environment = st.tabs(['세법', '금융법', '지방세', '조달·계약', '국토·건축·주택', '환경·화학안전'])
+    tax, procurement, finance, local_tax, housing, environment = st.tabs(['국세', '조달계약', '금융', '지방세', '국토건축주택', '환경화학안전'])
     with tax: law_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with procurement: procurement_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with finance: fsc_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with local_tax: local_tax_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-    with procurement: procurement_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with housing: housing_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with environment: environment_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
 

@@ -65,9 +65,9 @@ def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: 
         if include_external or name in tax_laws
     }
 
-    # 세법 기본 지도에는 세법과 실제 인용·역인용이 있는 외부 법령만 둔다.
+    # 국세 기본 지도에는 국세 법령과 실제 인용·역인용이 있는 외부 법령만 둔다.
     # 선의 표시 임계값이나 법령군 필터를 적용하기 전에 양방향 근거를 확인한다.
-    # 금융법 은하는 독립된 수집 범위 전체를 유지한다.
+    # 금융 은하는 독립된 수집 범위 전체를 유지한다.
     if not fsc:
         connected = set()
         for edge in edges:
@@ -127,7 +127,7 @@ def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: 
             **({"full_name": name} if fsc else {}),
             "family": fam,
             "category": 'external' if outer else ('fsc' if fsc else 'tax'),
-            "title": ((catalog.get(name,{}).get('managing_authority','금융 법령')+' · '+catalog.get(name,{}).get('kind','')) if fsc else ('외부 법령 · 세법과의 연결' if outer else '세법령')) + ' · 시행일 ' + catalog.get(name,{}).get('effective','확인 필요'),
+            "title": ((catalog.get(name,{}).get('managing_authority','금융 법령')+' · '+catalog.get(name,{}).get('kind','')) if fsc else ('외부 법령 · 국세 법령과의 연결' if outer else '국세 법령')) + ' · 시행일 ' + catalog.get(name,{}).get('effective','확인 필요'),
             "color": color_for(fam),
             "tier": t,
             "count": laws[name],
@@ -203,7 +203,7 @@ def render_html(data: dict, height: int = 720) -> str:
 
 def render_page(data: dict, height: int = 800) -> str:
     from html import escape
-    title = escape(data.get("galaxy_title", "세법 은하"))
+    title = escape(data.get("galaxy_title", "국세 은하"))
     return (
         "<!doctype html><html lang='ko'><head><meta charset='utf-8'>"
         "<meta name='viewport' content='width=device-width,initial-scale=1'>"

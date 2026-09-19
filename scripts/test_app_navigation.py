@@ -8,11 +8,12 @@ class NavigationTests(unittest.TestCase):
     def test_primary_menu_order_domains_and_simplified_controls(self):
         app=AppTest.from_file('app.py',default_timeout=60).run()
         self.assertFalse(app.exception,str(app.exception))
-        self.assertEqual(app.radio(key='app_section').options[:2],['법령은하','개정안 검토'])
+        self.assertEqual(app.radio(key='app_section').options[:2],['법령은하','개정안 검토 (국세)'])
         self.assertEqual(app.radio(key='app_section').value,'galaxy')
-        self.assertEqual([t.label for t in app.tabs],['세법','금융법','지방세','조달·계약','국토·건축·주택','환경·화학안전'])
+        self.assertEqual([t.label for t in app.tabs],['국세','조달계약','금융','지방세','국토건축주택','환경화학안전'])
         self.assertNotIn('법령 관계도 (평면)', app.radio(key='lm_view').options)
         self.assertFalse(any((s.key or '') in ('lm_g_min','lm_g_arts','fsc_minimum','fsc_points') for s in app.slider))
+        self.assertTrue(any('현재 국세 개정안만 지원합니다.' in c.value for c in app.caption))
         self.assertGreaterEqual(len(app.get('popover')),3 if (Path(__file__).resolve().parents[1]/'output/fsc-universe/bundle.json').is_file() else 2)
 
     @unittest.skipUnless((Path(__file__).resolve().parents[1]/"output/fsc-universe/bundle.json").is_file(), "Requires locally collected FSC snapshot")

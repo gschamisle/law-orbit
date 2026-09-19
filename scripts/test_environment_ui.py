@@ -29,7 +29,7 @@ class EnvironmentUI(unittest.TestCase):
     def test_six_galaxies_and_sector_state_isolation(self):
         app=AppTest.from_file('app.py',default_timeout=60).run()
         self.assertFalse(app.exception,str(app.exception))
-        self.assertIn('환경·화학안전',[t.label for t in app.tabs])
+        self.assertIn('환경화학안전',[t.label for t in app.tabs])
         upload_id=app.get('file_uploader')[0].proto.id
         app.text_input(key='lm_library_query').set_value('배당금')
         app.text_input(key='fsc_focus_ref').set_value('제2조')

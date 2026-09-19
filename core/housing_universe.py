@@ -55,7 +55,7 @@ def load_bundle(path=BUNDLE):
 
 
 def present(data,graph,sector):
-    return shared.present(data,graph,sector,domain='housing',title='국토·건축·주택 은하',sectors=SECTORS)
+    return shared.present(data,graph,sector,domain='housing',title='국토건축주택 은하',sectors=SECTORS)
 
 
 def report(bundle):

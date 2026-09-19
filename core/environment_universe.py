@@ -21,7 +21,7 @@ def validate_bundle(bundle):return shared.validate_bundle(bundle,domain='environ
 def load_bundle(path=BUNDLE):return shared.load_bundle(path,domain='environment')
 
 def present(data,graph,sector):
-    return shared.present(data,graph,sector,domain='environment',title='환경·화학안전 은하',sectors=SECTORS)
+    return shared.present(data,graph,sector,domain='environment',title='환경화학안전 은하',sectors=SECTORS)
 
 def report(bundle):
     result=shared.report(bundle,domain='environment',sectors=SECTORS)
