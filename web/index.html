@@ -12,4 +12,8 @@
 <footer>수집·분석한 명시적 인용 범위입니다. 연결 유무가 연계개정 필요성이나 영향 없음을 확정하지는 않습니다.<br>국세 개정안 파일 검토는 기존 로컬 앱에서 이용할 수 있습니다.</footer></main>
 <dialog id="coverage"><button class="dialog-close" aria-label="안내 닫기">닫기</button><span class="eyebrow">ABOUT THIS COLLECTION</span><h2>수집 자료 안내</h2><div id="coverage-copy"></div></dialog>
 <dialog id="storage"><button class="dialog-close" aria-label="저장 자료 관리 닫기">닫기</button><h2>이 기기에 저장한 자료</h2><p class="muted">불러온 자료는 이 브라우저에 저장됩니다. 브라우저 설정·저장 공간에 따라 삭제될 수 있으며, 시크릿 모드에서는 저장이 제한될 수 있습니다.</p><p id="storage-size"></p><button id="clear-saved">법령 자료 캐시 비우기</button><p class="muted small">다음에 열람할 때 필요한 자료를 다시 내려받습니다.</p></dialog>
+<dialog id="reading" class="reading-dialog" aria-labelledby="reading-title" aria-describedby="reading-context">
+<header class="reading-header"><div><span class="eyebrow">READ THE CONNECTION</span><p id="reading-context" class="muted small"></p></div><button class="dialog-close quiet" aria-label="연결 조문 본문 닫기" autofocus>닫기</button></header>
+<div id="reading-scroll"><h2 id="reading-title">연결 조문 본문</h2><div id="reading-meta" class="muted small"></div><label id="reading-picker" hidden>수집 조문<select id="reading-article" aria-label="연결 법령의 수집 조문"></select></label><p id="reading-status" class="muted small" role="status"></p><div id="reading-body"></div></div>
+<footer class="reading-actions"><button id="reading-copy" class="quiet" disabled>본문 복사</button><button id="reading-explore" disabled>이 조문을 중심으로 탐색</button></footer></dialog>
 <script type="module" src="app.mjs"></script></body></html>

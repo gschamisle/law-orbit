@@ -188,7 +188,7 @@ def shell(dest):
     html=html.replace('__SOUND__',(ROOT/'ui/assets/law_galaxy_sound.js').read_text(encoding='utf-8')).replace('__GESTURES__',(ROOT/'ui/assets/law_galaxy_gestures.js').read_text(encoding='utf-8'))
     html=html.replace("(()=>{'use strict';", "window.addEventListener('message',function init(event){if(event.source!==parent||event.origin!==location.origin||event.data?.type!=='galaxy-data')return;window.removeEventListener('message',init);const WEB_DATA=event.data.data;(()=>{'use strict';",1)
     html=html.replace('__DATA__','WEB_DATA')
-    html=html.replace("function select(n){selected", "function select(n){if(n?.web_law)parent.postMessage({type:'galaxy-select',law:n.web_law,jo:n.web_jo||'',region:n.web_region||''},location.origin);selected",1)
+    html=html.replace("function select(n){selected", "function select(n){if(n?.web_law)parent.postMessage({type:'galaxy-select',law:n.web_law,jo:n.web_jo||'',region:n.web_region||'',mode:D.mode},location.origin);selected",1)
     html=html.replace('})();\n</script>', '})();});\n</script>')
     prefix="<!doctype html><html lang='ko'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>법령 은하</title><link rel='stylesheet' href='fonts.css'><style>body{margin:0;background:#051e22}#galaxy-wrap{border:0!important;border-radius:0!important;height:100vh!important;min-height:0!important}</style>"
     (dest/'renderer.html').write_text(prefix+html+'</html>',encoding='utf-8')

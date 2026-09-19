@@ -1,5 +1,5 @@
 const SHELL='law-galaxy-shell-v1';
-const ASSETS=['./','index.html','style.css','fonts.css','app.mjs','store.mjs','query.mjs','renderer.html','app.webmanifest','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
+const ASSETS=['./','index.html','style.css','fonts.css','app.mjs','store.mjs','reading.mjs','query.mjs','renderer.html','app.webmanifest','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{
