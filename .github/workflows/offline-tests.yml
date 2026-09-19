@@ -2,7 +2,7 @@ name: Offline tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/render-deployment]
   pull_request:
     branches: [main]
 
@@ -17,7 +17,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --frozen
 
       - name: Run offline test suite
         run: uv run python -m scripts.run_offline_tests

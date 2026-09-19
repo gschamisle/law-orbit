@@ -115,3 +115,7 @@ GitHub Actions의 [오프라인 테스트](.github/workflows/offline-tests.yml)�
 - [인용 파싱의 지원 패턴·한계](docs/citation-parsing.md)
 - [국세 병행법령 탐지](docs/parallel-law-detection.md)
 - [수동 검증 시나리오](docs/manual-test-scenarios.md)
+
+## 공개 웹 배포
+
+Render에서 여섯 은하만 공개하는 설정은 [공개 배포 안내](docs/render-deployment.md)를 참고하세요. 로컬 개정안 검토 기능은 유지되며, 공개 서버에는 업로드 기능과 API 인증값을 제공하지 않습니다.

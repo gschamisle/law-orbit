@@ -10,6 +10,9 @@ LAW_API_KEY = os.getenv("LAW_API_KEY", "")
 LAW_SEARCH_URL = "https://www.law.go.kr/DRF/lawSearch.do"
 LAW_SERVICE_URL = "https://www.law.go.kr/DRF/lawService.do"
 
+# 공개 서버는 은하 열람만 제공한다. 로컬 기본 기능은 유지한다.
+PUBLIC_GALAXY_ONLY = os.getenv("PUBLIC_GALAXY_ONLY", "0") == "1"
+
 # 기능 플래그 ───────────────────────────────────────────────────────────────
 # 3단계 HWPX 출력: 베타 기간 동안 비활성화(코드는 보존, 탭은 안내문구만 노출).
 # 재활성화하려면 True로 바꾸거나 .env에 ENABLE_HWPX_OUTPUT=1 설정.

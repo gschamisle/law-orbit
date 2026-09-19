@@ -1,0 +1,25 @@
+# Public galaxies only. Local amendment review remains available.
+services:
+  - type: web
+    name: law-galaxies
+    runtime: python
+    repo: https://github.com/gschamisle/tax-amendment-assistant
+    branch: codex/render-deployment
+    region: singapore
+    plan: 1c-2g
+    numInstances: 1
+    autoDeployTrigger: "off"
+    buildCommand: uv sync --frozen && uv cache prune --ci
+    startCommand: uv run --frozen python -m scripts.run_public_server
+    healthCheckPath: /_stcore/health
+    disk:
+      name: law-galaxy-data
+      mountPath: /opt/render/project/src/output
+      sizeGB: 10
+    envVars:
+      - key: PUBLIC_GALAXY_ONLY
+        value: "1"
+      - key: GALAXY_SNAPSHOT_URL
+        sync: false
+      - key: GALAXY_SNAPSHOT_SHA256
+        sync: false
