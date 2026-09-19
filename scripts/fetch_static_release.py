@@ -27,6 +27,15 @@ def fetch(metadata,destination):
             destination.mkdir(parents=True)
             tar.extractall(destination,filter='data')
     result=validate(destination)
+    # Fail rather than publish a stale shell after browser/template edits.
+    from scripts.build_static_galaxies import shell
+    with tempfile.TemporaryDirectory() as expected:
+        shell(Path(expected))
+        for file in Path(expected).rglob('*'):
+            if not file.is_file():continue
+            wanted=file.read_bytes();actual=(destination/file.relative_to(expected)).read_bytes()
+            if file.suffix!='.woff2':wanted=wanted.replace(b'\r\n',b'\n');actual=actual.replace(b'\r\n',b'\n')
+            if wanted!=actual:raise ValueError('Rebuild the release after web or renderer changes')
     if result['version']!=spec['data_version']:raise ValueError('Unexpected data version')
     return result
 
