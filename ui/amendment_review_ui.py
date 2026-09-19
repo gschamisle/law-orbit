@@ -131,12 +131,9 @@ def _parallel_block(texts: list[tuple[str, str]]) -> None:
 
 
 def render(law_api_key: str = "", openai_api_key: str = "") -> None:
-    st.markdown('<div class="mofe-section-header">개정안 검토</div>', unsafe_allow_html=True)
-    st.caption(
-        "발표된 개정법률안을 넣으면 **추가 개정이 필요한 조문**을 찾습니다. "
-        "여러 법안을 함께 올리면 법안 사이의 정비 여부까지 대조합니다. "
-        "LLM을 쓰지 않아 결과가 매번 같습니다."
-    )
+    st.markdown('<div class="mofe-section-header">개정안 불러오기</div>', unsafe_allow_html=True)
+    st.caption('여러 개정안을 함께 올리면 법안 사이의 정비 여부까지 대조합니다.')
+    st.caption('자동 검토 지원 범위: 세법 개정안 · 금융법 개정안은 아직 지원하지 않습니다.')
 
     uploads = st.file_uploader(
         "개정법률안 파일 (여러 개 가능)", type=list(_SUPPORTED),
@@ -144,7 +141,11 @@ def render(law_api_key: str = "", openai_api_key: str = "") -> None:
         help="입법예고된 '(법령안) ○○법 일부개정법률(안)' 파일. PDF·HWPX 모두 됩니다.",
     )
     if not uploads:
-        st.info("검토할 개정법률안 파일을 올려 주세요.")
+        st.markdown('''<div class="atlas-review-steps">
+          <div class="atlas-review-step"><b>01 / 불러오기</b><strong>검토할 개정안</strong><p>PDF·HWP·HWPX·텍스트 파일을<br>한 번에 여러 개 올릴 수 있습니다.</p></div>
+          <div class="atlas-review-step"><b>02 / 대조하기</b><strong>인용과 대응 조문</strong><p>번호 이동에 따른 인용 정비와<br>함께 검토할 대응 조문을 찾습니다.</p></div>
+          <div class="atlas-review-step"><b>03 / 살펴보기</b><strong>근거와 검토 후보</strong><p>원문 근거를 읽고,<br>추가 개정이 필요한지 판단하세요.</p></div>
+        </div>''', unsafe_allow_html=True)
         return
 
     if st.button("검토 실행", type="primary", key="ar_run"):
@@ -171,7 +172,7 @@ def render(law_api_key: str = "", openai_api_key: str = "") -> None:
     if not texts:
         return
 
-    st.caption(f"업로드 파일은 `data/uploads/`(git 제외)에만 저장됩니다 · {len(texts)}건")
+    st.caption(f"검토 자료 {len(texts)}건 · 업로드한 파일은 이 컴퓨터에 보관됩니다.")
     t1, t2 = st.tabs([
         ":material/swap_vert: 번호 밀림 — 인용 정비 누락",
         ":material/compare_arrows: 병행개정 — 대응 조문 검토",

@@ -6,14 +6,21 @@ from collections import Counter
 from pathlib import Path
 
 from core.citation_scope import Provision, classify, parse_scope, parse_target, scope_relation
-from core.law_universe import graph_path
+from core.law_universe import graph_path, load_graph
 
 GRAPH = graph_path()
 
 
 def analyze(law: str, reference: str, graph: dict | None = None) -> dict:
+    from functools import partial
+    from core import citation_scope as scopes
+    graph = graph if graph is not None else load_graph()
+    option = dict(allow_hyphen=graph.get("domain") == "fsc")
+    parse_target = partial(scopes.parse_target, **option)
+    parse_scope = partial(scopes.parse_scope, **option)
+    scope_relation = partial(scopes.scope_relation, **option)
+    classify = partial(scopes.classify, **option)
     target = parse_target(reference)
-    graph = graph if graph is not None else json.loads(GRAPH.read_text(encoding="utf-8"))
     norm = lambda name: "".join(str(name).split()).replace("ㆍ", "·")
     rows: list[dict] = []
     seen: set[tuple] = set()

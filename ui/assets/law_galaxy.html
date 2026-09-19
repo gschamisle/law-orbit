@@ -1,21 +1,86 @@
 <section id="galaxy-wrap" style="height:__H__px" aria-label="세법 은하 탐색기">
 <style>
-#galaxy-wrap{position:relative;isolation:isolate;overflow:hidden;background:#050b17;color:#e8f0fa;border:1px solid #233149;border-radius:18px;font-family:'Nanum Myeongjo',serif;min-height:620px;color-scheme:dark}
-#galaxy-wrap,#galaxy-wrap *{font-family:'Nanum Myeongjo',serif!important}#galaxy-wrap *{box-sizing:border-box}#galaxy-wrap:fullscreen{height:100vh!important;border-radius:0}
+#galaxy-wrap{position:relative;isolation:isolate;overflow:hidden;background:#051e22;color:#e8f0fa;border:1px solid #31534c;border-radius:18px;font-family:'MaruBuri',serif;min-height:620px;color-scheme:dark}
+#galaxy-wrap,#galaxy-wrap *{font-family:'MaruBuri',serif!important}#galaxy-wrap *{box-sizing:border-box}#galaxy-wrap:fullscreen{height:100vh!important;border-radius:0}
 #galaxy{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;outline:none}
-.g-hero{position:absolute;left:32px;top:28px;pointer-events:none;max-width:58%}.g-eyebrow{font:10px monospace;letter-spacing:3px;color:#79c9cf;text-transform:uppercase}.g-hero h2{font-size:34px;letter-spacing:-1.5px;margin:12px 0 7px;font-weight:500}.g-hero p{font-size:12px;color:#8b9bb1;line-height:1.8;margin:0}.g-live{display:inline-block;width:5px;height:5px;border-radius:50%;background:#70ddc7;margin-right:8px;box-shadow:0 0 9px #70ddc7}
-.g-controls{position:absolute;right:22px;top:28px;display:flex;gap:6px}.g-controls button{background:#111c2ddd;border:1px solid #304057;color:#becddd;border-radius:8px;padding:9px 12px;font-size:11px;cursor:pointer}.g-controls button:hover{border-color:#70ddc7;color:#fff}.g-controls button:focus-visible,#g-select:focus-visible{outline:2px solid #70ddc7}
-.g-panel{position:absolute;right:22px;top:96px;width:257px;max-height:calc(100% - 177px);overflow:auto;border:1px solid #2b3b514d;border-radius:12px;background:linear-gradient(145deg,#111e31e8,#09111edb);backdrop-filter:blur(16px);padding:20px}.g-panel small{font:10px monospace;letter-spacing:2px;color:#738ba3}.g-panel h3{font-size:19px;letter-spacing:-.6px;margin:13px 0 5px;line-height:1.5}.g-panel p{font-size:11px;line-height:1.9;color:#9aacc0}.g-panel select{width:100%;background:#091222;border:1px solid #354358;border-radius:7px;color:#c9d7e5;font-size:11px;padding:9px;margin:12px 0 4px}.g-divider{height:1px;background:#26394b;margin:17px 0}.g-stat{font:34px monospace;font-weight:300;color:#dcf7f2}.g-small{font-size:10px;color:#8197aa;margin-top:3px}.g-evidence{font-size:11px;line-height:1.8;padding:10px 11px;margin-top:10px;border-left:2px solid #67d7bf;background:#0a1425;border-radius:0 7px 7px 0;overflow-wrap:anywhere;color:#cbdae8}.g-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;font-size:11px;border-bottom:1px solid #23314955;color:#aec0d1;cursor:pointer}.g-item:hover{color:#80eed7}.g-badge{font-size:10px;padding:4px 7px;background:#17332f;border:1px solid #285348;border-radius:5px;color:#90ddc8;display:inline-block}
-.g-footer{position:absolute;left:32px;right:26px;bottom:22px;display:flex;justify-content:space-between;align-items:end;pointer-events:none;gap:20px}.g-footer p{font-size:10px;color:#72859c;margin:7px 0 0;letter-spacing:.3px}.g-key{font:10px monospace;color:#b3c1d0;border:1px solid #304052;border-radius:4px;padding:3px 6px;margin-right:5px}.g-legend{display:flex;gap:14px;font-size:10px;color:#a5b8cc;flex-wrap:wrap;max-width:70%}.g-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px}
+.g-hero{position:absolute;left:32px;top:28px;pointer-events:none;max-width:58%}.g-eyebrow{font:10px monospace;letter-spacing:3px;color:#79c9cf;text-transform:uppercase}.g-hero h2{font-size:34px;letter-spacing:-1.5px;margin:12px 0 7px;font-weight:700}.g-hero p{font-size:12px;color:#adbfaf;line-height:1.8;margin:0}.g-live{display:inline-block;width:5px;height:5px;border-radius:50%;background:#70ddc7;margin-right:8px;box-shadow:0 0 9px #70ddc7}
+.g-controls{position:absolute;right:22px;top:28px;display:flex;gap:6px}.g-controls button{background:#0e3530dd;border:1px solid #304057;color:#becddd;border-radius:8px;padding:9px 12px;font-size:11px;cursor:pointer}.g-controls button:hover{border-color:#70ddc7;color:#fff}.g-controls button:focus-visible,#g-select:focus-visible{outline:2px solid #70ddc7}
+.g-panel{position:absolute;right:22px;top:96px;width:257px;max-height:calc(100% - 177px);overflow:auto;border:1px solid #2b3b514d;border-radius:12px;background:linear-gradient(145deg,#103d35ed,#082a28e8);backdrop-filter:blur(16px);padding:20px}.g-panel small{font:10px monospace;letter-spacing:2px;color:#738ba3}.g-panel h3{font-size:19px;letter-spacing:-.6px;margin:13px 0 5px;line-height:1.5}.g-panel p{font-size:11px;line-height:1.9;color:#b6c9ba}.g-panel select{width:100%;background:#092e2a;border:1px solid #354358;border-radius:7px;color:#c9d7e5;font-size:11px;padding:9px;margin:12px 0 4px}.g-divider{height:1px;background:#26394b;margin:17px 0}.g-stat{font:34px monospace;font-weight:300;color:#dcf7f2}.g-small{font-size:10px;color:#8197aa;margin-top:3px}.g-evidence{font-size:11px;line-height:1.8;padding:10px 11px;margin-top:10px;border-left:2px solid #67d7bf;background:#0a302b;border-radius:0 7px 7px 0;overflow-wrap:anywhere;color:#cbdae8}.g-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;font-size:11px;border-bottom:1px solid #23314955;color:#aec0d1;cursor:pointer}.g-item:hover{color:#80eed7}.g-badge{font-size:10px;padding:4px 7px;background:#17332f;border:1px solid #285348;border-radius:5px;color:#90ddc8;display:inline-block}
+.g-footer{position:absolute;left:32px;right:26px;bottom:22px;display:flex;justify-content:space-between;align-items:end;pointer-events:none;gap:20px}.g-footer p{font-size:10px;color:#a2b6a8;margin:7px 0 0;letter-spacing:.3px}.g-key{font:10px monospace;color:#b3c1d0;border:1px solid #304052;border-radius:4px;padding:3px 6px;margin-right:5px}.g-legend{display:flex;gap:14px;font-size:10px;color:#a5b8cc;flex-wrap:wrap;max-width:70%}.g-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px}
 #g-tooltip{position:absolute;pointer-events:none;display:none;background:#122137ee;border:1px solid #3d5871;border-radius:7px;padding:8px 12px;font-size:11px;color:#e1f0ff;z-index:4;max-width:270px;box-shadow:0 5px 30px #0005}
 @media(max-width:720px){.g-hero{left:20px;top:20px;max-width:65%}.g-hero h2{font-size:25px}.g-hero p{max-width:220px}.g-controls{right:12px;top:18px;flex-direction:column}.g-controls button{padding:7px}.g-panel{right:12px;top:auto;bottom:65px;width:220px;max-height:205px;padding:14px}.g-panel h3{font-size:15px}.g-panel .g-divider{margin:10px 0}.g-footer{left:20px;bottom:14px}.g-footer>div:last-child{display:none}.g-legend{max-width:100%;font-size:9px}.g-stat{font-size:24px}}
+/* The iframe uses the same type and control scale as the app. */
+#galaxy-wrap{--g-text:#f4eedf;--g-muted:#abc2b8;--g-border:#416355;color:var(--g-text)}
+.g-hero p,.g-panel p,.g-panel small,.g-small,.g-footer p,.g-legend,.g-eyebrow {
+  font-size:13px;color:var(--g-muted);line-height:1.75;
+}
+.g-panel label{font-size:13px!important;color:var(--g-muted)!important}
+.g-panel h3{font-size:20px;color:var(--g-text)}
+.g-panel{width:288px;top:136px;border-color:#41635580;background:#0c302beF}
+.g-panel select{font-size:14px;color:var(--g-text);border:1px solid var(--g-border);border-radius:10px;padding:10px 12px;min-height:42px}
+.g-item,.g-evidence{font-size:14px;color:var(--g-text);line-height:1.75}
+.g-badge{font-size:13px;border-radius:999px;padding:4px 10px;color:#d9e9dd;background:#244d43;border-color:#547d6e}
+.g-controls{max-width:344px;gap:8px;justify-content:flex-end;flex-wrap:wrap;z-index:5;align-items:flex-start}
+.g-controls button{min-height:40px;background:#123b32eF;border:1px solid var(--g-border);border-radius:10px;color:var(--g-text);padding:9px 13px;font-size:14px;line-height:20px;white-space:nowrap;font-weight:700;transition:background .16s,border-color .16s}
+.g-controls button:hover{background:#204a3f;border-color:#789480;color:#fff5df}
+.g-controls button[aria-pressed="true"]{background:#244d43;border-color:#7ca38e}
+.g-controls button:focus-visible,.g-volume input:focus-visible{outline:2px solid #b1dac2;outline-offset:3px}
+.g-sound-group{display:flex;flex-direction:column;align-items:stretch;position:relative}
+.g-volume{position:absolute;right:0;top:48px;background:#103b32;border:1px solid var(--g-border);border-radius:10px;padding:10px 12px;width:190px;box-shadow:0 8px 24px #001d1a80;color:var(--g-muted);font-size:13px;line-height:20px}
+.g-volume[hidden]{display:none}
+.g-volume input{width:100%;accent-color:#accfb8;height:18px;margin:6px 0 0}
+.g-volume output{float:right;font-variant-numeric:tabular-nums}
+#g-tooltip{font-size:13px;background:#103b32f5;border-color:#547d6e;color:var(--g-text)}
+@media(min-width:721px){.g-hero{max-width:calc(100% - 400px)}.g-hero h2{font-size:30px}}
+@media(max-width:720px){
+  .g-hero{position:relative;left:auto;top:auto;margin:20px 20px 0;max-width:calc(100% - 40px)}.g-hero h2{font-size:26px}.g-hero p{max-width:100%}
+  .g-controls{position:relative;left:auto;right:auto;top:auto;margin:14px 20px 0;max-width:none;flex-direction:row;justify-content:flex-start}
+  .g-controls button{padding:8px 11px;min-height:38px}
+  .g-panel{width:min(288px,calc(100% - 40px));right:20px;top:auto;max-height:230px;bottom:76px}
+  .g-panel h3{font-size:20px}.g-legend{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){.g-controls button{transition:none}}
+
+#galaxy-wrap{font-weight:400}
+#galaxy-wrap h2,#galaxy-wrap h3,#galaxy-wrap strong{font-weight:700}
+#galaxy-wrap button,#galaxy-wrap button *{font-family:'Pretendard',sans-serif!important;font-weight:600}
+/* Anchor the volume panel to the controls so wrapping cannot push it offscreen. */
+.g-sound-group{position:static}
+.g-volume{top:calc(100% + 8px)}
+@media(max-width:720px){.g-volume{left:0;right:auto}}
+/* Keep the map clear until the user requests its details. */
+.g-panel[hidden],.g-volume-trigger[hidden]{display:none!important}
+.g-panel{z-index:4;max-height:calc(100% - 230px)}
+.g-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
+.g-panel-heading strong{font-size:16px}
+.g-info-toggle,.g-panel-heading button{background:#123b32ed;border:1px solid var(--g-border);border-radius:10px;color:var(--g-text);font-size:14px;line-height:20px;padding:9px 13px;cursor:pointer;white-space:nowrap}
+.g-info-toggle{position:absolute;right:22px;bottom:22px;z-index:5;min-height:40px}
+.g-info-toggle:hover,.g-panel-heading button:hover{background:#204a3f;border-color:#789480}
+.g-info-toggle[aria-expanded="true"]{background:#244d43;border-color:#7ca38e}
+.g-info-toggle:focus-visible,.g-panel-heading button:focus-visible{outline:2px solid #b1dac2;outline-offset:3px}
+.g-panel-heading button{padding:5px 10px;font-size:13px}
+.g-sound-group{flex-direction:row;gap:6px}
+.g-controls .g-volume-trigger{padding-left:10px;padding-right:10px;color:var(--g-muted)}
+.g-footer{right:190px}
+.g-footer>div:last-child{display:none}
+.g-legend{max-width:100%}
+@media(max-width:720px){
+ .g-info-toggle{right:20px;bottom:18px}
+ .g-panel{width:min(360px,calc(100% - 40px));max-height:calc(100% - 310px);bottom:72px}
+ .g-footer{right:20px;bottom:74px}
+}
 </style>
-<canvas id="galaxy" tabindex="0" aria-label="드래그로 회전, 방향키로 회전, 더하기와 빼기로 확대. 법령 선택 목록으로도 탐색할 수 있습니다."></canvas>
-<header class="g-hero"><div class="g-eyebrow"><span class="g-live"></span>TAX LAW / RELATION ATLAS</div><h2 id="g-title">세법 은하</h2><p id="g-subtitle">조문에서 법령으로, 법령에서 다음 영향으로.</p></header>
-<div class="g-controls"><button id="g-reset" type="button">전체 보기</button><button id="g-motion" type="button" aria-pressed="false">움직임 멈춤</button><button id="g-full" type="button">전체 화면</button></div>
-<aside class="g-panel"><small id="g-mode">EXPLORE THE CONNECTIONS</small><label for="g-select" style="display:block;font-size:10px;color:#94a9be;margin-top:14px">탐색할 법령·조문</label><select id="g-select"><option value="">전체 연결 보기</option></select><div id="g-details"></div></aside>
-<footer class="g-footer"><div><div class="g-legend" id="g-legend"></div><p id="g-footnote"></p></div><div><span class="g-key">DRAG</span><span class="g-key">SCROLL</span><p>회전 · 확대 · 점 선택</p></div></footer><div id="g-tooltip" role="status"></div>
+<canvas id="galaxy" tabindex="0" aria-label="한 손가락 또는 드래그로 회전, 두 손가락 벌리기 또는 스크롤로 확대·축소. 방향키로 회전, 더하기와 빼기로 확대. 법령 선택 목록으로도 탐색할 수 있습니다."></canvas>
+<header class="g-hero"><div class="g-eyebrow"><span class="g-live"></span><span id="g-domain">TAX LAW / RELATION ATLAS</span></div><h2 id="g-title">세법 은하</h2><p id="g-subtitle">조문에서 법령으로, 법령에서 다음 영향으로.</p></header>
+<div class="g-controls"><button id="g-reset" type="button">전체 보기</button><button id="g-motion" type="button" aria-pressed="false">움직임 멈춤</button><button id="g-full" type="button">전체 화면</button><div class="g-sound-group"><button id="g-sound" type="button" aria-pressed="false" title="낮은 바탕음과 별을 지날 때의 작은 반짝임 소리">소리 켜기</button><button id="g-volume-toggle" type="button" class="g-volume-trigger" aria-label="소리 크기 조절" aria-expanded="false" aria-controls="g-volume-popover" hidden>음량</button><label id="g-volume-popover" class="g-volume" hidden>소리 크기 <output id="g-volume-value">12%</output><input id="g-volume" aria-label="은하 소리 크기" type="range" min="0" max="30" step="1" value="12"></label></div></div>
+<button id="g-info-toggle" type="button" class="g-info-toggle" aria-expanded="false" aria-controls="g-info-panel">법령·조문 정보</button>
+<aside id="g-info-panel" class="g-panel" aria-label="법령·조문 정보" hidden><div class="g-panel-heading"><strong>법령·조문 정보</strong><button id="g-info-close" type="button" aria-label="법령·조문 정보 닫기">닫기</button></div><small id="g-mode">EXPLORE THE CONNECTIONS</small><label for="g-select" style="display:block;font-size:10px;color:#94a9be;margin-top:14px">탐색할 법령·조문</label><select id="g-select"><option value="">전체 연결 보기</option></select><div id="g-details"></div></aside>
+<footer class="g-footer"><div><div class="g-legend" id="g-legend"></div><p id="g-footnote"></p></div><div><span class="g-key">DRAG</span><span class="g-key">SCROLL</span><p>드래그로 회전 · 두 손가락·휠로 확대</p></div></footer><div id="g-tooltip" role="status"></div>
 </section>
+<script>
+__SOUND__
+__GESTURES__
+</script>
 <script>
 (()=>{'use strict';
 const D=__DATA__,root=document.getElementById('galaxy-wrap'),cv=document.getElementById('galaxy'),ctx=cv.getContext('2d');
@@ -28,19 +93,41 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let motion=
 const stars=Array.from({length:230},(_,i)=>({x:((i*719+37)%997)/997,y:((i*421+53)%991)/991,r:.35+(i%5)*.17,a:.15+(i%7)*.07}));
 const rgba=(hex,a)=>{const c=hex.replace('#','');return `rgba(${parseInt(c.slice(0,2),16)},${parseInt(c.slice(2,4),16)},${parseInt(c.slice(4,6),16)},${a})`};
 const label=n=>n.label+(n.subtitle?' '+n.subtitle:'');
-$('g-title').textContent=boundary?'신설 항, 넓어지는 궤도':spotlight?'한 조문이 잇는 은하':impact?'한 조문, 연결된 우주':'세법 은하';
+const fsc=D.domain==='fsc';
+const localTax=D.domain==='local_tax';
+const procurement=D.domain==='procurement';
+const housing=D.domain==='housing';
+const environment=D.domain==='environment';
+const sound=createGalaxySound({root,button:$('g-sound'),slider:$('g-volume'),readout:$('g-volume-value'),volumeButton:$('g-volume-toggle')});
+const infoPanel=$('g-info-panel'),infoToggle=$('g-info-toggle');
+function setInfoOpen(open,restoreFocus=false){
+ infoPanel.hidden=!open;infoToggle.setAttribute('aria-expanded',String(open));
+ if(open){sound.hideVolume();$('g-tooltip').style.display='none';}
+ else if(restoreFocus||infoPanel.contains(document.activeElement))infoToggle.focus();
+}
+infoToggle.onclick=()=>setInfoOpen(infoPanel.hidden);
+$('g-info-close').onclick=()=>setInfoOpen(false,true);
+root.addEventListener('keydown',e=>{if(e.key==='Escape'&&!infoPanel.hidden){e.preventDefault();e.stopPropagation();setInfoOpen(false,true)}},true);
+root.addEventListener('pointerdown',e=>{if(!infoPanel.hidden&&!infoPanel.contains(e.target)&&!infoToggle.contains(e.target))setInfoOpen(false)});
+root.setAttribute('aria-label',(D.galaxy_title||'세법 은하')+' 탐색기');
+if(fsc)$('g-domain').textContent='FINANCIAL LAW / RELATION ATLAS';
+if(localTax)$('g-domain').textContent='LOCAL TAX / RELATION ATLAS';
+if(environment)$('g-domain').textContent='ENVIRONMENT / CHEMICAL SAFETY';
+if(housing)$('g-domain').textContent='LAND / BUILDING / HOUSING';
+if(procurement)$('g-domain').textContent='PUBLIC PROCUREMENT / RELATION ATLAS';
+$('g-title').textContent=boundary?'신설 항, 넓어지는 궤도':spotlight?'한 조문이 잇는 은하':impact?'한 조문, 연결된 우주':(D.galaxy_title||'세법 은하');
 $('g-subtitle').textContent=boundary?`${D.example?'가상 예시 · ':''}${D.target} · ${D.change_summary}`:spotlight?`${D.target} · ${D.direction}`:impact?D.target:'법령 사이를 흐르는 인용의 궤도를 탐색하세요.';
-$('g-mode').textContent=boundary?'CITATION SCOPE / REVIEW':spotlight?'CITATIONS / BOTH DIRECTIONS':impact?'AMENDMENT IMPACT / 01':'KOREAN TAX LAW / ATLAS';
+$('g-mode').textContent=boundary?'CITATION SCOPE / REVIEW':spotlight?'CITATIONS / BOTH DIRECTIONS':impact?'AMENDMENT IMPACT / 01':(environment?'ENVIRONMENT / ATLAS':housing?'LAND & HOUSING / ATLAS':procurement?'PROCUREMENT / ATLAS':localTax?'LOCAL TAX / ATLAS':fsc?'FSC LAW / ATLAS':'KOREAN TAX LAW / ATLAS');
 $('g-footnote').textContent=`${D.built_at||'저장 그래프'} 기준 · ${boundary?'점선은 범위·문맥 검토 후보입니다':impact?'직접 연결 · 화살표는 인용 방향':'법령군별 색상 · 화면상 거리는 법적 영향의 크기가 아닙니다'}`;
 if(spotlight)$('g-reset').textContent='연결 전체 보기';
-const legends=spotlight?[['#66e5ed','인용하는 곳 →'],['#ffc77a','← 인용해 오는 곳'],['#e8a1cc','문맥·출처 확인 (점선)']]:boundary?[['#ffc77a','범위 재검토 (점선)'],['#88b8ff','문언상 포함'],['#e8a1cc','문맥 확인 (점선)']]:impact?[['#66efce','직접'],['#ffc77a','범위'],['#88b8ff','상위'],['#c6a3ff','하위'],['#e8a1cc','문맥 확인']]:[['#5b8cff','소득세'],['#3ddc84','법인세'],['#ff6b8a','조세특례'],['#c084fc','상속·증여'],['#2dd4bf','국제조세']];
-$('g-legend').innerHTML=legends.map(([c,t])=>`<span><i class="g-dot" style="background:${c}"></i>${t}</span>`).join('');
+const legends=spotlight?[['#66e5ed','인용하는 곳 →'],['#ffc77a','← 인용해 오는 곳'],['#e8a1cc','문맥·출처 확인 (점선)']]:boundary?[['#ffc77a','범위 재검토 (점선)'],['#88b8ff','문언상 포함'],['#e8a1cc','문맥 확인 (점선)']]:impact?[['#66efce','직접'],['#ffc77a','범위'],['#88b8ff','상위'],['#c6a3ff','하위'],['#e8a1cc','문맥 확인']]:environment?[['#80b4ff','법령·고시 묶음별 색상']]:housing?[['#80b4ff','法과 공간 · 법령 묶음별 색상']]:procurement?[['#80b4ff','법령·예규 묶음별 색상']]:fsc?[['#7fb4ff','금융 법령·규정'],['#68e0cb','법률 · 감독규정 · 시행세칙']]:[['#5b8cff','소득세'],['#3ddc84','법인세'],['#ff6b8a','조세특례'],['#c084fc','상속·증여'],['#2dd4bf','국제조세']];
+$('g-legend').innerHTML=(localTax&&!spotlight?[['#68dbc2','지방세법'],['#efb975','감면·특례'],['#8bbef5','기본·징수'],['#d5c78d','선택 지역 조례·규칙']]:legends).map(([c,t])=>`<span><i class="g-dot" style="background:${c}"></i>${t}</span>`).join('');
 D.nodes.filter(n=>!n.context_only).forEach(n=>{const o=document.createElement('option');o.value=n.id;o.textContent=label(n);$('g-select').append(o)});
 function links(){return selected?allLinks.filter(l=>l.a===selected.id||l.b===selected.id):D.links}
 function panel(){
- const n=selected,ls=links(),others=new Map();ls.forEach(l=>{const other=byId.get(l.a===n?.id?l.b:l.a);if(other&&other.id!==n?.id)others.set(other.id,(others.get(other.id)||0)+l.n)});
+ const n=selected,ls=links(),others=new Map();infoToggle.title=n?label(n)+' · 인용 연결과 근거 보기':'법령 선택과 은하 안내';ls.forEach(l=>{const other=byId.get(l.a===n?.id?l.b:l.a);if(other&&other.id!==n?.id)others.set(other.id,(others.get(other.id)||0)+l.n)});
  if(!n){$('g-details').innerHTML=`<h3>${spotlight?'이 조문이 잇는 경로':impact?'개정 영향의 첫 번째 궤도':'법은 서로를 참조합니다.'}</h3><p>${spotlight?'가운데가 선택한 조문입니다. 민트색은 이 조문이 인용하는 곳, 금색은 이 조문을 인용하는 곳입니다. 점을 선택해 근거를 확인하세요.':boundary?'가운데는 변경된 조문입니다. 점선은 신설 항의 적용 취지를 확인할 연결입니다.':impact?'가운데가 개정 대상입니다. 연결된 조문을 선택하면 저장된 인용 근거가 나타납니다.':'법령을 선택하면 같은 법령군과 드문 연결까지 펼쳐집니다. 별빛 주위의 작은 점은 조문입니다.'}</p><div class="g-divider"></div><div class="g-stat">${D.article_count||D.nodes.length}</div><div class="g-small">${impact?'지도에 표시된 조문':'탐색 가능한 법령'}</div><p>${spotlight?'화살표는 인용 방향입니다. 점선은 선택한 범위에 속하는지 원문 확인이 필요합니다.':impact?'개정 필요성의 확정이 아닌 영향 검토 후보입니다.':'점의 크기는 인용량, 선은 인용하는 법령에서 인용받는 법령으로 향합니다.'}</p>`;return;}
- let html=`<h3>${esc(label(n))}</h3><p>${esc(n.title||n.family)}</p>${n.status?`<span class="g-badge">${esc(n.status)}</span>`:''}<div class="g-divider"></div>`;
+ let html=`<h3>${esc(label(n))}</h3>${n.full_name&&n.full_name!==n.label?`<p class="g-full-name">${esc(n.full_name)}</p>`:''}<p>${esc(n.title||n.family)}</p>${n.status?`<span class="g-badge">${esc(n.status)}</span>`:''}<div class="g-divider"></div>`;
  if(n.evidence?.length){html+=`<div class="g-small">연결 근거 ${n.evidence.length}개 · ${esc(kinds[n.kind]||'인용 근거')}</div>`;n.evidence.forEach(e=>html+=`<div class="g-evidence">${e.direction_label?`<strong>${esc(e.direction_label)}</strong><p>${esc(e.source_law)} ${esc(e.source_ref)} → ${esc(e.target_law)} ${esc(e.target_ref)}</p>`:''}${esc(e.raw)}<p>${esc(e.reason)}</p>${e.context?`<details><summary>인용 주변 원문</summary><p style="white-space:pre-wrap">${esc(e.context)}</p></details>`:''}${e.source_effective?`<p>출처 시행일 ${esc(e.source_effective)}${e.target_effective?` · 대상 시행일 ${esc(e.target_effective)}`:''}</p>`:''}${sourceLink(e.source_url,'출처 원문')} ${sourceLink(e.target_url,'대상 원문')}${(e.annex_urls||[]).map((u,i)=>`<p>${sourceLink(u,`별표·서식 원본 ${i+1}`)}</p>`).join('')}${e.question?`<p style="color:#ffd698">${esc(e.question)}</p>`:''}${e.change_summary?`<p>${esc(e.change_summary)}</p>`:''}</div>`)}
  else{html+=`<div class="g-stat">${others.size}</div><div class="g-small">연결된 ${impact?'조문':'법령'}</div>`;[...others].sort((a,b)=>b[1]-a[1]).forEach(([id,count])=>{const o=byId.get(id);html+=`<button type="button" class="g-item" data-node="${esc(id)}" style="width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left"><span>${esc(label(o))}</span><span>${count}</span></button>`})}
  $('g-details').innerHTML=html;root.querySelectorAll('[data-node]').forEach(el=>el.onclick=()=>select(byId.get(el.dataset.node)));
@@ -54,16 +141,16 @@ $('g-motion').onclick=()=>{motion=!motion;auto=motion&&!selected&&!impact;motion
 $('g-full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await root.requestFullscreen()}catch{$('g-full').textContent='독립 HTML에서 사용'}};
 function resize(){W=root.clientWidth;H=root.clientHeight;const d=Math.min(devicePixelRatio||1,2);cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
 new ResizeObserver(resize).observe(root);resize();
-function project(p){let x=p.x-pan.x,y=p.y-pan.y,z=p.z-pan.z;const cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);const xx=x*cy-z*sy;z=x*sy+z*cy;const yy=y*cx-z*sx;z=y*sx+z*cx;const scale=Math.min((W>720?W-300:W-24)/1000,(H-200)/1100)*zoom;const f=1100/(1100+z);return{x:(W>720?(W-260)/2:W/2)+xx*f*scale,y:H*.57+yy*f*scale,z,d:f*scale}}
+function project(p){let x=p.x-pan.x,y=p.y-pan.y,z=p.z-pan.z;const cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);const xx=x*cy-z*sy;z=x*sy+z*cy;const yy=y*cx-z*sx;z=y*sx+z*cx;const inset=W>720&&!infoPanel.hidden?280:0;const scale=Math.min((W-inset-24)/1000,(H-200)/1100)*zoom;const f=1100/(1100+z);return{x:(W-inset)/2+xx*f*scale,y:H*.57+yy*f*scale,z,d:f*scale}}
 function curve(a,b,t,bend=1){const lift=(impact?30:65)*bend;return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t-Math.sin(Math.PI*t)*lift,z:a.z+(b.z-a.z)*t+Math.sin(Math.PI*t)*35}}
 function draw(ts){
  const dt=Math.min((ts-last)/1000||0,.05);last=ts;if(motion)clock+=dt;if(auto&&!drag)ry+=dt*.025;
  const ease=reduced?1:Math.min(1,dt*6);zoom+=(targetZoom-zoom)*ease;for(const k of ['x','y','z'])pan[k]+=(destination[k]-pan[k])*ease;
  ctx.clearRect(0,0,W,H);ctx.globalAlpha=1;
- const bg=ctx.createRadialGradient(W*.38,H*.55,20,W*.38,H*.55,W*.65);bg.addColorStop(0,'#101c35');bg.addColorStop(.55,'#091326');bg.addColorStop(1,'#040914');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+ const bg=ctx.createRadialGradient(W*.38,H*.55,20,W*.38,H*.55,W*.65);bg.addColorStop(0,'#103c3a');bg.addColorStop(.55,'#082728');bg.addColorStop(1,'#03181e');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
  for(const s of stars){ctx.fillStyle=rgba('#c6d9f1',s.a*(.7+.3*Math.sin(clock*.5+s.x*20)));ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fill()}
  // A restrained galactic haze anchors the selected neighbourhood.
- const haze=ctx.createRadialGradient(W*.35,H*.56,15,W*.35,H*.56,H*.45);haze.addColorStop(0,rgba(impact?'#54dec6':'#4978d4',.065));haze.addColorStop(1,'transparent');ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
+ const haze=ctx.createRadialGradient(W*.35,H*.56,15,W*.35,H*.56,H*.45);haze.addColorStop(0,rgba(impact?'#54dec6':'#8aa98d',.065));haze.addColorStop(1,'transparent');ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
  const active=links(),neighbor=new Set();active.forEach(l=>{neighbor.add(l.a);neighbor.add(l.b)});
  for(const p of D.dust||[]){const q=project(p);const lit=!selected||p.law_id===selected.id;ctx.fillStyle=rgba(p.c,spotlight?.075:lit?.48:.09);ctx.beginPath();ctx.arc(q.x,q.y,Math.max(.45,.9*q.d),0,Math.PI*2);ctx.fill()}
  for(const l of active){const a=byId.get(l.a),b=byId.get(l.b);if(!a||!b)continue;const color=l.color||a.color;ctx.lineWidth=Math.min(2.5,.55+Math.log2(l.n+1)*.22);ctx.strokeStyle=rgba(color,selected||impact?.44:.16);ctx.setLineDash(l.dashed?[6,6]:[]);ctx.beginPath();for(let k=0;k<=24;k++){const q=project(curve(a,b,k/24,l.bend||1));k?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)}ctx.stroke();ctx.setLineDash([]);
@@ -76,20 +163,23 @@ function draw(ts){
   ctx.strokeStyle=rgba(n.color,chosen?.8:.25);ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(q.x,q.y,rr*(chosen?2.5:1.9),rr*.85,-.3,0,Math.PI*2);ctx.stroke();ctx.fillStyle=n.color;ctx.shadowBlur=chosen?20:8;ctx.shadowColor=n.color;ctx.beginPath();ctx.arc(q.x,q.y,rr,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(q.x-rr*.22,q.y-rr*.22,Math.max(1,rr*.28),0,Math.PI*2);ctx.fill();
   if(chosen||n.is_target){ctx.strokeStyle=rgba(n.color,.12+.08*Math.sin(clock*1.5));ctx.beginPath();ctx.arc(q.x,q.y,rr*3.4+Math.sin(clock)*3,0,Math.PI*2);ctx.stroke()}
   let show=!n.context_only&&(impact||chosen||hover?.id===n.id||(selected&&neighbor.has(n.id))||n.tier===0);
-  if(show&&spotlight){ctx.font="13px 'Nanum Myeongjo',serif";const width=Math.max(ctx.measureText(n.label).width,ctx.measureText(n.subtitle||'').width)+12,box={x:q.x-width/2,y:q.y-rr-29,w:width,h:rr*2+55};const overlaps=labelBoxes.some(b=>box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y);if(overlaps&&!chosen&&!n.is_target&&hover?.id!==n.id)show=false;else labelBoxes.push(box);}
-  if(show){ctx.font=`${chosen||n.is_target?'600':'400'} ${impact?13:12}px 'Nanum Myeongjo',serif`;ctx.textAlign='center';ctx.fillStyle=on?'#e1eefa':'#7f93ac';ctx.shadowBlur=6;ctx.shadowColor='#020610';ctx.fillText(n.label,q.x,q.y-rr-13);if(n.subtitle){ctx.font="11px 'Nanum Myeongjo',serif";ctx.fillStyle='#9dafc6';ctx.fillText(n.subtitle,q.x,q.y+rr+19)}ctx.shadowBlur=0}
+  if(show&&(spotlight||fsc||localTax||procurement||housing||environment)){ctx.font="13px 'MaruBuri',serif";const width=Math.max(ctx.measureText(n.label).width,ctx.measureText(n.subtitle||'').width)+12,box={x:q.x-width/2,y:q.y-rr-29,w:width,h:rr*2+55};const overlaps=labelBoxes.some(b=>box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y);if(overlaps&&!chosen&&!n.is_target&&hover?.id!==n.id)show=false;else labelBoxes.push(box);}
+  if(show){ctx.font=`${chosen||n.is_target?'700':'400'} ${impact?13:12}px 'MaruBuri',serif`;ctx.textAlign='center';ctx.fillStyle=on?'#e1eefa':'#7f93ac';ctx.shadowBlur=6;ctx.shadowColor='#020610';ctx.fillText(n.label,q.x,q.y-rr-13);if(n.subtitle){ctx.font="11px 'MaruBuri',serif";ctx.fillStyle='#9dafc6';ctx.fillText(n.subtitle,q.x,q.y+rr+19)}ctx.shadowBlur=0}
   if(!n.context_only)hit.push({n,q,rr:Math.max(rr+8,14)});
  }ctx.globalAlpha=1;frameId=requestAnimationFrame(draw);
 }
 function pick(x,y){return [...hit].reverse().find(o=>Math.hypot(o.q.x-x,o.q.y-y)<o.rr)?.n||null}
-cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);drag={x:e.offsetX,y:e.offsetY,ox:e.offsetX,oy:e.offsetY};auto=false;cv.style.cursor='grabbing'};
-cv.onpointermove=e=>{if(drag){ry+=(e.offsetX-drag.x)*.004;rx=Math.max(-1.3,Math.min(1.3,rx+(e.offsetY-drag.y)*.004));drag.x=e.offsetX;drag.y=e.offsetY;return}hover=pick(e.offsetX,e.offsetY);const tip=$('g-tooltip');tip.style.display=hover?'block':'none';if(hover){tip.textContent=label(hover);tip.style.left=Math.min(W-275,e.offsetX+16)+'px';tip.style.top=Math.max(4,e.offsetY-35)+'px'}cv.style.cursor=hover?'pointer':'grab'};
-cv.onpointerup=e=>{if(drag&&Math.hypot(e.offsetX-drag.ox,e.offsetY-drag.oy)<6){const n=pick(e.offsetX,e.offsetY);select(n?.id===selected?.id?null:n)}drag=null;cv.style.cursor='grab'};
-cv.onpointercancel=()=>{drag=null;cv.style.cursor='grab'};cv.onpointerleave=()=>{$('g-tooltip').style.display='none';hover=null};
-cv.addEventListener('wheel',e=>{e.preventDefault();targetZoom=Math.max(.4,Math.min(2.8,targetZoom*Math.exp(-e.deltaY*.001)))},{passive:false});
+const gestures=createGalaxyGestures({canvas:cv,getZoom:()=>targetZoom,
+ onZoom:value=>{targetZoom=value},
+ onRotate:(dx,dy)=>{ry+=dx*.004;rx=Math.max(-1.3,Math.min(1.3,rx+dy*.004))},
+ onActive:active=>{drag=active?{}:null;if(active)auto=false;cv.style.cursor=active?'grabbing':'grab'},
+ onTap:(x,y)=>{const n=pick(x,y);select(n?.id===selected?.id?null:n)},
+ onLeave:()=>{$('g-tooltip').style.display='none';hover=null},
+ onHover:(x,y)=>{hover=pick(x,y);sound.hover(hover?.id,x/W);if(!hover)sound.trail(x/W,y/H);const tip=$('g-tooltip');tip.style.display=hover?'block':'none';if(hover){tip.textContent=label(hover);tip.style.left=Math.min(W-275,x+16)+'px';tip.style.top=Math.max(4,y-35)+'px'}cv.style.cursor=hover?'pointer':'grab'}
+});
 cv.onkeydown=e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Escape'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')ry-=.08;if(e.key==='ArrowRight')ry+=.08;if(e.key==='ArrowUp')rx-=.08;if(e.key==='ArrowDown')rx+=.08;if(e.key==='+'||e.key==='=')targetZoom=Math.min(2.8,targetZoom*1.1);if(e.key==='-')targetZoom=Math.max(.4,targetZoom/1.1);if(e.key==='Escape')reset()};
 document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frameId);if(!document.hidden){last=performance.now();frameId=requestAnimationFrame(draw)}});
-Promise.all([document.fonts.load('400 13px "Nanum Myeongjo"'),document.fonts.load('700 13px "Nanum Myeongjo"')]).then(()=>{root.dataset.fonts='loaded'}).catch(()=>{root.dataset.fonts='failed'});
+Promise.all([document.fonts.load('400 13px "MaruBuri"'),document.fonts.load('600 13px "MaruBuri"'),document.fonts.load('700 13px "MaruBuri"'),document.fonts.load('600 14px "Pretendard"')]).then(()=>{root.dataset.fonts='loaded'}).catch(()=>{root.dataset.fonts='failed'});
 panel();frameId=requestAnimationFrame(draw);
 })();
 </script>

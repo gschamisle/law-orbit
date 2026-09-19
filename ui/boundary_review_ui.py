@@ -68,7 +68,7 @@ def render(graph: dict) -> None:
     st.caption("개정 전후의 한 조문 전체를 비교합니다. 종전 마지막 항을 포함하던 범위·열거 인용을 찾아 신설 항도 포함할 취지인지 묻습니다.")
     if st.button("A법 제5항 신설 예시 보기", key="boundary_demo"):
         st.session_state["boundary_result"] = example_result()
-    with st.form("boundary_form"):
+    with st.form("boundary_form", border=False):
         laws = sorted(graph.get("laws", []))
         left, right = st.columns([3, 2])
         law = left.selectbox("비교할 법령", laws, index=laws.index("법인세법") if "법인세법" in laws else 0, key="boundary_law")

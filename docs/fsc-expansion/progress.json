@@ -1,26 +1,65 @@
 {
-  "status": "completed",
-  "source_branch": "codex/precise-citation-impact",
-  "source_sha": "329d7ec5e055f1c81821aa3d89db9553cc119a3b",
-  "work_branch": "codex/fsc-expansion-draft",
-  "verified_as_of": "2026-09-16",
-  "artifacts": [
-    "docs/fsc-expansion/plan.md",
-    "docs/fsc-expansion/inventory.md",
-    "core/law_domains.py",
-    "scripts/test_law_domains.py",
-    "scripts/run_offline_tests.py"
-  ],
-  "validation": {
-    "new_registry_unit_tests": "4 passed in isolated local reconstruction",
-    "full_offline_suite": "not run: this automation has no repository checkout and a Git-data ref update did not create a GitHub Actions run",
-    "github_readback": "verified core/law_domains.py from the work branch after commit"
+  "schema_version": 2,
+  "updated_at": "2026-09-16",
+  "branch": "codex/fsc-expansion-stage2",
+  "base_commit": "8e93b25479d10c1c724236bc98261fc379937d04",
+  "state": "implemented-and-verified-awaiting-user-review",
+  "committed": false,
+  "pushed": false,
+  "separate_galaxy": true,
+  "tax_data_unchanged": true,
+  "collection": {
+    "articles": 6164,
+    "administrative_rule_bodies": 162,
+    "administrative_rules_indexed": 148,
+    "external_evidence": 5792,
+    "internal_evidence": 32202,
+    "statutes": 117,
+    "scheduled_not_collected": 1,
+    "official_short_names": 70,
+    "administrative_articles": 5117,
+    "fss_bylaws": 28
   },
-  "remaining": [
-    "Resolve the full 117-item FSC inventory to official IDs and effective editions",
-    "Collect FSC administrative rules via admrul without name synthesis",
-    "Identify the official FSS rule corpus before ingesting FSS-issued rules",
-    "Generalize universe_builder focus category after the inventory is verified",
-    "Run the repository's full offline suite in a normal checkout before merge"
-  ]
+  "validation": {
+    "font": "Nanum Myeongjo loaded",
+    "post_alias_collection_tests": 27,
+    "preview": "http://127.0.0.1:8503/",
+    "offline_modules_passed": 33,
+    "post_alias_isolation_tests": 7,
+    "browser_verified": true,
+    "nonannex_spans_verified": 37783,
+    "protected_tax_file_hashes": 11,
+    "post_alias_focus_tests": 6,
+    "post_sector_adapter_tests": 23,
+    "review_spans_verified": 1137,
+    "sector_state_isolation": true
+  },
+  "not_implemented": [
+    "unstructured administrative documents and duplicate-number sources",
+    "complete relative-reference and scoped-alias resolution",
+    "all FSS internal regulations",
+    "supplement and annex file text analysis",
+    "external corpus reverse citations",
+    "external map expansion",
+    "in-app manual sector-tag editor"
+  ],
+  "not_executed": [
+    "new user bill upload end-to-end review"
+  ],
+  "report": "docs/fsc-expansion/implementation.md",
+  "sector_extension": {
+    "state": "implemented-and-verified",
+    "multiple_tags": true,
+    "sector_documents": {
+      "all": 265,
+      "insurance": 14,
+      "banking": 22,
+      "securities": 30,
+      "credit": 40,
+      "digital": 19,
+      "common": 148
+    },
+    "report": "docs/fsc-expansion/sectors.md",
+    "unindexed_administrative_bodies": 14
+  }
 }

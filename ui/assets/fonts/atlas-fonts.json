@@ -1,0 +1,33 @@
+{
+  "retrieved": "2026-09-17",
+  "fonts": [
+    {
+      "file": "MaruBuri-Regular.woff2",
+      "url": "https://campaign-cdn.pstatic.net/0/hangeul/2023/fonts/MaruBuri-Regular.woff2",
+      "bytes": 429572,
+      "sha256": "74bd817d96466e5d071e19234faddc8099f9d5913757880a52a59516859a72ff"
+    },
+    {
+      "file": "MaruBuri-SemiBold.woff2",
+      "url": "https://campaign-cdn.pstatic.net/0/hangeul/2023/fonts/MaruBuri-SemiBold.woff2",
+      "bytes": 502028,
+      "sha256": "5c8b39b683595d0ddcf2554148f4d2fb14c55cb967e5bff2e282b2936034fc75"
+    },
+    {
+      "file": "MaruBuri-Bold.woff2",
+      "url": "https://campaign-cdn.pstatic.net/0/hangeul/2023/fonts/MaruBuri-Bold.woff2",
+      "bytes": 460008,
+      "sha256": "a1cfbd75774a5ff66a9f750bd4a33aa26d925488d047f077d06b0a44f1b895e0"
+    },
+    {
+      "file": "Pretendard-SemiBold.woff2",
+      "url": "https://raw.githubusercontent.com/orioncactus/pretendard/v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2",
+      "bytes": 785856,
+      "sha256": "c863f76a7de5c1ddc1ed8b2fa794964530774592c4f31407a84e2a2ae93f17f0"
+    }
+  ],
+  "official_pages": [
+    "https://hangeul.naver.com/font",
+    "https://github.com/orioncactus/pretendard"
+  ]
+}

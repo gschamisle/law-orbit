@@ -43,16 +43,19 @@ def _tier(law_name: str) -> int:
     return 0
 
 
-def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: bool = True) -> dict:
+def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: bool = True, *, graph: dict | None = None) -> dict:
     """법령·조문 좌표와 법령군 간 인용 엣지.
 
     조문은 법령당 상한을 둔다. 조특령(450조)까지 전부 찍으면 점이 뭉쳐 은하가
     아니라 얼룩이 된다 — 연결이 많은 조문부터 남긴다.
     """
-    graph = load_graph()
+    graph = load_graph() if graph is None else graph
+    fsc = graph.get("domain") == "fsc"
     edges = graph['edges']
+    from core.fsc_labels import labels as fsc_labels
+    display_names = fsc_labels(graph.get('catalog', [])) if fsc else {}
     catalog = {l['name']:l for l in graph.get('catalog',[])}
-    tax_laws = set(graph.get('tax_laws',graph.get('laws',[])))
+    tax_laws = set(graph.get('focus_laws', graph.get('tax_laws',graph.get('laws',[]))))
 
     # 인용 원문의 표기 흔들림('소득세법 ', '소득세법시행령')이 별도 노드가 되지
     # 않도록 추적 목록의 정식 명칭으로 맞춘다. 목록에 없는 법령(지방세법 등)은
@@ -61,6 +64,19 @@ def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: 
         normalize(name): name for name in graph.get('laws',[])
         if include_external or name in tax_laws
     }
+
+    # 세법 기본 지도에는 세법과 실제 인용·역인용이 있는 외부 법령만 둔다.
+    # 선의 표시 임계값이나 법령군 필터를 적용하기 전에 양방향 근거를 확인한다.
+    # 금융법 은하는 독립된 수집 범위 전체를 유지한다.
+    if not fsc:
+        connected = set()
+        for edge in edges:
+            source = canonical.get(normalize(edge.get("source_law", "")))
+            target = canonical.get(normalize(edge.get("target_law", "")))
+            if source and target and (source in tax_laws or target in tax_laws):
+                connected.update((source, target))
+        canonical = {key: name for key, name in canonical.items()
+                     if name in tax_laws or name in connected}
 
     def norm(name: str) -> str:
         return canonical.get(normalize(name), "")
@@ -83,6 +99,8 @@ def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: 
     fam_index = {f: i for i, f in enumerate(fams)}
 
     # 법령군을 구(球) 위에 균등 배치 — 황금각이라 개수가 바뀌어도 고르게 퍼진다
+    palette = ('#7fb4ff', '#68e0cb', '#c3a5ff', '#f2bd7d', '#ef9abd', '#85c9dd', '#c8d993')
+    color_for = lambda fam: palette[fam_index[fam] % len(palette)] if fsc else _FAMILY_COLOR.get(fam, "#8fa3bf")
     nodes: list[dict] = []
     positions: dict[str, tuple[float, float, float]] = {}
     for name in names:
@@ -105,11 +123,12 @@ def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: 
         positions[name] = (x, yy, z)
         nodes.append({
             "id": name,
-            "label": law_abbrev.law(name),
+            "label": display_names.get(name, law_abbrev.law(name)),
+            **({"full_name": name} if fsc else {}),
             "family": fam,
-            "category": 'external' if outer else 'tax',
-            "title": ('외부 법령 · 세법과의 연결' if outer else '세법령') + ' · 시행일 ' + catalog.get(name,{}).get('effective','확인 필요'),
-            "color": _FAMILY_COLOR.get(fam, "#8fa3bf"),
+            "category": 'external' if outer else ('fsc' if fsc else 'tax'),
+            "title": ((catalog.get(name,{}).get('managing_authority','금융 법령')+' · '+catalog.get(name,{}).get('kind','')) if fsc else ('외부 법령 · 세법과의 연결' if outer else '세법령')) + ' · 시행일 ' + catalog.get(name,{}).get('effective','확인 필요'),
+            "color": color_for(fam),
             "tier": t,
             "count": laws[name],
             "x": round(x, 1), "y": round(yy, 1), "z": round(z, 1),
@@ -120,7 +139,7 @@ def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: 
     for name in names:
         top = [jo for jo, _n in degree[name].most_common(max_articles_per_law)]
         cx, cy, cz = positions[name]
-        color = _FAMILY_COLOR.get(family(name), "#8fa3bf")
+        color = color_for(family(name))
         for k, jo in enumerate(sorted(top, key=lambda s: (len(s), s))):
             y = 1 - 2 * (k + 0.5) / max(len(top), 1)
             rad = math.sqrt(max(0.0, 1 - y * y))
@@ -131,7 +150,7 @@ def build(min_edge: int = 8, max_articles_per_law: int = 220, include_external: 
                 "y": round(cy + y * r, 1),
                 "z": round(cz + math.sin(th) * rad * r, 1),
                 "c": color,
-                "law": law_abbrev.law(name),
+                "law": display_names.get(name, law_abbrev.law(name)),
                 "law_id": name,
                 "jo": law_abbrev.jo_key(jo),
             })
@@ -157,11 +176,19 @@ def _font_styles() -> str:
 
     font_dir = ROOT / "ui/assets/fonts"
     faces = []
-    for name, weight in (("Regular", 400), ("Bold", 700)):
-        encoded = base64.b64encode((font_dir / f"NanumMyeongjo-{name}.ttf").read_bytes()).decode("ascii")
-        faces.append(f"@font-face{{font-family:'Nanum Myeongjo';font-style:normal;font-weight:{weight};"
-                     f"font-display:swap;src:url(data:font/ttf;base64,{encoded}) format('truetype');}}")
-    license_text = escape((font_dir / "OFL.txt").read_text(encoding="utf-8"))
+    for family, name, weight in (
+        ("MaruBuri", "Regular", 400),
+        ("MaruBuri", "SemiBold", 600),
+        ("MaruBuri", "Bold", 700),
+        ("Pretendard", "SemiBold", 600),
+    ):
+        encoded = base64.b64encode((font_dir / f"{family}-{name}.woff2").read_bytes()).decode("ascii")
+        faces.append(f"@font-face{{font-family:'{family}';font-style:normal;font-weight:{weight};"
+                     f"font-display:swap;src:url(data:font/woff2;base64,{encoded}) format('woff2');}}")
+    license_text = escape("\n\n".join(
+        (font_dir / name).read_text(encoding="utf-8")
+        for name in ("MaruBuri-LICENSE.txt", "Pretendard-LICENSE.txt")
+    ))
     return "<pre hidden id='galaxy-font-license'>" + license_text + "</pre><style>" + "".join(faces) + "</style>"
 
 
@@ -169,14 +196,18 @@ def render_html(data: dict, height: int = 720) -> str:
     """Offline canvas renderer; JSON is escaped for an HTML script context."""
     template = (ROOT / "ui/assets/law_galaxy.html").read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
-    return _font_styles() + template.replace("__H__", str(max(620, int(height)))).replace("__DATA__", payload)
+    sound = (ROOT / "ui/assets/law_galaxy_sound.js").read_text(encoding="utf-8")
+    gestures = (ROOT / "ui/assets/law_galaxy_gestures.js").read_text(encoding="utf-8")
+    return _font_styles() + template.replace("__H__", str(max(620, int(height)))).replace("__DATA__", payload).replace("__SOUND__", sound).replace("__GESTURES__", gestures)
 
 
 def render_page(data: dict, height: int = 800) -> str:
+    from html import escape
+    title = escape(data.get("galaxy_title", "세법 은하"))
     return (
         "<!doctype html><html lang='ko'><head><meta charset='utf-8'>"
         "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-        "<title>세법 은하 · 조문 영향 탐색</title>"
+        f"<title>{title} · 조문 영향 탐색</title>"
         "<style>body{margin:0;background:#040914;padding:16px}</style></head><body>"
         + render_html(data, height) + "</body></html>"
     )

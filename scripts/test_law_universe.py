@@ -1,6 +1,8 @@
 """Expanded law coverage, evidence ownership, hierarchy and scope regressions."""
+from copy import deepcopy
 import json
 import unittest
+from core.law_galaxy import build as overview
 from core.universe_builder import build_universe
 from core.law_universe import SOURCES, load_graph
 from core.galaxy_focus import analyze_focus, visible_rows, build
@@ -106,7 +108,8 @@ class UniverseTests(unittest.TestCase):
 
     def test_all_persisted_evidence_spans_and_scope(self):
         g=load_graph()
-        src=json.loads(SOURCES.read_text(encoding='utf-8'))
+        src=g.get('source') or json.loads(SOURCES.read_text(encoding='utf-8'))
+        self.assertEqual(src['built_at'],g['built_at'])
         texts={(l['name'],a['jo']):a['text'] for l in src['laws'] for a in l['articles']}
         taxes=set(g['tax_laws'])
         for e in g['edges']:
@@ -115,6 +118,50 @@ class UniverseTests(unittest.TestCase):
                 continue
             text=texts[e['source_law'],e['source_jo']]
             self.assertEqual(text[e['source_start']:e['source_end']],e['cite_raw'])
+
+
+class TaxOverviewTests(unittest.TestCase):
+    def graph(self):
+        return dict(
+            laws=['세법', '연결없는세법', '직접인용법', '역인용법', '고립규칙',
+                  '외부끼리법', '다른외부법', '자기참조규칙'],
+            tax_laws=['세법', '연결없는세법'],
+            edges=[
+                dict(source_law='세법 ', target_law='직접인용법', source_jo='1'),
+                dict(source_law='역인용법', target_law=' 세법', source_jo='2'),
+                dict(source_law='외부끼리법', target_law='다른외부법', source_jo='3'),
+                dict(source_law='자기참조규칙', target_law='자기참조규칙', source_jo='4'),
+            ],
+        )
+
+    def test_tax_connections_survive_display_threshold_in_both_directions(self):
+        graph = self.graph()
+        original = deepcopy(graph)
+        for threshold in (1, 8, 60):
+            with self.subTest(threshold=threshold):
+                data = overview(graph=graph, min_edge=threshold)
+                ids = {node['id'] for node in data['nodes']}
+                self.assertEqual(ids, {'세법', '연결없는세법', '직접인용법', '역인용법'})
+                self.assertEqual({(e['a'], e['b']) for e in data['all_links']},
+                                 {('세법', '직접인용법'), ('역인용법', '세법')})
+                self.assertTrue(all(dot['law_id'] in ids for dot in data['dust']))
+                if threshold > 1:
+                    self.assertFalse(data['links'])
+        self.assertEqual(graph, original)
+
+    def test_tax_only_switch_keeps_all_tax_laws(self):
+        data = overview(graph=self.graph(), include_external=False)
+        self.assertEqual({n['id'] for n in data['nodes']}, {'세법', '연결없는세법'})
+        self.assertFalse(data['all_links'])
+
+    def test_fsc_scope_keeps_disconnected_documents(self):
+        graph = self.graph()
+        graph.update(domain='fsc', focus_laws=list(graph['laws']))
+        del graph['tax_laws']
+        for external in (True, False):
+            with self.subTest(external=external):
+                data = overview(graph=graph, include_external=external)
+                self.assertEqual({n['id'] for n in data['nodes']}, set(graph['laws']))
 
 
 if __name__=='__main__':

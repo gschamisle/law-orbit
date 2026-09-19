@@ -1,0 +1,363 @@
+:root {
+  --c-bg:#082c2b; --c-surface:#103b38; --c-surface-2:#164640;
+  --c-border:#2c514b; --c-border-strong:#547168;
+  --c-text:#f4eedf; --c-text-muted:#afc4b9; --c-primary:#f1d18b;
+  --c-primary-hover:#ffe3a7; --c-on-primary:#17332c; --c-primary-weak:#244941;
+  --c-accent:#9fe3c8; --c-warn:#f1d18b; --c-danger:#ffb4a4;
+  --c-ring:#f1d18b66; --atlas-font:'MaruBuri',serif; --atlas-button-font:'Pretendard',sans-serif;
+}
+html,body,input,textarea,select,button,pre,code,
+[data-testid="stMarkdownContainer"],[data-testid="stWidgetLabel"],[data-testid="stText"],
+[data-testid="stCaptionContainer"],[data-testid="stMetricValue"],[data-baseweb="select"],
+[role="option"],[role="tooltip"],[role="dialog"] {font-family:var(--atlas-font)!important}
+.stApp,[data-testid="stAppViewContainer"],[data-testid="stMain"]{background:var(--c-bg);color:var(--c-text)}
+[data-testid="stMainBlockContainer"]{max-width:1540px;padding:2.4rem 3.3rem 3rem}
+[data-testid="stHeader"]{background:transparent!important}
+[data-testid="stToolbarActions"],[data-testid="stAppDeployButton"],[data-testid="stDecoration"],#MainMenu,footer{display:none!important}
+[data-testid="stSidebar"]{background:#062321!important;border-right:1px solid #315249}
+[data-testid="stSidebar"] [data-testid="stSidebarContent"]{background:#062321!important}
+[data-testid="stSidebarUserContent"]{padding:1.6rem 1.35rem!important}
+.atlas-brand{padding:0 8px 36px}
+.atlas-orbit{position:relative;width:68px;height:64px;margin-bottom:22px;display:grid;place-items:center;color:var(--c-primary)}
+.atlas-orbit:before,.atlas-orbit:after{content:"";position:absolute;width:60px;height:28px;border:1px solid #7f977675;border-radius:50%;transform:rotate(-35deg)}
+.atlas-orbit:after{transform:rotate(55deg);border-color:#e9cb8399}
+.atlas-orbit b{font-size:29px;font-weight:400}.atlas-orbit i{position:absolute;top:10px;right:8px;width:5px;height:5px;border-radius:50%;background:#efd493;box-shadow:0 0 14px #f1d18b}
+.atlas-kicker{font-size:10px;letter-spacing:2.2px;color:#b9c7ad;line-height:1.8}
+.atlas-brand-name{font-size:21px;line-height:1.65;margin-top:12px;font-weight:700;letter-spacing:-.6px}
+.atlas-brand-name em,.atlas-hero em{font-style:normal;color:var(--c-primary)}
+.atlas-brand p{font-size:12px;color:var(--c-text-muted);margin:13px 0 0}
+.atlas-sidebar-note{border-top:1px solid var(--c-border);margin:28px 8px 25px;padding-top:25px;color:#abc1b3;font-size:12px;line-height:2}
+.atlas-sidebar-footer{font-size:10px;letter-spacing:.5px;color:#9bb5a8;margin:32px 8px 0}.atlas-sidebar-footer span{color:#a5dbb7;font-size:7px;margin-right:5px}
+.st-key-app_section [role="radiogroup"]{gap:9px}
+.st-key-app_section [role="radiogroup"] label{margin:0;padding:13px 16px;border:1px solid transparent;border-radius:10px;background:transparent;transition:background .15s;width:100%}
+.st-key-app_section [role="radiogroup"] label>div:first-child{display:none}
+.st-key-app_section [role="radiogroup"] label:has(input:checked){background:#254b40;border-color:#708060;color:#fae4ad}
+.st-key-app_section [role="radiogroup"] label:hover{background:#163c33}
+.st-key-app_section [role="radiogroup"] label p{font-size:15px!important;font-weight:700;color:inherit}
+.st-key-app_section [role="radiogroup"] label:has(input:focus-visible){outline:2px solid var(--c-primary);outline-offset:3px}
+.atlas-hero{padding:3px 0 24px;border-bottom:1px solid #34554b;margin-bottom:18px}
+.atlas-hero h1{font-size:clamp(27px,3vw,43px);font-weight:700;letter-spacing:-1.5px;line-height:1.45;padding:10px 0 7px;margin:0;color:var(--c-text)}
+.atlas-hero p{font-size:13px;line-height:1.85;margin:0;color:var(--c-text-muted)}
+.atlas-mobile-break{display:none}
+[data-testid="stTabs"] [role="tablist"]{gap:28px;border-bottom:1px solid var(--c-border);background:transparent;margin-bottom:18px}
+[data-testid="stTabs"] [role="tab"]{color:var(--c-text-muted);font-family:var(--atlas-font)!important;padding:8px 3px 14px;font-size:17px;height:auto;min-height:48px}
+[data-testid="stTabs"] [role="tab"] p{font-size:17px;font-weight:700}
+[data-testid="stTabs"] [role="tab"][aria-selected="true"]{color:var(--c-primary)}
+[data-testid="stTabs"] [data-baseweb="tab-highlight"]{background:var(--c-primary);height:2px}
+[data-testid="stTabs"] [data-baseweb="tab-border"]{display:none}
+h2,h3,h4,[data-testid="stHeadingWithActionElements"]{font-family:var(--atlas-font)!important;color:var(--c-text)}
+[data-testid="stMarkdownContainer"] h3{font-size:22px;padding:0 0 8px;font-weight:700;letter-spacing:-.5px}
+[data-testid="stWidgetLabel"] p{font-size:12px;color:var(--c-text-muted);letter-spacing:.15px}
+[data-testid="stCaptionContainer"]{color:var(--c-text-muted)!important;font-size:12px;line-height:1.8}
+[data-testid="stCaptionContainer"] p{color:inherit;font-size:inherit}
+input,textarea{color:var(--c-text)!important;caret-color:var(--c-primary)}
+[data-baseweb="input"],[data-baseweb="textarea"],[data-baseweb="select"]>div{background:var(--c-surface)!important;border-color:var(--c-border)!important;border-radius:8px!important}
+[data-baseweb="input"]:focus-within,[data-baseweb="textarea"]:focus-within,[data-baseweb="select"]>div:focus-within{border-color:var(--c-primary)!important;box-shadow:0 0 0 2px #f1d18b22}
+[data-baseweb="select"]{font-size:14px}
+input::placeholder,textarea::placeholder{color:#a3bbae!important;opacity:1}
+[data-baseweb="popover"] [role="listbox"],[data-baseweb="popover"] ul{background:#163d36!important;color:var(--c-text)!important}
+[role="option"]{color:var(--c-text)!important}
+[role="option"][aria-selected="true"]{background:#35584a!important}
+button[data-testid^="stBaseButton"],a[data-testid^="stBaseLinkButton"]{border-radius:8px;min-height:39px;font-size:13px;box-shadow:none}
+button[data-testid="stBaseButton-secondary"],button[data-testid="stBaseButton-secondaryFormSubmit"],
+[data-testid="stDownloadButton"] button,[data-testid="stPopover"]>button,a[data-testid^="stBaseLinkButton"]{background:transparent;color:var(--c-text);border:1px solid var(--c-border)}
+button[data-testid="stBaseButton-primary"],button[data-testid="stBaseButton-primaryFormSubmit"]{background:var(--c-primary)!important;border:1px solid var(--c-primary)!important;color:var(--c-on-primary)!important;font-weight:700}
+button[data-testid^="stBaseButton"] p,button[data-testid^="stBaseButton"] span{color:inherit}
+button[data-testid="stBaseButton-primary"]:hover,button[data-testid="stBaseButton-primaryFormSubmit"]:hover{background:var(--c-primary-hover)!important}
+button[data-testid^="stBaseButton"]:focus-visible,[role="tab"]:focus-visible,a:focus-visible{outline:2px solid var(--c-primary)!important;outline-offset:3px}
+[data-testid="stPopover"]>button{color:var(--c-text-muted);font-size:11px;white-space:nowrap}
+[data-testid="stPopoverBody"],[role="dialog"]{background:#103b36!important;color:var(--c-text);border-color:var(--c-border)!important}
+[data-testid="stPopoverBody"]{max-height:75vh;overflow:auto}
+[data-testid="stExpander"]{background:#0c3330;border:1px solid var(--c-border)!important;border-radius:9px}
+[data-testid="stExpander"] summary{font-size:13px;color:var(--c-text-muted);padding:10px 14px}
+[data-testid="stExpander"] summary p{font-size:13px}
+[data-testid="stForm"]{padding:0!important}
+[data-testid="stText"]{white-space:pre-wrap;line-height:1.95;font-size:15px;color:var(--c-text)}
+[data-testid="stVerticalBlockBorderWrapper"]{border-color:var(--c-border)!important;border-radius:10px}
+[data-testid="stMetric"]{background:#103b36;border:1px solid var(--c-border);border-radius:10px;padding:16px}
+[data-testid="stMetricValue"]{color:var(--c-primary);font-size:28px;font-variant-numeric:tabular-nums}
+[data-testid="stDataFrame"],[data-testid="stTable"]{border:1px solid var(--c-border);border-radius:8px;overflow:hidden}
+pre,code{color:var(--c-text);background:#113b35!important;white-space:pre-wrap}
+[data-testid="stAlert"]{background:#153e35;color:var(--c-text);border-radius:9px}
+[data-testid="stFileUploaderDropzone"]{background:#123b33;border:1px dashed #829473;padding:36px 24px;border-radius:14px;min-height:210px}
+[data-testid="stFileUploaderDropzone"] small{color:var(--c-text-muted)}
+.atlas-review-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0}
+.atlas-review-step{padding:22px 18px;border-top:1px solid #65806a}
+.atlas-review-step b{display:block;color:var(--c-primary);font-size:12px;margin-bottom:14px;font-weight:400}
+.atlas-review-step strong{font-size:17px;font-weight:700;color:var(--c-text)}
+.atlas-review-step p{font-size:12px;line-height:1.9;color:var(--c-text-muted);margin-top:10px}
+.mofe-section-header{font-size:21px;font-weight:700;line-height:1.6;margin:8px 0 16px;color:var(--c-text)}
+.mofe-subheader{font-size:16px;color:var(--c-primary);margin:16px 0 8px}
+iframe{border-radius:14px!important}
+::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#527465;border-radius:9px}
+@media(max-width:900px){[data-testid="stMainBlockContainer"]{padding:2.7rem 1.3rem 2rem}.atlas-hero h1{font-size:32px}.atlas-hero{padding-bottom:20px}}
+@media(max-width:540px){[data-testid="stMainBlockContainer"]{padding:2.8rem 1rem 1.5rem}.atlas-mobile-break{display:block}.atlas-hero h1{font-size:29px;letter-spacing:-1px}.atlas-review-steps{grid-template-columns:1fr;gap:0}.atlas-review-step{padding:15px 2px}[data-testid="stTabs"] [role="tablist"]{gap:28px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Preserve Korean words and give actions room before rearranging inputs. */
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stWidgetLabel"] p {word-break:keep-all;overflow-wrap:break-word}
+button[data-testid^="stBaseButton"] p,
+button[data-testid="stPopoverButton"] p,
+a[data-testid^="stBaseLinkButton"] p {
+  white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;
+}
+[data-testid="stPopoverButton"] {min-width:max-content}
+[data-testid="stMainBlockContainer"] {container-type:inline-size}
+.st-key-page_galaxy [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stPopover"]) {
+  display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:14px;align-items:center;
+}
+.st-key-page_galaxy [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stPopover"]) > [data-testid="stColumn"],
+.st-key-page_galaxy [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stFormSubmitButton"]) > [data-testid="stColumn"] {
+  width:100%!important;min-width:0!important;max-width:none!important;
+}
+.st-key-page_galaxy [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stFormSubmitButton"]) {
+  display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:12px;align-items:end;
+}
+@container(max-width:760px) {
+  .st-key-page_galaxy [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stForm"]) {
+    flex-direction:column;gap:14px;
+  }
+  .st-key-page_galaxy [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stForm"]) > [data-testid="stColumn"] {
+    width:100%!important;min-width:0!important;flex:1 1 auto!important;
+  }
+}
+/* Native Streamlit navigation must remain visible even without hover. */
+[data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapseButton"] {
+  visibility:visible!important;opacity:1!important;
+}
+[data-testid="stExpandSidebarButton"] {
+  position:fixed!important;top:10px!important;left:14px!important;z-index:100000!important;
+}
+button[data-testid="stExpandSidebarButton"],
+[data-testid="stSidebarCollapseButton"] button {
+  color:var(--c-text)!important;background:#164640!important;border:1px solid #547168!important;
+  min-height:34px;padding:4px 10px;white-space:nowrap;
+}
+button[data-testid="stExpandSidebarButton"]:after {
+  content:"메뉴";font-family:var(--atlas-font);font-size:13px;padding-left:5px;
+}
+[data-testid="stSidebarCollapseButton"] button:after {
+  content:"접기";font-family:var(--atlas-font);font-size:12px;padding-left:3px;
+}
+[data-testid="stMarkdownContainer"] svg text{font-family:var(--atlas-font)!important}
+/* At very small widths, keep sector names intact and place source info above. */
+.st-key-page_galaxy [role="radiogroup"] label p {white-space:nowrap;overflow-wrap:normal}
+@container(max-width:480px) {
+  .st-key-page_galaxy [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stPopover"]) {
+    display:flex;flex-direction:column-reverse;align-items:stretch;gap:14px;
+  }
+  .st-key-page_galaxy [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stPopover"]) > [data-testid="stColumn"]:last-child {
+    width:120px!important;flex:0 0 auto!important;align-self:flex-end;
+  }
+}
+/* A single scale for native controls. Headings retain their hierarchy. */
+:root {
+  --atlas-control-size:14px; --atlas-help-size:13px;
+  --atlas-control-height:42px; --atlas-control-radius:10px;
+  --c-text-muted:#abc2b8; --c-primary:#e8c77d; --c-primary-hover:#f3d591;
+  --c-on-primary:#102d28; --c-selected:#244d43; --c-selected-border:#547d6e;
+}
+[data-testid="stMarkdownContainer"] p {font-size:var(--atlas-control-size);line-height:1.7}
+[data-testid="stWidgetLabel"] p,
+[data-testid="stCheckbox"] p,
+[role="radiogroup"] p {
+  font-size:var(--atlas-control-size)!important;line-height:1.5!important;
+  color:var(--c-text);letter-spacing:0;
+}
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p,
+.atlas-hero p,.atlas-brand p,.atlas-sidebar-note,.atlas-sidebar-footer,
+.atlas-review-step p,[data-testid="stFileUploaderDropzone"] small,
+[role="tooltip"], [role="tooltip"] p {
+  font-size:var(--atlas-help-size)!important;color:var(--c-text-muted)!important;
+  line-height:1.75!important;letter-spacing:0;
+}
+[data-testid="stCaptionContainer"] a {color:var(--c-text-muted)}
+[data-testid="stTooltipIcon"] button {color:var(--c-text-muted)!important}
+input,textarea,[data-baseweb="select"],[role="option"] {
+  font-size:var(--atlas-control-size)!important;line-height:1.5;
+}
+[data-baseweb="input"], [data-baseweb="select"]>div {
+  min-height:var(--atlas-control-height);border-radius:var(--atlas-control-radius)!important;
+  border-color:#365c50!important;background:#0e3530!important;
+}
+input::placeholder,textarea::placeholder {color:var(--c-text-muted)!important}
+
+/* Actions: one warm primary, quiet secondary actions, consistent hit areas. */
+button[data-testid^="stBaseButton"],button[data-testid="stPopoverButton"],
+a[data-testid^="stBaseLinkButton"] {
+  min-height:var(--atlas-control-height);padding:9px 16px;
+  border:1px solid #416355;border-radius:var(--atlas-control-radius);
+  background:#123b32;color:var(--c-text);box-shadow:none;
+  font-family:var(--atlas-font)!important;font-size:var(--atlas-control-size)!important;
+  font-weight:700;line-height:20px;letter-spacing:0;
+  transition:background .16s,border-color .16s,color .16s;
+}
+button[data-testid^="stBaseButton"] [data-testid="stMarkdownContainer"],
+button[data-testid="stPopoverButton"] [data-testid="stMarkdownContainer"],
+a[data-testid^="stBaseLinkButton"] [data-testid="stMarkdownContainer"],
+button[data-testid^="stBaseButton"] p,button[data-testid="stPopoverButton"] p,
+a[data-testid^="stBaseLinkButton"] p {
+  font:inherit!important;color:inherit!important;line-height:20px!important;margin:0!important;
+}
+button[data-testid^="stBaseButton"]:hover:not(:disabled),
+button[data-testid="stPopoverButton"]:hover,a[data-testid^="stBaseLinkButton"]:hover {
+  background:#204a3f;border-color:#789480;color:#fff5df;
+}
+button[data-testid="stBaseButton-primary"],button[data-testid="stBaseButton-primaryFormSubmit"] {
+  background:var(--c-primary)!important;border-color:var(--c-primary)!important;
+  color:var(--c-on-primary)!important;
+}
+button[data-testid="stBaseButton-primary"] *,button[data-testid="stBaseButton-primaryFormSubmit"] * {
+  color:var(--c-on-primary)!important;
+}
+button[data-testid="stBaseButton-primary"]:hover:not(:disabled),
+button[data-testid="stBaseButton-primaryFormSubmit"]:hover:not(:disabled) {
+  background:var(--c-primary-hover)!important;border-color:var(--c-primary-hover)!important;
+}
+button[data-testid^="stBaseButton"]:disabled {opacity:.45;cursor:not-allowed}
+button[data-testid^="stBaseButton"]:focus-visible,button[data-testid="stPopoverButton"]:focus-visible,
+[data-baseweb="tag"]:focus-visible,a:focus-visible {
+  outline:2px solid #b1dac2!important;outline-offset:3px;
+}
+[data-testid="stPopoverButton"] {background:transparent;color:var(--c-text-muted);font-weight:400}
+[data-testid="stPopoverBody"],[role="dialog"] {border:1px solid #416355!important;border-radius:14px!important}
+[data-testid="stExpander"] {background:#0c3330;border:1px solid #36584c!important;border-radius:12px}
+[data-testid="stExpander"] summary {padding:13px 16px;background:transparent!important;color:var(--c-text)}
+[data-testid="stExpander"] summary p {font-size:var(--atlas-control-size)!important;line-height:20px;font-weight:700;color:var(--c-text)!important}
+
+/* Selected filters are quiet teal pills, never white text on yellow. */
+[data-baseweb="tag"] {
+  background:var(--c-selected)!important;color:#f0f2e7!important;
+  border:1px solid var(--c-selected-border)!important;border-radius:999px!important;
+  min-height:30px;height:auto!important;padding:4px 10px!important;
+  margin:3px!important;max-width:100%!important;
+  font-family:var(--atlas-font)!important;font-size:var(--atlas-control-size)!important;
+}
+[data-baseweb="tag"] span {
+  color:inherit!important;font-size:var(--atlas-control-size)!important;line-height:20px!important;
+  white-space:nowrap;overflow-wrap:normal;
+}
+[data-baseweb="tag"] svg {fill:#bfd7c7!important;color:#bfd7c7!important;width:12px;height:12px}
+[data-baseweb="tag"]:hover {background:#305f50!important;border-color:#86a792!important}
+[data-testid="stMultiSelect"] [data-baseweb="select"]>div {padding:3px 5px}
+[data-testid="stCheckbox"] label {align-items:center;gap:2px}
+[data-testid="stCheckbox"] label>span:first-child {
+  width:18px;height:18px;border-radius:5px;border:1px solid #688f7e!important;
+  background:#0b302b!important;flex-shrink:0;margin-top:0;
+}
+[data-testid="stCheckbox"] label:has(input:checked)>span:first-child {
+  background:#386b5c!important;border-color:#7aa38e!important;
+}
+[data-testid="stCheckbox"] label:has(input:checked)>span:first-child:after {border-color:#f4eedf!important}
+[data-testid="stCheckbox"] label:has(input:focus-visible)>span:first-child {outline:2px solid #b1dac2;outline-offset:3px}
+
+/* Compact, keyboard-accessible choices instead of scattered radio dots. */
+.st-key-page_galaxy [role="radiogroup"] {gap:8px;flex-wrap:wrap}
+.st-key-page_galaxy [data-baseweb="radio"] {
+  margin:0;padding:8px 13px;min-height:38px;border:1px solid transparent;
+  border-radius:999px;background:transparent;box-sizing:border-box;
+}
+.st-key-page_galaxy [data-baseweb="radio"]>div:first-child {display:none}
+.st-key-page_galaxy [data-baseweb="radio"]>div:last-child {padding-left:0}
+.st-key-page_galaxy [data-baseweb="radio"]:hover {background:#153c33}
+.st-key-page_galaxy [data-baseweb="radio"]:has(input:checked) {background:var(--c-selected);border-color:#547d6e}
+.st-key-page_galaxy [data-baseweb="radio"]:has(input:checked) p {color:#f0f2e7;font-weight:700}
+.st-key-page_galaxy [data-baseweb="radio"]:has(input:focus-visible) {outline:2px solid #b1dac2;outline-offset:3px}
+.st-key-app_section [role="radiogroup"] {width:100%;align-items:stretch}
+.st-key-app_section [role="radiogroup"] label {box-sizing:border-box;min-height:46px}
+.st-key-app_section [role="radiogroup"] label p {font-size:var(--atlas-control-size)!important}
+[data-testid="stMain"] [data-testid="stTabs"] [role="tab"] p {font-size:16px!important}
+[data-testid="stExpandSidebarButton"],[data-testid="stSidebarCollapseButton"] button {min-height:36px!important}
+
+/* Reading uses MaruBuri; every action uses the bundled Pretendard SemiBold. */
+html,body,input,textarea,select,[data-testid="stMarkdownContainer"] p,
+[data-testid="stCaptionContainer"],.atlas-hero p,.atlas-brand p {
+  font-weight:400;
+}
+h1,h2,h3,h4,strong,b,.atlas-brand-name,.mofe-section-header {
+  font-weight:700;
+}
+.mofe-subheader,[data-testid="stWidgetLabel"] p {font-weight:600}
+button,button[data-testid],a[data-testid^="stBaseLinkButton"],summary,[data-baseweb="tag"],
+[data-baseweb="radio"],
+button[data-testid] [data-testid="stMarkdownContainer"],button[data-testid] p,
+a[data-testid^="stBaseLinkButton"] [data-testid="stMarkdownContainer"],
+a[data-testid^="stBaseLinkButton"] p,
+summary [data-testid="stMarkdownContainer"],summary p,
+[data-baseweb="radio"] [data-testid="stMarkdownContainer"],
+[data-baseweb="radio"] p,[data-baseweb="tag"] span {
+  font-family:var(--atlas-button-font)!important;font-weight:600!important;
+}
+button:after,[data-testid="stSidebarCollapseButton"] button:after,
+button[data-testid="stExpandSidebarButton"]:after {
+  font-family:var(--atlas-button-font);font-weight:600;
+}
+
+/* Primary navigation is a full-width rail, separate from action buttons. */
+[data-testid="stSidebar"] [data-testid="stSidebarContent"]{padding-left:0!important;padding-right:0!important}
+[data-testid="stSidebarUserContent"]{padding:1.6rem 0!important;margin-left:0!important;margin-right:0!important;width:100%!important}
+.atlas-brand{padding:0 32px 30px}
+.atlas-sidebar-note{margin:26px 32px 24px}
+.atlas-sidebar-footer{margin:28px 32px 0}
+.st-key-app_section{width:100%!important;max-width:none!important}
+.st-key-app_section [role="radiogroup"]{gap:0!important;width:100%}
+.st-key-app_section [role="radiogroup"] label{
+  width:100%;min-height:58px;margin:0;padding:0 29px;border:0!important;
+  border-left:3px solid transparent!important;border-radius:0!important;align-items:center;
+}
+.st-key-app_section [role="radiogroup"] label:has(input:checked){background:#193f36;border-left-color:var(--c-primary)!important}
+.st-key-app_section [role="radiogroup"] label:has(input:focus-visible){outline-offset:-3px}
+.st-key-app_section [role="radiogroup"] label,
+.st-key-app_section [role="radiogroup"] label [data-testid="stMarkdownContainer"],
+.st-key-app_section [role="radiogroup"] label p{
+  font-family:var(--atlas-font)!important;font-size:15px!important;font-weight:600!important;
+}
+.st-key-app_section [role="radiogroup"] label:has(input:checked) p{font-weight:700!important}
+[data-testid="stSidebarUserContent"] [data-testid="stElementContainer"]:has(> [data-testid="stPopover"]){
+  margin:0 24px;width:calc(100% - 48px)!important;
+}
+/* Only the data-management popover uses this compact treatment. */
+[data-testid="stPopoverBody"]:has(.st-key-atlas_data_tools){
+  width:min(360px,calc(100vw - 32px))!important;padding:14px!important;
+  border-radius:12px!important;box-shadow:0 12px 32px #00191666;
+}
+.st-key-atlas_data_tools,.st-key-atlas_data_tools [data-testid="stVerticalBlock"]{gap:10px!important;background:transparent!important}
+.st-key-atlas_data_tools .atlas-data-copy,
+.st-key-atlas_data_tools [data-testid="stMarkdownContainer"] p,
+.st-key-atlas_data_tools [data-testid="stSpinner"] p{
+  font-size:12px!important;line-height:1.55!important;margin:0!important;color:var(--c-text-muted)!important;
+}
+.st-key-atlas_data_tools button[data-testid]{min-height:36px!important;padding:6px 10px!important}
+.st-key-atlas_data_tools button[data-testid] p{font-size:13px!important;color:var(--c-text)!important}
+.st-key-atlas_data_tools [data-testid="stAlert"]{padding:9px 10px!important}
+/* Three-field forms must not inherit the two-field galaxy-search grid. */
+.st-key-page_galaxy [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stFormSubmitButton"]):has(> [data-testid="stColumn"]:nth-child(3)){
+  grid-template-columns:minmax(0,1fr) minmax(180px,1fr) 110px;
+}
+@container(max-width:760px){
+  .st-key-page_galaxy [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stFormSubmitButton"]):has(> [data-testid="stColumn"]:nth-child(3)){
+    grid-template-columns:minmax(0,1fr) 110px;
+  }
+  .st-key-page_galaxy [data-testid="stForm"] [data-testid="stHorizontalBlock"]:has(> [data-testid="stColumn"] [data-testid="stFormSubmitButton"]):has(> [data-testid="stColumn"]:nth-child(3)) > [data-testid="stColumn"]:first-child{grid-column:1/-1}
+}
+
+/* Extend the navigation rail through Streamlit's remaining ten-pixel gutter. */
+.st-key-app_section{margin-left:-10px!important;width:calc(100% + 20px)!important}
+/* A single light popover surface; no nested cards or stretched action. */
+[data-testid="stPopoverBody"]:has(.st-key-atlas_data_tools){
+  border:0!important;border-radius:8px!important;padding:16px!important;
+  box-shadow:0 8px 28px #00151266;
+}
+[data-testid="stPopoverBody"]:has(.st-key-atlas_data_tools)>div{background:transparent!important}
+.st-key-atlas_data_tools button[data-testid]{
+  width:auto!important;min-height:32px!important;padding:4px 0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+}
+.st-key-atlas_data_tools button[data-testid] p{color:#bce5d2!important;font-size:12px!important}
+.st-key-atlas_data_tools button[data-testid]:hover p{text-decoration:underline;text-underline-offset:4px}
+.st-key-boundary_demo button[data-testid]{
+  padding:4px 0!important;min-height:32px!important;border:0!important;background:transparent!important;
+}
+.st-key-boundary_demo button[data-testid] p{font-size:13px!important;color:var(--c-text-muted)!important}
+.st-key-boundary_demo button[data-testid]:hover p{color:var(--c-text)!important;text-decoration:underline;text-underline-offset:4px}

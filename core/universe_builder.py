@@ -44,24 +44,31 @@ def resolved_name(cite, text, citations, own_law):
     return name
 
 
-def build_universe(source):
+def build_universe(source, *, focus_categories=("tax",), preserve_external=False, article_adapter=None, source_names=None):
+    """Preserve the tax default; other domains are explicit opt-ins."""
+    if (not isinstance(focus_categories, (tuple, list)) or not focus_categories
+            or any(not isinstance(c, str) or not c for c in focus_categories)):
+        raise ValueError("focus_categories must be a nonempty list or tuple of category names")
+    focus_categories = tuple(dict.fromkeys(focus_categories))
     corpus = source['laws']
     catalog = {norm(l['name']):l for l in corpus}
-    metadata = [{k:v for k,v in l.items() if k not in ('articles','annexes')} for l in corpus]
+    metadata = [{k:v for k,v in l.items() if k not in ('articles','annexes','raw_body_blocks')} for l in corpus]
     edges, seen, outside = [], set(), Counter()
+    external_references = []
     samples = {}
     def add(law, article, target_name, target_ref, raw, start, end, kind='article', relation='direct', **extra):
         dest = catalog.get(norm(target_name))
         if kind != 'standard' and not dest:
-            if target_name and target_name != law['name'] and law['category'] == 'tax':
+            if target_name and target_name != law['name'] and law['category'] in focus_categories:
                 outside[target_name] += 1
                 samples.setdefault(target_name, law['name']+' '+block_at(article,start)['ref']+' · '+raw)
-            return
+            if not preserve_external or not target_name:
+                return
         target_name = dest['name'] if dest else target_name
-        if law['category'] != 'tax' and (not dest or dest['category'] != 'tax'):
+        if law['category'] not in focus_categories and (not dest or dest['category'] not in focus_categories):
             return
         # Ignore the article's own heading, retaining genuine intra-article text separately.
-        if start == 0 and target_name == law['name'] and kind == 'article':
+        if start == 0 and target_name == law['name'] and kind == 'article' and extra.get('source_granularity') != 'annex':
             return
         block = block_at(article,start)
         context = block['text']
@@ -83,11 +90,21 @@ def build_universe(source):
             edge['target_title'] = matched['title'] if matched else ''
             edge['annex_urls'] = matched.get('urls',[]) if matched else []
         edge['evidence_id'] = hashlib.sha256(repr(ident).encode('utf-8')).hexdigest()[:20]
-        edges.append(edge)
+        if preserve_external and not dest:
+            edge.update(target_status='not-collected', target_analysis='not-indexed', external_reverse='not-collected')
+            external_references.append(edge)
+        else:
+            edges.append(edge)
 
     for law in corpus:
+        if source_names is not None and law['name'] not in source_names:
+            continue
         for article in law['articles']:
             text = article['text']
+            if article_adapter is not None and law.get('provider') in ('admrul', 'ordin'):
+                for citation in article_adapter(law, article, corpus):
+                    add(law, article, **citation)
+                continue
             citations = parse_citations(text)
             expanded_spans = []
             for cite in citations:
@@ -123,8 +140,8 @@ def build_universe(source):
             brackets = list(BRACKET.finditer(text))
             for m in brackets:
                 name = m[1]
-                if norm(name) not in catalog:
-                    if law['category']=='tax' and name.endswith(('법','법률','시행령','시행규칙','규칙')):
+                if norm(name) not in catalog and not preserve_external:
+                    if law['category'] in focus_categories and name.endswith(('법','법률','시행령','시행규칙','규칙')):
                         outside[name] += 1
                         samples.setdefault(name, law['name']+' '+block_at(article,m.start())['ref']+' · '+m[0])
                     continue
@@ -158,7 +175,7 @@ def build_universe(source):
                 no = str(int(m[2])) + ('의'+str(int(m[3])) if m[3] else '')
                 label = '별표 '+no if m[1]=='별표' else '별지 제'+no+'호서식'
                 add(law,article,name,label,m[0],m.start(),m.end(),kind='annex',relation='annex_reference')
-            if law['category'] == 'tax':
+            if law['category'] in focus_categories:
                 for standard in STANDARDS:
                     for m in re.finditer(re.escape(standard),text):
                         add(law,article,standard,'기준 참조',m[0],m.start(),m.end(),kind='standard',relation='standard_reference')
@@ -176,7 +193,7 @@ def build_universe(source):
                                 add(law,article,target_law,'과세표준 산식 참조',m[0],b['start']+m.start(),b['start']+m.end(),
                                     kind='law',relation='calculation_reference')
         # The annex's own title identifies its related article; do not read image/table cells as parsed text.
-        if law['category'] == 'tax':
+        if law['category'] in focus_categories:
             for annex in law.get('annexes',[]):
                 synthetic = {'jo':annex['ref'],'title':annex['title'],'text':annex['title'], 'effective':annex['effective']}
                 for cite in parse_citations(annex['title']):
@@ -185,12 +202,19 @@ def build_universe(source):
                         add(law,synthetic,name,f'제{cite.jo}조'+('의'+cite.jo_sub if cite.jo_sub else ''),
                             cite.raw,*cite.span,relation='byeolpyo',source_ref=annex['ref'],source_granularity='annex')
     edges.sort(key=lambda e:(e['source_law'],e['source_jo'],e['source_start'],e['target_law'],e['target_ref']))
-    return {'schema_version':2,'built_at':source['built_at'],'provider':source.get('provider',''),
+    result = {'schema_version':2,'built_at':source['built_at'],'provider':source.get('provider',''),
             'laws':sorted(l['name'] for l in corpus), 'catalog':metadata, 'edges':edges,
             'tax_laws':sorted(l['name'] for l in corpus if l['category']=='tax'),
             'relation_counts':dict(Counter(e['target_kind'] for e in edges)),
             'outside_scope':[{'law':n,'mentions':c,'example':samples.get(n,'')} for n,c in outside.most_common()],
             'coverage_note':'수집한 세법령 내부 및 세법령↔선정 외부 법령의 연결입니다. 법령·정의 참조는 특정 조문 연결을 확정하지 않습니다. 별표 파일 본문·부칙·고시 및 회계기준 전문은 전수 해석하지 않았습니다.'}
+    if preserve_external:
+        result['external_references'] = sorted(external_references, key=lambda e:(e['source_law'], e['source_jo'], e['source_start']))
+    if focus_categories != ("tax",):
+        result["focus_categories"] = list(focus_categories)
+        result["focus_laws"] = sorted(l["name"] for l in corpus if l["category"] in focus_categories)
+        result["coverage_note"] = "수록한 선택 도메인 내부와 수록 외부 법령의 직접 연결입니다. 미수록 법령·부칙·별표 파일 본문·행정규칙은 별도 점검이 필요합니다."
+    return result
 
 
 def main():

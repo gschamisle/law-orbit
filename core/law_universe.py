@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 GRAPH = ROOT / 'data/law-galaxy-graph.json'
 SOURCES = ROOT / 'data/law-galaxy-sources.json'
 LEGACY = ROOT / 'data/law-citation-graph.json'
+LIVE_BUNDLE = ROOT / 'output/tax-universe/bundle.json'
 NEW_TAX = ['증권거래세법', '개별소비세법', '교육세법', '주세법', '교통ㆍ에너지ㆍ환경세법', '인지세법']
 EXTERNAL = [
     '상법', '자본시장과 금융투자업에 관한 법률', '중소기업기본법', '독점규제 및 공정거래에 관한 법률',
@@ -22,6 +23,8 @@ def norm(name):
 
 
 def graph_path():
+    if LIVE_BUNDLE.is_file():
+        return LIVE_BUNDLE
     return GRAPH if GRAPH.exists() else LEGACY
 
 

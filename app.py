@@ -1,117 +1,83 @@
-"""이번 세제개편안, 이렇게 하려는거 맞아? — 메인 앱.
-
-이름을 '세법개정 AI 어시스턴트'에서 바꿨다. 두 군데가 사실과 달랐다.
-개정문을 써 주는 도구가 아니라 이미 발표된 것을 읽어 대조하는 도구이고,
-기본 화면의 탭은 LLM을 쓰지 않는다(내부망 빌드에는 아예 없다).
-"""
-import base64
-import os
+"""이 조문 건드리면 다 죽는 거야 — 법령 연결 탐색과 개정안 검토."""
 import streamlit as st
-from config import (
-    LAW_API_KEY, OPENAI_API_KEY,
-    ENABLE_HWPX_OUTPUT, ENABLE_DRAFT_TAB, ENABLE_WIP_TABS,
-)
-from ui import (
-    amendment_review_ui, article_relations_ui, law_map_ui, new_article_ui,
-    stage1_draft, stage2_crossref, stage3_output,
-)
+from config import LAW_API_KEY, OPENAI_API_KEY, ENABLE_HWPX_OUTPUT, ENABLE_DRAFT_TAB, ENABLE_WIP_TABS
+from ui import (fsc_map_ui, law_map_ui, local_tax_map_ui, procurement_map_ui, housing_map_ui, environment_map_ui, amendment_review_ui, article_relations_ui,
+                new_article_ui, stage1_draft, stage2_crossref, stage3_output)
 from ui.styles import inject_global_css
 
-st.set_page_config(
-    page_title="이번 세제개편안, 이렇게 하려는거 맞아?",
-    page_icon="📋",
-    layout="wide",
-)
-
+APP_TITLE = '이 조문 건드리면 다 죽는 거야'
+st.set_page_config(page_title=APP_TITLE, page_icon='✦', layout='wide', initial_sidebar_state='expanded')
 inject_global_css()
 
-# ── 앱 헤더 ──────────────────────────────────────────────────────────────────
-_logo_html = ""
-if os.path.exists("logo.png"):
-    with open("logo.png", "rb") as _f:
-        _b64 = base64.b64encode(_f.read()).decode()
-    _logo_html = f'<img src="data:image/png;base64,{_b64}" class="mofe-header-logo" />'
-
-st.markdown(f"""
-<div class="mofe-header-card">
-  {_logo_html}
-  <div class="mofe-app-title">
-    <h1>이번 세제개편안, 이렇게 하려는거 맞아?</h1>
-    <p>개정안을 검토하고, 연결된 법령과 조문을 탐색합니다.</p>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-law_api_key = LAW_API_KEY
-openai_api_key = OPENAI_API_KEY
-
-# 안 쓰는 키를 요구하지 않는다. 기본 2개 탭은 OpenAI를 부르지 않으므로,
-# 조문안 작성 탭을 켰을 때만 OPENAI_API_KEY를 따진다.
-_missing = [n for n, v in (("LAW_API_KEY", law_api_key),) if not v]
-if ENABLE_DRAFT_TAB and not openai_api_key:
-    _missing.append("OPENAI_API_KEY")
-if _missing:
-    st.warning(f".env 파일에 {', '.join(_missing)}를 설정하세요.")
-
-# 현행본 대조는 추적 법령(32건) 전체를 API로 조회해 1분 넘게 걸린다.
-# 기동 때 자동으로 돌리면 그동안 화면이 백지라, 사용자가 원할 때만 실행한다.
-_fresh_col, _btn_col = st.columns([5, 1])
-with _btn_col:
-    _check = st.button("현행본 대조", width="stretch",
-                       help="추적 중인 법령 32건의 현행본을 조회해 저장된 스냅샷과 비교합니다 (약 1분)")
-if _check and law_api_key:
-    with _fresh_col, st.spinner("법제처에서 현행본을 조회하는 중... (약 1분)"):
-        try:
-            from core.law_freshness import compare_with_manifest, load_manifest
-
-            _mf = load_manifest()
-            st.session_state["law_freshness_changes"] = (
-                compare_with_manifest(law_api_key) if _mf.get("laws") else []
-            )
-            st.session_state["law_freshness_done"] = True
-        except Exception as _exc:
-            st.session_state["law_freshness_changes"] = []
-            st.session_state["law_freshness_error"] = str(_exc)
-
-with _fresh_col:
-    _freshness = st.session_state.get("law_freshness_changes", [])
-    if st.session_state.get("law_freshness_error"):
-        st.warning(f"현행본 대조 실패: {st.session_state['law_freshness_error']}")
-    elif _freshness:
-        _names = ", ".join(c["name"] for c in _freshness[:5])
-        _more = f" 외 {len(_freshness) - 5}건" if len(_freshness) > 5 else ""
-        st.warning(
-            f"저장된 법령 스냅샷과 현행본이 다릅니다: {_names}{_more}. "
-            "터미널에서 `uv run python scripts/check_law_freshness.py --update-manifest` 후 "
-            "`uv run python scripts/build_law_citation_graph.py --all`, "
-            "`uv run python scripts/build_parallel_matrix.py` 실행을 권장합니다."
-        )
-    elif st.session_state.get("law_freshness_done"):
-        st.success("저장된 법령 스냅샷이 현행본과 일치합니다.")
-
-# ── 탭 ────────────────────────────────────────────────────────────────────────
-# 아이콘은 Material Symbols(:material/…:). 이모지는 OS·글꼴마다 모양과 폭이 달라
-# 정렬이 흔들리고 디자인 토큰으로 색을 맞출 수 없다.
-#
-# 기본 화면은 개정안 검토와 법령 관계 탐색이다. 두 화면 모두 LLM 없이 동작한다.
-_TABS: list[tuple[str, object]] = [
-    (":material/fact_check: 개정안 검토", amendment_review_ui),
-    (":material/hub: 세법 관계도", law_map_ui),
-]
-# 아래부터는 플래그로 감춘다(config 참고). 코드는 그대로 두고 노출만 끈다.
+pages = [('galaxy', '법령은하', None), ('review', '개정안 검토', amendment_review_ui)]
 if ENABLE_WIP_TABS:
-    # 조문 하나를 지정해 인용·역인용·병행·별표를 보는 화면. 법령명·조번호를 직접
-    # 받으므로 단독으로 돈다(1단계 값이 있으면 자동 채우기만 한다).
-    _TABS.append((":material/travel_explore: 조문 연관 조회", article_relations_ui))
-    _TABS.append((":material/add_circle: 신설 조문 검토", new_article_ui))
-# 아래 둘은 1단계 초안이 있어야 의미가 있다. stage2_crossref를 앞에 두었더니
-# "1단계에서 먼저 초안을 생성하세요"만 뜨는 빈 탭이 됐다 — 의존하는 탭 옆에 붙인다.
+    pages += [('relations', '조문 연관 조회', article_relations_ui), ('new_article', '신설 조문 검토', new_article_ui)]
 if ENABLE_DRAFT_TAB:
-    _TABS.append((":material/edit_note: 조문안 작성 (GPT)", stage1_draft))
-    _TABS.append((":material/link: 인용·준용 확인 (초안 연계)", stage2_crossref))
+    pages += [('draft', '조문안 작성', stage1_draft), ('crossref', '초안 인용 확인', stage2_crossref)]
 if ENABLE_HWPX_OUTPUT:
-    _TABS.append((":material/description: HWPX 출력", stage3_output))
+    pages.append(('output', 'HWPX 출력', stage3_output))
+labels = {key: label for key, label, _ in pages}
 
-for _tab, (_label, _module) in zip(st.tabs([t[0] for t in _TABS]), _TABS):
-    with _tab:
-        _module.render(law_api_key, openai_api_key)
+with st.sidebar:
+    st.markdown('''<div class="atlas-brand">
+      <div class="atlas-orbit" aria-hidden="true"><i></i><b>✦</b></div>
+      <div class="atlas-kicker">A LAW RELATION ATLAS</div>
+      <div class="atlas-brand-name">이 조문 건드리면<br><em>다 죽는 거야</em></div>
+      <p>작은 개정의 커다란 파장.</p>
+    </div>''', unsafe_allow_html=True)
+    page = st.radio('작업 메뉴', list(labels), format_func=labels.get, key='app_section', label_visibility='collapsed')
+    st.markdown('<div class="atlas-sidebar-note">조문을 따라가면<br>다음에 살펴볼 법이 보입니다.</div>', unsafe_allow_html=True)
+    with st.popover('자료 관리', width='stretch'):
+        with st.container(key='atlas_data_tools'):
+            st.markdown('<p class="atlas-data-copy">수집된 본문과 연결 지도는 오프라인에서도 볼 수 있습니다.<br>현행본 대조는 세법 추적 목록을 법제처와 비교합니다. 이 버튼은 저장 자료를 변경하지 않습니다.</p>', unsafe_allow_html=True)
+            check = st.button('세법 현행본 대조', disabled=not bool(LAW_API_KEY), key='check_freshness', width='content')
+            if not LAW_API_KEY:
+                st.info('현행본 대조에는 법제처 API 연결 설정이 필요합니다.')
+            if check:
+                with st.spinner('현행본 확인 중…'):
+                    try:
+                        from core.law_freshness import compare_with_manifest, load_manifest
+                        changes = compare_with_manifest(LAW_API_KEY) if load_manifest().get('laws') else []
+                        st.session_state['law_freshness_changes'] = changes
+                        st.session_state['law_freshness_done'] = True
+                        st.session_state.pop('law_freshness_error', None)
+                    except Exception:
+                        st.session_state['law_freshness_error'] = True
+            if st.session_state.get('law_freshness_error'):
+                st.warning('현행본을 확인하지 못했습니다. API 연결 설정을 확인해 주세요.')
+            elif st.session_state.get('law_freshness_done'):
+                changes = st.session_state.get('law_freshness_changes', [])
+                if changes:
+                    st.warning('수집 판본과 다른 법령: ' + ', '.join(c['name'] for c in changes))
+                else:
+                    st.success('비교한 세법 추적 목록이 현행본과 일치합니다.')
+    st.markdown('<div class="atlas-sidebar-footer"><span>●</span> 수집 자료로 탐색 중</div>', unsafe_allow_html=True)
+
+# Keep page widgets mounted, like native tabs, so switching the sidebar does not
+# discard uploaded files, unsubmitted forms, or either galaxy's independent state.
+hidden = '\n'.join(f'.st-key-page_{key} {{ display: none !important; }}' for key in labels if key != page)
+st.markdown('<style>' + hidden + '</style>', unsafe_allow_html=True)
+
+with st.container(key='page_galaxy'):
+    st.markdown('''<header class="atlas-hero"><div class="atlas-kicker">01 / EXPLORE THE CONNECTIONS</div>
+      <h1>하나의 조문,<br class="atlas-mobile-break"><em> 이어지는 법령.</em></h1>
+      <p>개정하기 전에, 이 조문이 연결한 세계부터 살펴보세요.</p>
+    </header>''', unsafe_allow_html=True)
+    tax, finance, local_tax, procurement, housing, environment = st.tabs(['세법', '금융법', '지방세', '조달·계약', '국토·건축·주택', '환경·화학안전'])
+    with tax: law_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with finance: fsc_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with local_tax: local_tax_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with procurement: procurement_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with housing: housing_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with environment: environment_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+
+for key, label, module in pages[1:]:
+    with st.container(key='page_' + key):
+        if key == 'review':
+            st.markdown('''<header class="atlas-hero"><div class="atlas-kicker">02 / REVIEW THE AMENDMENT</div>
+              <h1>바꾸는 조문,<br class="atlas-mobile-break"><em> 놓치는 연결 없이.</em></h1>
+              <p>개정안을 불러오고, 함께 살펴볼 인용과 대응 조문을 확인하세요.</p>
+            </header>''', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<header class="atlas-hero"><h1>{label}</h1></header>', unsafe_allow_html=True)
+        module.render(LAW_API_KEY, OPENAI_API_KEY)

@@ -1,4 +1,4 @@
-"""세법 관계도 탭 — 법령 은하(3D)와 조문 관계도(2D).
+"""세법은하 — 수집 본문과 조문 연결 탐색.
 
 발표 후 공개된 정보만 다루므로 LLM도 API 키도 필요 없다. 인용 그래프만 읽는다.
 """
@@ -9,41 +9,67 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 from core import law_abbrev
+from core.law_universe import SOURCES
+from ui.law_library_ui import render as render_library
+
+
+@st.cache_data(show_spinner=False, max_entries=8)
+def _tax_document(path: str, stamp: tuple[int, int], law: str) -> dict | None:
+    from pathlib import Path
+    source = json.loads(Path(path).read_text(encoding='utf-8'))
+    return next((d for d in source['laws'] if d['name'] == law), None)
 
 
 @st.cache_data(show_spinner=False)
-def _galaxy_data(min_edge: int, max_articles: int, stamp: int, external: bool = True) -> dict:
+def _connected_galaxy_data(min_edge: int, max_articles: int, stamp: int, external: bool = True) -> dict:
     from core.law_galaxy import build
 
-    return build(min_edge=min_edge, max_articles_per_law=max_articles, include_external=external)
+    from ui.impact_explorer_ui import _snapshot
+    return build(min_edge=min_edge, max_articles_per_law=max_articles, include_external=external, graph=_snapshot(stamp))
 
 
 @st.cache_data(show_spinner=False)
 def _focus(law: str, reference: str, stamp: int) -> dict:
     from core.galaxy_focus import analyze_focus
-    return analyze_focus(law, reference)
+    from ui.impact_explorer_ui import _snapshot
+    return analyze_focus(law, reference, graph=_snapshot(stamp))
 
 
 def _render_galaxy() -> None:
     from core.galaxy_focus import DIRECTIONS, KINDS, build, visible_rows
-    from core.impact_explorer import GRAPH
+    from core.law_universe import graph_path
     from core.law_galaxy import render_html, render_page
     from ui.impact_explorer_ui import _snapshot
 
-    stamp = GRAPH.stat().st_mtime_ns
+    stamp = graph_path().stat().st_mtime_ns
     graph = _snapshot(stamp)
     tax_laws = set(graph.get('tax_laws',graph.get('laws',[])))
     laws = sorted(graph.get("laws", []), key=lambda n:(n not in tax_laws,n))
-    external = st.checkbox("외부 법령 연결 함께 보기", True, key='lm_external',
-                           help='상법·자본시장법·민법·중소기업·회생·주택·금융 관련 법령과 세법 사이의 연결을 표시합니다.')
-    with st.form("lm_focus_form"):
-        a, b = st.columns([3, 4])
-        law = a.selectbox("개정할 법령", laws, key="lm_focus_law",
-                          index=laws.index("법인세법") if "법인세법" in laws else 0)
-        reference = b.text_input("조문 번호", "제16조", key="lm_focus_ref",
-                                 help="16, 16의2 또는 제16조제2항제1호처럼 입력하세요.")
-        submitted = st.form_submit_button("조문 연결 보기", key="lm_focus_run")
-    if submitted:
+    law_entry, reference_entry = st.columns([1, 1], vertical_alignment='bottom')
+    with law_entry:
+        law = st.selectbox("법령 선택", laws, key="lm_focus_law",
+                           index=laws.index("법인세법") if "법인세법" in laws else 0)
+    document = None
+    if 'source' in graph:
+        document = next((d for d in graph['source']['laws'] if d['name'] == law), None)
+    elif SOURCES.is_file():
+        stat = SOURCES.stat()
+        document = _tax_document(str(SOURCES), (stat.st_mtime_ns, stat.st_size), law)
+    picked = render_library(document, prefix='lm_', default_reference=st.session_state.get('lm_focus_ref', '제16조'))
+    if picked:
+        st.session_state['lm_focus_ref'] = picked
+    previous = st.session_state.get('lm_focus_selection')
+    if previous and previous[0] != law:
+        st.session_state.pop('lm_focus_selection', None)
+        st.session_state.pop('lm_focus_error', None)
+    with reference_entry:
+        with st.form("lm_focus_form", border=False):
+            entry, action = st.columns([4, 1.5], vertical_alignment='bottom')
+            reference = entry.text_input("조문 번호", "제16조", key="lm_focus_ref",
+                                        help="수집 본문에서 고르거나 제16조제2항제1호처럼 직접 입력하세요.")
+            with action:
+                submitted = st.form_submit_button("연결 탐색", key="lm_focus_run", type='primary', width='stretch')
+    if submitted or picked:
         st.session_state.pop("lm_focus_selection", None)
         st.session_state.pop("lm_focus_error", None)
         try:
@@ -52,7 +78,7 @@ def _render_galaxy() -> None:
         except ValueError as exc:
             st.session_state["lm_focus_error"] = str(exc)
     if st.session_state.get("lm_focus_selection"):
-        if st.button("조문 선택 해제 · 전체 은하로", key="lm_focus_clear"):
+        if st.button("전체 은하로 돌아가기", key="lm_focus_clear"):
             st.session_state.pop("lm_focus_selection", None)
     if st.session_state.get("lm_focus_error"):
         st.error(st.session_state["lm_focus_error"])
@@ -63,22 +89,21 @@ def _render_galaxy() -> None:
     kinds = list(KINDS)
     if result:
         st.markdown(f"#### {result['law']} {result['reference']}의 연결")
-        direction = st.radio("강조할 방향", list(DIRECTIONS), format_func=DIRECTIONS.get,
+        direction = st.radio("연결 방향", list(DIRECTIONS), format_func=DIRECTIONS.get,
                              horizontal=True, key="lm_focus_direction")
-        review = st.checkbox("문맥·출처 확인이 필요한 연결도 점선으로 보기", True, key="lm_focus_review")
-        if result.get('broad_rows'):
-            broad = st.checkbox(f"이 법령 전체를 참조하는 역인용 후보 {len(result['broad_rows'])}개도 보기", False,
-                                key='lm_broad', help='특정 조문과의 연결을 확정하지 않은 넓은 후보입니다.')
         if result["narrow"]:
             st.info("역인용의 범위와 나가는 인용의 출처 항·호·목을 대조합니다. 상위 단위의 공통 문구와 한정·제외 조건은 점선으로 표시합니다.")
-    with st.expander("은하 표시 설정"):
+    with st.expander("연결 설정"):
+        external = st.checkbox("외부 법령 연결 포함", True, key='lm_external',
+                               help='세법과 직접 연결된 상법·자본시장법 등 외부 법령을 함께 봅니다.')
         if result:
+            review = st.checkbox("문맥·출처 확인 후보 포함", True, key="lm_focus_review")
+            if result.get('broad_rows'):
+                broad = st.checkbox("법령 전체를 참조하는 역인용 후보 포함", False, key='lm_broad')
             kinds = st.multiselect('연결 종류', list(KINDS), default=list(KINDS), format_func=KINDS.get, key='lm_kinds')
-        c1, c2 = st.columns(2)
-        min_edge = c1.slider("표시할 최소 인용 건수", 2, 60, 8, key="lm_g_min",
-                             help="전체 은하에 적용합니다. 조문 연결 보기에서는 한 건의 인용도 표시합니다.")
-        max_arts = c2.slider("법령당 조문 점 수", 40, 450, 220, step=10, key="lm_g_arts")
-    data = _galaxy_data(min_edge, max_arts, stamp, external)
+        st.caption('전체 지도는 주요 연결을 표시합니다. 법령·조문을 선택하면 드문 연결까지 펼쳐집니다.')
+    min_edge, max_arts = 8, 220
+    data = _connected_galaxy_data(min_edge, max_arts, stamp, external)
     if result:
         filters = dict(external=external,kinds=kinds,include_broad=broad)
         data = build(result, data, direction, review, **filters)
@@ -90,7 +115,7 @@ def _render_galaxy() -> None:
         if not rows:
             st.info("현재 조건에 맞는 저장 인용이 없습니다. 연결이 없거나 조문이 존재하지 않는다는 뜻은 아닙니다.")
     components.html(render_html(data, height=740), height=760, scrolling=False)
-    st.download_button("은하 HTML 내려받기 (파일 하나, 오프라인 동작)",
+    st.download_button("은하 내려받기",
                        render_page(data).encode("utf-8"), "조문연결은하.html" if result else "법령은하.html",
                        "text/html", key="lm_g_dl")
     if result:
@@ -116,12 +141,19 @@ def _render_galaxy() -> None:
                 st.write("참조 번호를 해석하지 못한 나가는 인용은 아래에 남겼습니다.")
                 st.dataframe(result["unplaced"], hide_index=True)
     else:
-        st.caption("드래그로 회전, 휠로 확대, 법령을 클릭하면 그 법령의 인용만 남습니다. "
-                   "안쪽은 세법령, 바깥쪽은 외부 법령입니다. 위에서 조문을 입력하면 인용과 역인용 경로만 부각됩니다.")
+        st.caption("한 손가락·드래그로 회전 · 두 손가락·휠로 확대 · 점을 선택해 연결 확인")
+
+
+def _source_info(graph: dict) -> None:
+    tax_laws = set(graph.get('tax_laws', graph.get('laws', [])))
+    laws = graph.get('laws', [])
+    st.caption(f"수집 기준 {graph['built_at']} · 세법령 {len(tax_laws)}개 · 외부 법령 {len(laws)-len(tax_laws)}개")
+    st.caption('세법과 인용·역인용이 확인된 외부 법령만 기본 지도에 표시합니다. 숨긴 법령의 수집 본문은 보관합니다.')
+    st.caption('법령 약칭은 세제개편안 상세본의 표기를 따릅니다. 표시 거리는 법적 영향의 크기를 뜻하지 않습니다.')
     if graph.get('catalog'):
         with st.expander(f"수록 범위 · 세법령 {len(tax_laws)}개 + 외부 법령 {len(laws)-len(tax_laws)}개"):
             st.write(graph.get('coverage_note',''))
-            st.caption(f"수집일 {graph['built_at']} · 국가법령정보센터 시행일 기준 본문. 자동 갱신 일정은 설정하지 않았습니다.")
+            st.caption(f"수집일 {graph['built_at']} · 국가법령정보센터 시행일 기준 본문. 매일 새 시행 여부 확인 · 월요일 전체 갱신(노트북과 Codex 실행 중).")
             st.dataframe([{'법령':l['name'], '구분':'세법령' if l['category']=='tax' else '외부 법령',
                            '시행일':l['effective'], '공포일':l.get('promulgated','')} for l in graph['catalog']],
                          hide_index=True, width='stretch')
@@ -131,51 +163,21 @@ def _render_galaxy() -> None:
                               for r in graph['outside_scope'][:20]], hide_index=True, width='stretch')
 
 
-@st.cache_data(show_spinner=False)
-def _flat_map(min_edge: int, cross_only: bool, stamp: int) -> tuple[str, list]:
-    from core.law_map import build, render_svg, top_pairs
-
-    data = build(min_edge=min_edge, cross_family_only=cross_only)
-    return render_svg(data), top_pairs(data, 15)
-
-
 def render(law_api_key: str = "", openai_api_key: str = "") -> None:
-    st.markdown('<div class="mofe-section-header">세법 관계도</div>', unsafe_allow_html=True)
-    st.caption(
-        "세법령의 인용 관계를 은하에서 탐색합니다. 법령 전체를 둘러보거나, "
-        "개정할 조문을 입력해 연결된 경로를 따라가세요."
-    )
-
-    view = st.radio(
-        "보기", ["법령 은하 (3D)", "조문 영향 탐색", "법령 관계도 (평면)"],
-        horizontal=True, key="lm_view", label_visibility="collapsed",
-    )
-
-    if view == "조문 영향 탐색":
+    from core.law_universe import graph_path
+    from ui.impact_explorer_ui import _snapshot
+    views = ['법령 은하 (3D)', '조문 영향 탐색']
+    if st.session_state.get('lm_view') not in views:
+        st.session_state['lm_view'] = views[0]
+    heading, info = st.columns([5, 1], vertical_alignment='center')
+    with heading:
+        view = st.radio('탐색 방식', views, horizontal=True, key='lm_view', label_visibility='collapsed',
+                        format_func=lambda v: {'법령 은하 (3D)':'3D 은하', '조문 영향 탐색':'조문 영향 탐색'}[v])
+    with info:
+        with st.popover('자료 안내', width='stretch'):
+            _source_info(_snapshot(graph_path().stat().st_mtime_ns))
+    if view == '조문 영향 탐색':
         from ui.impact_explorer_ui import render as render_impact
         render_impact()
-    elif view.startswith("법령 은하"):
-        _render_galaxy()
     else:
-        c1, c2 = st.columns([1, 2])
-        min_edge = c1.slider("표시할 최소 인용 건수", 2, 80, 8, key="lm_f_min")
-        cross = c2.checkbox(
-            "법령군 간 인용만 (시행령→모법 제외)", value=True, key="lm_f_cross",
-            help="끄면 조특령→조특법(2,728건) 같은 당연한 관계가 화면을 덮습니다",
-        )
-        from core.impact_explorer import GRAPH
-        svg, pairs = _flat_map(min_edge, cross, GRAPH.stat().st_mtime_ns)
-        st.markdown(svg, unsafe_allow_html=True)
-        st.download_button("관계도 SVG 내려받기", data=svg.encode("utf-8"),
-                           file_name="법령관계도.svg", mime="image/svg+xml", key="lm_f_dl")
-        with st.expander(f"인용이 많은 법령쌍 {len(pairs)}건"):
-            for a, b, n in pairs:
-                st.markdown(f"- **{a} → {b}** · {n:,}건")
-
-    st.divider()
-    # 조문 단위 관계도(조문 연관 조회)는 지금 숨겨 둔 탭이라 여기서 안내하지 않는다 —
-    # 없는 탭으로 보내는 문구가 되기 때문. ENABLE_WIP_TABS를 켜면 다시 살릴 것.
-    st.caption(
-        "법령 약칭은 재정경제부 세제개편안 상세본의 공식 약어를 따릅니다 "
-        f"(예: {law_abbrev.law('소득세법 시행령')} {law_abbrev.article('제73조의2')})."
-    )
+        _render_galaxy()

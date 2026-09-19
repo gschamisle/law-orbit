@@ -9,6 +9,7 @@ import re
 from core import law_abbrev
 from core.citation_scope import Provision, classify, parse_target
 from core.impact_explorer import GRAPH, analyze
+from core.law_universe import load_graph
 from core.impact_galaxy import LABELS
 
 DIRECTIONS = {"both": "인용 + 역인용", "forward": "인용하는 조문", "reverse": "인용받는 경로"}
@@ -20,31 +21,37 @@ def _norm(name: str) -> str:
     return "".join(str(name).split()).replace("ㆍ", "·")
 
 
-def _target(reference: str) -> Provision:
+def _target(reference: str, *, allow_hyphen=False) -> Provision:
     compact = "".join(reference.split())
-    match = re.fullmatch(r"(\d+)(?:의(\d+))?", compact)
+    match = re.fullmatch(r"(\d+(?:-\d+)*)(?:의(\d+))?" if allow_hyphen else r"(\d+)(?:의(\d+))?", compact)
     if match:
         compact = f"제{match[1]}조" + (f"의{match[2]}" if match[2] else "")
-    return parse_target(compact)
+    return parse_target(compact, allow_hyphen=allow_hyphen)
 
 
 def analyze_focus(law: str, reference: str, graph: dict | None = None) -> dict:
-    graph = graph if graph is not None else json.loads(GRAPH.read_text(encoding="utf-8"))
+    graph = graph if graph is not None else load_graph()
+    from functools import partial
+    from core import citation_scope as scopes
+    option = dict(allow_hyphen=graph.get("domain") == "fsc")
+    target_input = partial(_target, **option)
+    parse_target = partial(scopes.parse_target, **option)
+    classify = partial(scopes.classify, **option)
     canonical = {_norm(name): name for name in graph.get("laws", [])}
     if _norm(law) not in canonical:
         raise ValueError("저장된 그래프에 수록된 법령을 선택하세요.")
     law = canonical[_norm(law)]
-    target = _target(reference)
+    target = target_input(reference)
     narrow = any(target.path[1:])
     reverse = analyze(law, target.label, graph)
-    tax_laws = {_norm(n) for n in graph.get('tax_laws', graph.get('laws', []))}
+    tax_laws = {_norm(n) for n in graph.get('focus_laws', graph.get('tax_laws', graph.get('laws', [])))}
     is_external = lambda a, b: _norm(a) not in tax_laws or _norm(b) not in tax_laws
     rows = []
     for row in reverse["rows"]:
         if row["same_article"] or row["status"] == "disjoint":
             continue
         try:
-            source = _target(str(row["source_jo"]))
+            source = target_input(str(row["source_jo"]))
             neighbor_jo, neighbor_ref, kind = source.jo, source.label, 'article'
         except ValueError:
             if row.get('source_granularity') != 'annex':
@@ -68,7 +75,7 @@ def analyze_focus(law: str, reference: str, graph: dict | None = None) -> dict:
         if _norm(edge.get('source_law','')) == _norm(law):
             continue
         try:
-            source = _target(str(edge['source_jo']))
+            source = target_input(str(edge['source_jo']))
         except ValueError:
             continue
         broad_rows.append({**edge, 'raw':edge['cite_raw'], 'source_ref':edge.get('source_ref',source.label),
@@ -85,7 +92,7 @@ def analyze_focus(law: str, reference: str, graph: dict | None = None) -> dict:
         if _norm(edge.get("source_law", "")) != _norm(law):
             continue
         try:
-            source = _target(str(edge.get("source_jo", "")))
+            source = target_input(str(edge.get("source_jo", "")))
         except ValueError:
             continue
         if source.jo != target.jo:
@@ -160,9 +167,11 @@ def build(result: dict, overview: dict, direction: str = "both", include_review:
     groups = defaultdict(list)
     for row in rows:
         groups[(row["neighbor_law"], row.get('neighbor_kind','article'), row["neighbor_jo"])].append(row)
+    display_names = {n["id"]: n["label"] for n in overview.get("nodes", []) if n.get("full_name")}
     center = "focus:" + result["law"] + "|" + result["reference"]
     nodes = [{**n, "context_only": True} for n in overview.get("nodes", [])]
-    nodes.append(dict(id=center, label=law_abbrev.law(result["law"]), subtitle=result["reference"],
+    nodes.append(dict(id=center, label=display_names.get(result["law"], law_abbrev.law(result["law"])), subtitle=result["reference"],
+                      full_name=result["law"] if display_names else "",
                       family=result["law"], color="#e4f7ff", count=len(groups), x=0, y=0, z=0,
                       title="선택한 개정 대상 · 직접 연결", is_target=True, evidence=[]))
     links = []
@@ -174,7 +183,8 @@ def build(result: dict, overview: dict, direction: str = "both", include_review:
         color = "#b5a1ff" if len(directions) > 1 else COLORS[evidence[0]["direction"]]
         if all(e["status"] == "review" for e in evidence):
             color = COLORS["review"]
-        nodes.append(dict(id=ident, label=law_abbrev.law(law), subtitle=evidence[0]['neighbor_ref'], kind=kind,
+        nodes.append(dict(id=ident, label=display_names.get(law, law_abbrev.law(law)), subtitle=evidence[0]['neighbor_ref'], kind=kind,
+                          full_name=law if display_names else "",
                           family=law, color=color, count=len(evidence),
                           x=round(math.cos(theta)*radius, 2), y=round(math.sin(theta)*radius*.85, 2), z=round(math.sin(theta*1.5)*100, 2),
                           title=next((e["neighbor_title"] for e in evidence if e["neighbor_title"]), "연결된 조문"),

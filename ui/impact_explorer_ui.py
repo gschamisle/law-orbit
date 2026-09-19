@@ -6,18 +6,19 @@ import json
 import streamlit as st
 import streamlit.components.v1 as components
 
-from core.impact_explorer import GRAPH, analyze
+from core.impact_explorer import analyze
+from core.law_universe import graph_path, load_graph
 from core.impact_galaxy import LABELS, build
 from core.law_galaxy import render_html, render_page
 
 
 @st.cache_data(show_spinner=False)
 def _snapshot(stamp: int) -> dict:
-    return json.loads(GRAPH.read_text(encoding="utf-8"))
+    return load_graph()
 
 
 def render() -> None:
-    graph = _snapshot(GRAPH.stat().st_mtime_ns)
+    graph = _snapshot(graph_path().stat().st_mtime_ns)
     mode = st.radio("탐색 방식", ["기존 인용 탐색", "신설 항 범위 재검토"], horizontal=True, key="impact_mode")
     if mode == "신설 항 범위 재검토":
         from ui.boundary_review_ui import render as render_boundary
@@ -25,11 +26,11 @@ def render() -> None:
         return
     st.caption("개정하려는 조문을 선택하면 직접 인용·상위 조문 인용·범위 포함을 근거와 함께 구분합니다.")
     laws = sorted(graph.get("laws", []))
-    with st.form("impact_target"):
-        left, right, button = st.columns([3, 3, 1])
+    with st.form("impact_target", border=False):
+        left, right, button = st.columns([3, 3, 1], vertical_alignment="bottom")
         law = left.selectbox("법령", laws, index=laws.index("법인세법") if "법인세법" in laws else 0)
         reference = right.text_input("개정 대상", "제16조제2항제1호")
-        submitted = button.form_submit_button("영향 탐색", use_container_width=True)
+        submitted = button.form_submit_button("영향 탐색", type="primary", width="stretch")
     if submitted or "impact_selection" not in st.session_state:
         try:
             st.session_state["impact_selection"] = analyze(law, reference, graph)

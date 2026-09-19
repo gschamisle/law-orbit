@@ -49,16 +49,20 @@ class ParsedScope:
     review_reason: str = ""
 
 
-def _number(value: str) -> tuple[int, int]:
+def _number(value: str, *, allow_hyphen=False) -> tuple:
+    if allow_hyphen:
+        base, _, sub = value.partition("의")
+        return tuple(int(n) for n in base.split("-")), int(sub or 0)
     base, _, sub = value.partition("의")
     return int(base), int(sub or 0)
 
 
-def parse_target(text: str) -> Provision:
+def parse_target(text: str, *, allow_hyphen=False) -> Provision:
     """Strict input: don't silently turn an invalid target into an entire article."""
     compact = re.sub(r"\s+", "", text)
+    number = r"\d+(?:-\d+)*" if allow_hyphen else r"\d+"
     match = re.fullmatch(
-        r"제(\d+)조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호(?:의(\d+))?)?(?:([가-하])목)?",
+        rf"제({number})조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호(?:의(\d+))?)?(?:([가-하])목)?",
         compact,
     )
     if not match:
@@ -67,20 +71,21 @@ def parse_target(text: str) -> Provision:
     if mok and not ho:
         raise ValueError("목을 지정할 때에는 호도 입력하세요.")
     values = [v for v in (jo, sub, hang, ho, ho_sub) if v]
-    if any(int(v) <= 0 for v in values):
+    if any(int(part) <= 0 for v in values for part in v.split("-")):
         raise ValueError("조문 번호는 1 이상이어야 합니다.")
-    norm = lambda v: str(int(v)) if v else ""
+    norm = lambda v: "-".join(str(int(part)) for part in v.split("-")) if v else ""
     return Provision(norm(jo) + (f"의{norm(sub)}" if sub else ""), norm(hang),
                      norm(ho) + (f"의{norm(ho_sub)}" if ho_sub else ""), mok or "")
 
 
-def parse_scope(raw: str) -> ParsedScope:
+def parse_scope(raw: str, *, allow_hyphen=False) -> ParsedScope:
     """Parse direct, enumerated, and same-level ranges in a single-law expression.
 
     No invented context: an isolated paragraph or a cross-level range needs review.
     Ranges stay intervals, including article/item branches, rather than guessed lists.
     """
-    tokens = list(_TOKEN.finditer(raw))
+    token_pattern = re.compile(r"제\s*(\d+(?:\s*-\s*\d+)*)\s*(조|항|호)(?:\s*의\s*(\d+))?|([가-하])\s*목") if allow_hyphen else _TOKEN
+    tokens = list(token_pattern.finditer(raw))
     if not tokens:
         return ParsedScope((), "조문 번호를 해석하지 못했습니다.")
     review = "한정·제외 또는 상대 참조는 원문 확인이 필요합니다." if _QUALIFIER.search(raw) else ""
@@ -92,7 +97,9 @@ def parse_scope(raw: str) -> ParsedScope:
     for i, token in enumerate(tokens):
         unit = "목" if token.group(4) else token.group(2)
         level = _LEVEL[unit]
-        value = token.group(4) or str(int(token.group(1)))
+        value = token.group(4) or "-".join(str(int(n.strip())) for n in token.group(1).split("-"))
+        if "-" in value and unit != "조":
+            return ParsedScope(tuple(scopes), "조 이외의 하이픈 번호는 확인이 필요합니다.")
         if token.group(3):
             if unit == "항":
                 return ParsedScope(tuple(scopes), "지원하지 않는 항 가지번호입니다.")
@@ -124,7 +131,7 @@ def parse_scope(raw: str) -> ParsedScope:
                 return ParsedScope(tuple(scopes), "범위의 상위 조문이 일치하지 않습니다.")
             if axis == 3:
                 review = "목 범위의 순서 확인이 필요합니다."
-            elif _number(start.path[axis]) > _number(end.path[axis]):
+            elif _number(start.path[axis], allow_hyphen=allow_hyphen) > _number(end.path[axis], allow_hyphen=allow_hyphen):
                 return ParsedScope(tuple(scopes), "역순 범위는 확정할 수 없습니다.")
             scopes.append(Scope(start, end, axis))
             # A range endpoint is not a separate direct citation.
@@ -143,7 +150,7 @@ def parse_scope(raw: str) -> ParsedScope:
     return ParsedScope(tuple(dict.fromkeys(scopes)), review)
 
 
-def scope_relation(scope: Scope, target: Provision) -> str | None:
+def scope_relation(scope: Scope, target: Provision, *, allow_hyphen=False) -> str | None:
     """exact / covering / contained / range, or None when provably disjoint."""
     for level, (a, b, wanted) in enumerate(zip(scope.start.path, scope.end.path, target.path)):
         if not wanted:
@@ -159,7 +166,7 @@ def scope_relation(scope: Scope, target: Provision) -> str | None:
         if scope.axis == level:
             if level == 3:
                 return None  # unsupported: caller preserves review status
-            if not (_number(a) <= _number(wanted) <= _number(b)):
+            if not (_number(a, allow_hyphen=allow_hyphen) <= _number(wanted, allow_hyphen=allow_hyphen) <= _number(b, allow_hyphen=allow_hyphen)):
                 return None
             return "range"
         if a != wanted:
@@ -167,11 +174,11 @@ def scope_relation(scope: Scope, target: Provision) -> str | None:
     return "exact"
 
 
-def classify(raw: str, target: Provision) -> tuple[str, str]:
-    parsed = parse_scope(raw)
+def classify(raw: str, target: Provision, *, allow_hyphen=False) -> tuple[str, str]:
+    parsed = parse_scope(raw, allow_hyphen=allow_hyphen)
     if parsed.review_reason:
         return "review", parsed.review_reason
-    matches = [scope_relation(s, target) for s in parsed.scopes]
+    matches = [scope_relation(s, target, allow_hyphen=allow_hyphen) for s in parsed.scopes]
     if "review" in matches:
         return "review", "항·호의 상위 계층이 생략되어 원문 구조 확인이 필요합니다."
     for relation in ("exact", "range", "covering", "contained"):
