@@ -9,3 +9,6 @@
 #reading-body h3{font-size:17px;color:#ebd394;margin:20px 0 12px}.reading-text{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font-size:15px;line-height:1.95}
 .reading-actions{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 28px;margin:0;border-top:1px solid #3d5b4e;flex-shrink:0}.reading-actions button{font-size:12px;min-height:36px;padding:8px 12px}
 @media(max-width:600px){.reading-dialog{width:calc(100vw - 20px);max-height:92vh;max-height:92dvh;border-radius:10px}.reading-header{padding:18px 18px 10px}#reading-scroll{padding:0 18px 18px}#reading-title{font-size:21px}.reading-actions{padding:12px 14px;gap:5px}.reading-actions button{font-size:11px;padding:7px 8px}.reading-text{font-size:14px}}
+
+/* Identity and a quiet, readable acknowledgment on every screen size. */
+.brand strong{white-space:nowrap}.site-footer p{margin:0 0 10px}.site-footer .inspiration{color:#abc1b6}.inspiration a{white-space:nowrap}#about h2{font-size:28px;margin-top:12px}#about h3{font-size:16px;margin:24px 0 8px}#about .about-subtitle{color:#ebd394}#about .about-motto{color:#abc1b6;font-size:12px;margin-top:20px}@media(max-width:860px){.sidebar-bottom{flex-wrap:wrap;column-gap:18px;row-gap:0}}

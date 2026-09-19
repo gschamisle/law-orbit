@@ -1,1 +1,1 @@
-{"name":"법령 은하 · 이 조문 건드리면 다 죽는 거야","short_name":"법령 은하","start_url":"./","display":"standalone","background_color":"#071f20","theme_color":"#082b29","lang":"ko","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
+{"name":"법의 궤도","short_name":"법의 궤도","start_url":"./","display":"standalone","background_color":"#071f20","theme_color":"#082b29","lang":"ko","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}],"description":"한 조문에서 시작하는 법령 연결 지도."}

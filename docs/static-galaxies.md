@@ -1,4 +1,4 @@
-# 무료 웹 법령 은하
+# 법의 궤도 — 무료 공개 열람
 
 **[공개 열람 사이트](https://gschamisle.github.io/tax-amendment-assistant/)** — 설치 없이 브라우저에서 엽니다.
 

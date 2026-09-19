@@ -190,14 +190,14 @@ def shell(dest):
     html=html.replace('__DATA__','WEB_DATA')
     html=html.replace("function select(n){selected", "function select(n){if(n?.web_law)parent.postMessage({type:'galaxy-select',law:n.web_law,jo:n.web_jo||'',region:n.web_region||'',mode:D.mode},location.origin);selected",1)
     html=html.replace('})();\n</script>', '})();});\n</script>')
-    prefix="<!doctype html><html lang='ko'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>법령 은하</title><link rel='stylesheet' href='fonts.css'><style>body{margin:0;background:#051e22}#galaxy-wrap{border:0!important;border-radius:0!important;height:100vh!important;min-height:0!important}</style>"
+    prefix="<!doctype html><html lang='ko'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>법의 궤도 — 연결 지도</title><link rel='stylesheet' href='fonts.css'><style>body{margin:0;background:#051e22}#galaxy-wrap{border:0!important;border-radius:0!important;height:100vh!important;min-height:0!important}</style>"
     (dest/'renderer.html').write_text(prefix+html+'</html>',encoding='utf-8')
 
 
 def build(source,dest):
     if dest.exists():raise ValueError('Choose a new empty destination; existing builds are preserved')
     dest.mkdir(parents=True);writer=Writer(dest);shell(dest)
-    manifest=dict(schema=1,title='이 조문 건드리면 다 죽는 거야',domains=[])
+    manifest=dict(schema=1,title='법의 궤도',domains=[])
     for domain,title in DOMAINS.items():
         if domain=='local_tax':
             from core.local_tax_graph import load_manifest,validate_bundle,merge_region
