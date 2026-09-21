@@ -1,8 +1,8 @@
-name: Publish free law galaxies
+name: Publish Law Orbit
 
 on:
   push:
-    branches: [codex/static-galaxies]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

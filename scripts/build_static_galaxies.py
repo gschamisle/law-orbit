@@ -195,6 +195,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
 def shell(dest):
     for p in (ROOT/'web').iterdir():
         if p.is_file():shutil.copy2(p,dest/p.name)
+    shutil.copy2(ROOT/'docs/law-orbit-introduction.html',dest/'introduction.html')
     fonts=dest/'fonts';fonts.mkdir(exist_ok=True)
     for p in (ROOT/'ui/assets/fonts').iterdir():
         if p.suffix in ('.woff2','.txt'):shutil.copy2(p,fonts/p.name)
