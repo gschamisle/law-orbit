@@ -106,3 +106,7 @@ python -m http.server 8514 --bind 127.0.0.1 --directory output/static-mofe-revie
 - [2026년도 공공기관 경영평가편람](https://mofe.go.kr/com/bbs/detailComtPolbbsView.do?menuNo=5020200&searchBbsId1=MOSFBBS_000000000039&searchNttId1=MOSF_000000000076609)
 
 개별 법령의 공식 원문·시행일은 수집 목록 및 화면의 출처 링크에 표시합니다.
+
+## 2026-09-21 문서 상태 갱신
+
+구현 소스와 소개문은 `codex/state-property` 브랜치에 커밋·푸시했습니다. 추가 분야의 공개 앱 배포는 아직 하지 않았습니다. 위 검증 기록은 해당 작업 당시의 기록이며, 국세를 포함한 모든 분야를 베타 단계로 안내합니다. 공개 여부는 정확도 등급이 아닙니다.
