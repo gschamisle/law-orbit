@@ -1,6 +1,6 @@
 # 법의 궤도
 
-[소개문 HTML 내려받기](https://github.com/gschamisle/law-orbit/raw/refs/heads/codex/state-property/docs/law-orbit-introduction.html) — 모바일용 · 약 2.3 MB · 글꼴·이미지 포함
+[소개문 HTML 내려받기](https://github.com/gschamisle/law-orbit/releases/download/introduction-2026-09-21/law-orbit-introduction.html) — 모바일용 · 약 2.3 MB · 글꼴·이미지 포함
 
 **베타 안내:** 국세를 포함한 모든 분야는 실험적 베타 단계입니다. 기능·인용 사례·자료 무결성 검사를 통과한 것과 실제 법령 전체의 정확도·누락률을 검증한 것은 다릅니다. 아래 공개 여부는 배포 상태이며, 분야별 정확도 등급이 아닙니다.
 
