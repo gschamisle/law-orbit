@@ -29,7 +29,7 @@ def main():
     if not args.collect_only:
         from core.local_tax_graph import publish
         report=publish(args.output,args.as_of)
-        print(f"지방세 은하 생성 완료 · 중앙 {report['central_documents']} · 자치법규 {report['indexed']} · 지역 {len(report['regions'])}",flush=True)
+        print(f"지방세 자료 생성 완료 · 중앙 {report['central_documents']} · 자치법규 {report['indexed']} · 지역 {len(report['regions'])}",flush=True)
 
 
 if __name__=='__main__': main()

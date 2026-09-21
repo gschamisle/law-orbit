@@ -99,7 +99,7 @@ def render(law_api_key: str='', openai_api_key: str='') -> None:
             result=_fsc_focus(path,stamp,law,reference,sector)
             st.session_state[key('focus_selection')]=(result['law'],result['reference'])
         except ValueError as error: st.session_state[key('focus_error')]=str(error)
-    if st.session_state.get(key('focus_selection')) and st.button('전체 은하로 돌아가기',key=key('focus_clear')):
+    if st.session_state.get(key('focus_selection')) and st.button('전체 보기',key=key('focus_clear')):
         st.session_state.pop(key('focus_selection'),None)
     if st.session_state.get(key('focus_error')): st.error(st.session_state[key('focus_error')])
     selection=st.session_state.get(key('focus_selection'));result=None
@@ -132,7 +132,7 @@ def render(law_api_key: str='', openai_api_key: str='') -> None:
         if not rows: st.info('현재 조건에 맞는 저장 인용이 없습니다. 관련 영향이 없다는 뜻은 아닙니다.')
     data=style_sector(data,sector)
     components.html(render_html(data,height=740),height=760,scrolling=False)
-    st.download_button('은하 내려받기',render_page(data).encode('utf-8'),f'금융 은하-{SECTORS[sector]}.html','text/html',key=key('html'))
+    st.download_button('3D 화면 내려받기',render_page(data).encode('utf-8'),f'금융-{SECTORS[sector]}.html','text/html',key=key('html'))
     if result:
         document,article=article_for(bundle,*selection)
         st.caption(f"{document['name']} · 시행 {_date(document['effective'])} · {document['managing_authority']} · 분야 {_tag_label(document)}")
@@ -148,7 +148,7 @@ def render(law_api_key: str='', openai_api_key: str='') -> None:
         if sector!='all':
             outside=[r for r in rows if r.get('out_of_sector')]
             with st.expander(f'분야 밖 관련 조문 · 공통·다른 업권 · {len(outside)}건',expanded=bool(outside)):
-                st.caption('금융 은하 안에서 수집·분석한 다른 분야의 조문입니다. 분야 태그는 개정 의무를 뜻하지 않습니다.')
+                st.caption('금융 분야에서 수집·분석한 다른 분야의 조문입니다. 분야 태그는 개정 의무를 뜻하지 않습니다.')
                 table(outside)
         issues=[e for e in graph.get('citation_issues',[]) if e['source_law']==selection[0] and e['source_jo']==article['jo']]
         if issues:
@@ -162,7 +162,7 @@ def render(law_api_key: str='', openai_api_key: str='') -> None:
                            '상태':'본문 수집 · 조문 연결 미분석' if e.get('target_status')=='collected-not-indexed' else '미수집 · 본문/역인용 미점검','공식 링크':e['target_url'],'인용 출처 링크':e['source_url']} for e in external],hide_index=True,width='stretch')
         st.download_button('금융 인용 근거 내려받기',json.dumps(dict(domain='fsc',sector=sector,selection=selection,rows=rows,
                            external_references=external,unresolved=issues,coverage=graph['coverage']),ensure_ascii=False,indent=2).encode('utf-8'),
-                           '금융 은하-인용근거.json','application/json',key=key('evidence'))
+                           '금융-인용근거.json','application/json',key=key('evidence'))
     _rules(bundle,sector,key)
     widget_names=('focus_law','focus_ref','direction','review','broad','kinds','rule_name','library_query','library_article','library_scope')
     saved[sector]={key(n):st.session_state[key(n)] for n in widget_names if key(n) in st.session_state}
@@ -172,7 +172,7 @@ def _source_info(bundle: dict) -> None:
     graph=bundle['graph']
     st.caption(f"수집 기준 {_date(graph['built_at'])} · 법령 {len(bundle['source']['laws'])}건 · 감독규정·시행세칙 {graph.get('administrative_rules_indexed',0)}건 분석")
     st.caption('공식 약칭을 우선 표시합니다. 업권은 복수 태그로 분류하며, 다른 업권·공통규정과의 연결은 분야 밖 관련 조문으로 안내합니다.')
-    with st.expander('금융 은하 수집 범위와 분석 상태'):
+    with st.expander('금융 자료의 수집 범위와 분석 상태'):
         st.write(graph['coverage_note'])
         st.caption('업권 태그는 명칭에 따른 분류이며 복수 지정할 수 있습니다. 공통에는 업권 공통규정과 기관운영 자료가 포함됩니다. 별표 파일 본문·부칙은 미분석입니다.')
         st.dataframe([{'법령·규정':d['name'],'분야':_tag_label(d),'분류 근거':' / '.join(d.get('sector_basis',[])),

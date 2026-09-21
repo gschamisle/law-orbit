@@ -1,4 +1,4 @@
-"""국세 은하 — 수집 본문과 조문 연결 탐색.
+"""국세 — 수집 본문과 조문 연결 탐색.
 
 발표 후 공개된 정보만 다루므로 LLM도 API 키도 필요 없다. 인용 그래프만 읽는다.
 """
@@ -78,7 +78,7 @@ def _render_galaxy() -> None:
         except ValueError as exc:
             st.session_state["lm_focus_error"] = str(exc)
     if st.session_state.get("lm_focus_selection"):
-        if st.button("전체 은하로 돌아가기", key="lm_focus_clear"):
+        if st.button("전체 보기", key="lm_focus_clear"):
             st.session_state.pop("lm_focus_selection", None)
     if st.session_state.get("lm_focus_error"):
         st.error(st.session_state["lm_focus_error"])
@@ -115,8 +115,8 @@ def _render_galaxy() -> None:
         if not rows:
             st.info("현재 조건에 맞는 저장 인용이 없습니다. 연결이 없거나 조문이 존재하지 않는다는 뜻은 아닙니다.")
     components.html(render_html(data, height=740), height=760, scrolling=False)
-    st.download_button("은하 내려받기",
-                       render_page(data).encode("utf-8"), "국세 은하-조문연결.html" if result else "국세 은하.html",
+    st.download_button("3D 화면 내려받기",
+                       render_page(data).encode("utf-8"), "국세-조문연결.html" if result else "국세-법령연결.html",
                        "text/html", key="lm_g_dl")
     if result:
         st.caption("민트: 선택 조문 → 인용 대상 · 금색: 인용 출처 → 선택 조문 · 분홍 점선: 문맥·출처 확인. "
@@ -166,13 +166,13 @@ def _source_info(graph: dict) -> None:
 def render(law_api_key: str = "", openai_api_key: str = "") -> None:
     from core.law_universe import graph_path
     from ui.impact_explorer_ui import _snapshot
-    views = ['법령 은하 (3D)', '조문 영향 탐색']
+    views = ['3D 법령 지도', '조문 영향 탐색']
     if st.session_state.get('lm_view') not in views:
         st.session_state['lm_view'] = views[0]
     heading, info = st.columns([5, 1], vertical_alignment='center')
     with heading:
         view = st.radio('탐색 방식', views, horizontal=True, key='lm_view', label_visibility='collapsed',
-                        format_func=lambda v: {'법령 은하 (3D)':'3D 은하', '조문 영향 탐색':'조문 영향 탐색'}[v])
+                        format_func=lambda v: {'3D 법령 지도':'3D 법령 지도', '조문 영향 탐색':'조문 영향 탐색'}[v])
     with info:
         with st.popover('자료 안내', width='stretch'):
             _source_info(_snapshot(graph_path().stat().st_mtime_ns))

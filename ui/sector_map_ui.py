@@ -3,9 +3,11 @@ import json
 from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
-from core import procurement_universe, housing_universe, environment_universe
+from core import procurement_universe, housing_universe, environment_universe, state_property_universe, forex_universe
+from core import public_institutions_universe, customs_universe, treasury_universe
 from core.procurement_universe import documents, sector_graph, mark_sector, article_for, external_evidence
-APIS={'procurement':procurement_universe,'housing':housing_universe,'environment':environment_universe}
+APIS={'procurement':procurement_universe,'housing':housing_universe,'environment':environment_universe,'state_property':state_property_universe,'forex':forex_universe}
+APIS.update(public_institutions=public_institutions_universe,customs=customs_universe,treasury=treasury_universe)
 from ui.law_library_ui import render as render_library
 
 
@@ -26,7 +28,7 @@ def focus(path, stamp, law, reference, sector, domain):
     from core.galaxy_focus import analyze_focus
     bundle=snapshot(path,stamp,domain)
     article_for(bundle,law,reference)
-    return mark_sector(analyze_focus(law,reference,graph=bundle['graph']),bundle['graph'],sector)
+    return APIS[domain].mark_sector(analyze_focus(law,reference,graph=bundle['graph']),bundle['graph'],sector)
 
 
 def date(value):
@@ -54,14 +56,36 @@ def render(profile, bundle_path):
     except (OSError,ValueError,KeyError,TypeError):
         st.error(profile['title']+' 데이터 검증 실패 · 수집 자료를 확인해 주세요.');return
     graph=bundle['graph'];docs=documents(bundle['source']);by_name={d['name']:d for d in docs}
+    work=bundle.get('assessment')
+    if work:
+        st.caption(work['purpose'])
+        with st.expander('업무 질문으로 시작'):
+            st.caption('수집 조문 간 인용 근거를 확인한 질문입니다. 개정 필요성의 자동 판정은 아닙니다.')
+            for case in work['cases']:
+                if not case['available']:continue
+                if st.button(case['title'],key=state_prefix+'_case_'+case['jo'],width='content'):
+                    remembered=st.session_state.setdefault(state_prefix+'_saved_widgets',{})
+                    remembered.setdefault('all',{}).update(law=case['law'],ref='제'+case['jo']+'조')
+                    st.session_state[state_prefix+'_all_law']=case['law']
+                    st.session_state[state_prefix+'_all_ref']='제'+case['jo']+'조'
+                    st.session_state[state_prefix+'_all_selection']=(case['law'],'제'+case['jo']+'조')
+                    st.session_state[state_prefix+'_sector']='all'
+            for limitation in work['limitations']:st.caption(limitation)
     title,info=st.columns([5,1],vertical_alignment='center')
     with title:
         sector=st.radio('탐색 분야',list(SECTORS),format_func=SECTORS.get,horizontal=True,key=state_prefix+'_sector',label_visibility='collapsed')
     with info:
         with st.popover('자료 안내',width='stretch'):
             summary=report(bundle)
-            st.caption(f"수집 {date(graph['built_at'])} · 법령 {summary['statutes']}건 · 행정규칙 {summary['administrative_rules']}건 · 조문 분석 {summary['indexed_documents']}건")
+            if domain=='forex':
+                st.caption(f"수집 {date(graph['built_at'])} · 법령 {summary['statutes']}건 · 행정규칙 {summary['api_administrative_rules']}건 · 한국은행 세칙·절차 {summary['bok_rules']}건")
+            else:
+                st.caption(f"수집 {date(graph['built_at'])} · 법령 {summary['statutes']}건 · 행정규칙 {summary['administrative_rules']}건 · 조문 분석 {summary['indexed_documents']}건")
             st.write(graph['coverage_note'])
+            if work:
+                for item in work['companion_sources']:st.link_button(item['title'],item['url'])
+            for document in docs:
+                for note in document.get('source_notes',[]):st.caption(document['name']+' · '+note)
             st.caption('분야는 복수 태그입니다. 다른 분야와 연결되는 근거는 전체 수집 범위에서 찾습니다. 자동 갱신 예약은 아직 연결하지 않았습니다.')
             with st.expander('수집 목록과 분석 상태'):
                 st.dataframe([{'자료':d['name'],'소관':d['managing_authority'],'시행일':date(d['effective']),
@@ -99,7 +123,7 @@ def render(profile, bundle_path):
         except ValueError as error:st.session_state[key('error')]=str(error)
     if st.session_state.get(key('error')):st.error(st.session_state[key('error')])
     selection=st.session_state.get(key('selection'))
-    if selection and st.button('전체 은하로 돌아가기',key=key('clear')):
+    if selection and st.button('전체 보기',key=key('clear')):
         st.session_state.pop(key('selection'),None);selection=None
     from core.galaxy_focus import DIRECTIONS,KINDS,build,visible_rows
     from core.law_galaxy import render_html,render_page
@@ -124,7 +148,7 @@ def render(profile, bundle_path):
         st.caption(f"인용 {sum(r['direction']=='forward' for r in rows)}건 · 역인용 {sum(r['direction']=='reverse' for r in rows)}건 · 분야 밖 관련 근거 {sum(r.get('out_of_sector',False) for r in rows)}건")
         if not rows:st.info('조건에 맞는 저장 인용이 없습니다. 관련 영향이 없다는 뜻은 아닙니다.')
     components.html(render_html(data,height=740),height=760,scrolling=False)
-    st.download_button('은하 내려받기',render_page(data).encode('utf-8'),profile['title']+' 은하.html','text/html',key=key('html'))
+    st.download_button('3D 화면 내려받기',render_page(data).encode('utf-8'),profile['title']+'-법령연결.html','text/html',key=key('html'))
     if result:
         document,article=article_for(bundle,*selection)
         st.caption(f"{document['name']} · 시행 {date(document['effective'])} · {document['managing_authority']}")
@@ -165,6 +189,10 @@ def render(profile, bundle_path):
             st.link_button('공식 원문·첨부파일 확인',d['source_url'])
             from core.fsc_administrative import body_text
             text=body_text(d.get('raw_body_blocks',[]))
+            if work:
+                import re
+                if re.search(r'</?img\b[^>]*>',text,re.I):
+                    text='[이미지·도표는 공식 원문에서 확인하세요.]\n\n'+re.sub(r'</?img\b[^>]*>','',text,flags=re.I).strip()
             if text:
                 with st.container(height=300):st.text(text)
     widgets=('law','ref','direction','review','broad','kinds','library_query','library_article','library_scope')

@@ -15,7 +15,7 @@ def analyze(law: str, reference: str, graph: dict | None = None) -> dict:
     from functools import partial
     from core import citation_scope as scopes
     graph = graph if graph is not None else load_graph()
-    option = dict(allow_hyphen=graph.get("domain") == "fsc")
+    option = dict(allow_hyphen=graph.get("domain") in ("fsc", "forex"))
     parse_target = partial(scopes.parse_target, **option)
     parse_scope = partial(scopes.parse_scope, **option)
     scope_relation = partial(scopes.scope_relation, **option)

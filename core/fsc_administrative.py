@@ -121,6 +121,7 @@ def prepare_source(source: dict) -> dict:
 
 def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
     text = article['text']
+    strict = law.get('citation_policy') == 'mofe-explicit'
     aliases = {norm(k):v for k,v in law.get('aliases',{}).items()}
     # Explicit article-local definitions take precedence, without leaking to other articles.
     local, _ = aliases_from(text)
@@ -130,6 +131,8 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
         aliases.setdefault('법시행규칙',aliases['법']+' 시행규칙')
     aliases.update({'이세칙':law['name'],'본세칙':law['name']} if law['name'].endswith('세칙')
                    else {'이규정':law['name'],'본규정':law['name'],'이규칙':law['name']})
+    if law.get('category') == 'forex':
+        aliases.update({n:law['name'] for n in ('이절차','본절차','이훈령','이규정','이지침','이고시')})
     if law.get('provider') == 'ordin':
         aliases.update({'이조례':law['name'],'본조례':law['name']} if law.get('kind') == '조례'
                        else {'이규칙':law['name'],'본규칙':law['name']})
@@ -142,45 +145,71 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
         if len({d['name'] for d in candidates}) == 1:
             names.setdefault(label, candidates[0])
             aliases.setdefault(label, candidates[0]['name'])
-    if law.get('category') in ('procurement','housing','environment'):
+    if law.get('category') in ('procurement','housing','environment','forex','public_institutions','customs','treasury'):
         aliases.update({n:law['name'] for n in ('이예규','본예규','이기준','이조건','본조건','이요령','이지침','본지침')})
     for d in corpus:
         aliases.setdefault(norm(d['name']),d['name'])
         if d.get('short_name'): aliases.setdefault(norm(d['short_name']),d['name'])
     # Prefix names are matched only at a word boundary; 감독규정 must not match 규정.
     alternatives = sorted(aliases,key=len,reverse=True)
-    prefix = re.compile(r'(?<![가-힣A-Za-z])('+'|'.join(r'\s*'.join(map(re.escape,a)) for a in alternatives)+r')\s*$')
+    declaration = r'(?:\s*\(이하\s*["“][^"”]+["”](?:\s*이?\s*라\s*(?:한다|함))?\s*\))?' if strict else ''
+    prefix = re.compile(r'(?<![가-힣A-Za-z])('+'|'.join(r'\s*'.join(map(re.escape,a)) for a in alternatives)+r')'+declaration+r'\s*$')
     outputs, occupied, previous_owner, previous_end = [], [], '', 0
     issues = article.setdefault('citation_issues', [])
     for match in START.finditer(text):
         if any(a<=match.start()<b for a,b in occupied): continue
         # A heading identifies the source and is never an outgoing citation.
         if not text[:match.start()].strip(): continue
+        if strict:
+            if any(q.start()<match.start()<q.end() for q in QUOTED.finditer(text)):
+                continue  # A number inside a document title does not identify the cited article.
+            from core.mofe_citations import embedded_quote
+            if embedded_quote(text,match.start()):
+                issues.append(dict(raw=match[0],start=match.start(),end=match.end(),reason='따옴표 속 인용 문구의 대상 법령 · 문맥 확인 필요'))
+                continue
         end = match.end()
         child = re.match(SUB,text[end:]); end += child.end()
         while tail := TAIL.match(text,end): end = tail.end()
+        if strict:
+            titled_range=re.match(r'\s*\([^()\n]*\)\s*(?:부터|내지|에서)\s*'+JO+r'(?:\s*\([^()\n]*\))?\s*까지',text[end:])
+            if titled_range:end+=titled_range.end()
         before = text[:match.start()]
         quote = re.search(r'「([^」]+)」(?:\s*\(이하\s*["“][^"”]+["”]\s*이?라\s*(?:한다|함)\))?\s*$',before)
+        if strict:quote=re.search(r'「([^」]+)」'+declaration+r'\s*$',before)
+        derivative = None
+        if law.get('category') == 'forex' or strict:
+            if not strict:quote = re.search(r'「([^」]+)」(?:\s*\(이하\s*["“][^"”]+["”]\s*이?\s*라\s*한\s*다\))?\s*$',before)
+            derivative = re.search(r'「([^」]+)」\s*(시행령|시행규칙)\s*$',before)
         named = prefix.search(before)
         same = re.search(r'같은\s*(법|영|시행령|규칙|시행규칙|규정|세칙|조례)\s*$',before)
+        if strict:same=re.search(r'같은\s*(법\s*시행령|법\s*시행규칙|법|영|시행령|규칙|시행규칙|규정|세칙|조례)\s*$',before)
         review = False
-        if quote:
+        if derivative:
+            owner, start = derivative[1]+' '+derivative[2], derivative.start()
+        elif quote:
             owner, start = quote[1], quote.start()
         elif same:
             owner, start, review = previous_owner, same.start(), True
-            if same[1] in ('영','시행령','규칙','시행규칙') and owner:
-                owner = re.sub(r'\s*시행(?:령|규칙)$','',owner) + (' 시행령' if same[1] in ('영','시행령') else ' 시행규칙')
+            if strict:
+                anchors=list(QUOTED.finditer(before[:same.start()]))
+                if anchors and anchors[-1].start()>previous_end:owner=anchors[-1][1]
+            derivative_token=norm(same[1])
+            if derivative_token in ('영','시행령','규칙','시행규칙','법시행령','법시행규칙') and owner:
+                owner = re.sub(r'\s*시행(?:령|규칙)$','',owner) + (' 시행령' if derivative_token in ('영','시행령','법시행령') else ' 시행규칙')
         elif named:
             owner, start = aliases[norm(named[1])], named.start()
         elif previous_owner and re.fullmatch(r'\s*(?:및|,|ㆍ|·)\s*동조\s*준용규정\s*[,ㆍ·]\s*',text[previous_end:match.start()]):
             owner, start, review = previous_owner,match.start(),True
         else:
             unknown = re.search(r'([가-힣]+(?:법|규정|세칙|규칙|조례)|법|영|규정|세칙|규칙|시행령|조례)\s*$',before)
+            if strict and re.search(r'제\s*\d+\s*(?:장|절)\s*\($',before):
+                issues.append(dict(raw=match[0],start=match.start(),end=match.end(),reason='장·절 인용에 붙은 제외 조문 · 대상 법령 확인 필요'))
+                continue
             if unknown:
                 owner, start = '', unknown.start()
             else:
                 owner, start = law['name'],match.start()
-        if law.get('category') in ('procurement','housing','environment') and owner:
+        if law.get('category') in ('procurement','housing','environment','forex','public_institutions','customs','treasury') and owner:
             owner = aliases.get(norm(owner), owner)
             if norm(owner) in names: owner = names[norm(owner)]['name']
         raw = text[start:end]
@@ -188,9 +217,11 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
         if not owner:
             issues.append(dict(raw=raw,start=start,end=end,reason='인용 법령·규정의 별칭 또는 상대 참조 미해결'))
             continue
-        if quote or named or same: previous_owner = owner
+        if quote or derivative or named or same: previous_owner = owner
         previous_end = end
-        parsed = parse_scope(text[match.start():end], allow_hyphen=True)
+        scope_text=text[match.start():end]
+        if strict:scope_text=re.sub(r'\([^()]*\)','',scope_text)
+        parsed = parse_scope(scope_text, allow_hyphen=True)
         dest = names.get(norm(owner))
         ranges = [s for s in parsed.scopes if s.axis == 0]
         refs = [s.start.label for s in parsed.scopes if s.start.jo and s.axis != 0]
@@ -207,6 +238,9 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
             target_article = next((a for a in dest['articles'] if a['jo']==target.jo),None) if dest else None
             missing = bool(dest and not target_article)
             deleted = bool(target_article and target_article.get('deleted'))
+            if strict and missing:
+                issues.append(dict(raw=raw,start=start,end=end,reason=f'수집 판본에 대상 조문 없음 · {owner} {ref} · 대상 해석 또는 판본 확인 필요'))
+                continue
             outputs.append(dict(target_name=owner,target_ref=ref,raw=raw,start=start,end=end,
                                 relation='junyo' if re.match(r'\s*(?:을|를)?\s*준용',text[end:]) else 'direct',
                                 via_range=bool(ranges),target_provision_status='missing-from-collected-body' if missing else 'deleted' if deleted else 'collected' if dest else 'not-collected',
@@ -218,7 +252,7 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
     # Keep document-level quoted references separate from definite article links.
     for q in QUOTED.finditer(text):
         if any(a<=q.start()<b for a,b in occupied): continue
-        outputs.append(dict(target_name=(names.get(norm(q[1]),{}).get('name',q[1]) if law.get('category') in ('procurement','housing','environment') else q[1]),target_ref='법령·정의 참조',raw=q[0],start=q.start(),end=q.end(),
+        outputs.append(dict(target_name=(names.get(norm(q[1]),{}).get('name',q[1]) if law.get('category') in ('procurement','housing','environment','forex','public_institutions','customs','treasury') else q[1]),target_ref='법령·정의 참조',raw=q[0],start=q.start(),end=q.end(),
                             kind='law',relation='law_reference'))
     # Relative wording is reported explicitly, rather than guessed across sentences.
     for m in re.finditer(r'같은\s*(?:조|항|호)(?:\s*제\s*\d+\s*(?:항|호))?',text):

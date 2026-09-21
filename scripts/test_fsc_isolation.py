@@ -71,7 +71,7 @@ class IsolationTests(unittest.TestCase):
 
     def test_domain_title_and_font_are_shared(self):
         html = render_html(present(overview(graph=fixture()['graph'])))
-        self.assertIn('금융 은하', html)
+        self.assertIn('"galaxy_title": "금융"', html)
         self.assertIn("font-family:'MaruBuri'", html)
         self.assertIn("font-family:'Pretendard'", html)
         self.assertIn('data:font/woff2;base64,', html)

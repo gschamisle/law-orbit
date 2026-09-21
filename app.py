@@ -1,15 +1,16 @@
 """이 조문 건드리면 다 죽는 거야 — 법령 연결 탐색과 개정안 검토."""
 import streamlit as st
 from config import LAW_API_KEY, OPENAI_API_KEY, ENABLE_HWPX_OUTPUT, ENABLE_DRAFT_TAB, ENABLE_WIP_TABS
-from ui import (fsc_map_ui, law_map_ui, local_tax_map_ui, procurement_map_ui, housing_map_ui, environment_map_ui, amendment_review_ui, article_relations_ui,
+from ui import (fsc_map_ui, law_map_ui, local_tax_map_ui, procurement_map_ui, housing_map_ui, environment_map_ui, state_property_map_ui, forex_map_ui, amendment_review_ui, article_relations_ui,
                 new_article_ui, stage1_draft, stage2_crossref, stage3_output)
 from ui.styles import inject_global_css
+from ui import mofe_map_ui
 
 APP_TITLE = '이 조문 건드리면 다 죽는 거야'
 st.set_page_config(page_title=APP_TITLE, page_icon='✦', layout='wide', initial_sidebar_state='expanded')
 inject_global_css()
 
-pages = [('galaxy', '법령은하', None), ('review', '개정안 검토 (국세)', amendment_review_ui)]
+pages = [('galaxy', '법령 탐색', None), ('review', '개정안 검토 (국세)', amendment_review_ui)]
 if ENABLE_WIP_TABS:
     pages += [('relations', '조문 연관 조회', article_relations_ui), ('new_article', '신설 조문 검토', new_article_ui)]
 if ENABLE_DRAFT_TAB:
@@ -63,13 +64,19 @@ with st.container(key='page_galaxy'):
       <h1>하나의 조문,<br class="atlas-mobile-break"><em> 이어지는 법령.</em></h1>
       <p>개정하기 전에, 이 조문이 연결한 세계부터 살펴보세요.</p>
     </header>''', unsafe_allow_html=True)
-    tax, procurement, finance, local_tax, housing, environment = st.tabs(['국세', '조달계약', '금융', '지방세', '국토건축주택', '환경화학안전'])
+    from core.domain_navigation import DOMAINS
+    tax, procurement, customs, forex, state_property, public_institutions, treasury, finance, local_tax, housing, environment = st.tabs(list(DOMAINS.values()))
     with tax: law_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with procurement: procurement_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with finance: fsc_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with local_tax: local_tax_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with housing: housing_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with environment: environment_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with state_property: state_property_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with forex: forex_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with public_institutions: mofe_map_ui.render('public_institutions')
+    with customs: mofe_map_ui.render('customs')
+    with treasury: mofe_map_ui.render('treasury')
 
 for key, label, module in pages[1:]:
     with st.container(key='page_' + key):

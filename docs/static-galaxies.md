@@ -1,6 +1,6 @@
 # 법의 궤도 — 무료 공개 열람
 
-**[공개 열람 사이트](https://gschamisle.github.io/tax-amendment-assistant/)** — 설치 없이 브라우저에서 엽니다.
+**[공개 열람 사이트](https://gschamisle.github.io/law-orbit/)** — 설치 없이 브라우저에서 엽니다.
 
 기존 Streamlit 앱을 유지하면서 브라우저에서 동작하는 별도 열람 버전을 제공합니다. API 서버·데이터베이스·법제처 인증값·문서 업로드가 필요하지 않습니다.
 

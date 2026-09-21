@@ -50,6 +50,10 @@ MODULES: tuple[str, ...] = (
     "scripts.test_housing_ui",
     "scripts.test_environment",
     "scripts.test_environment_ui",
+    "scripts.test_state_property",
+    "scripts.test_forex",
+    "scripts.test_mofe_domains",
+    "scripts.test_mofe_ui",
     "scripts.test_related_relation_types",
     "scripts.test_parallel_matrix",
 )

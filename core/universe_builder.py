@@ -101,7 +101,8 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
             continue
         for article in law['articles']:
             text = article['text']
-            if article_adapter is not None and law.get('provider') in ('admrul', 'ordin'):
+            if article_adapter is not None and (law.get('citation_policy') == 'mofe-explicit' or law.get('provider') in ('admrul', 'ordin') or
+                    (law.get('provider') == 'bok' and law.get('category') == 'forex')):
                 for citation in article_adapter(law, article, corpus):
                     add(law, article, **citation)
                 continue

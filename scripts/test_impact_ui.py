@@ -36,7 +36,7 @@ class GalaxyTests(unittest.TestCase):
         app = AppTest.from_file('app.py', default_timeout=30).run()
         self.assertFalse(app.exception, str(app.exception))
         labels = ' '.join(t.label for t in app.tabs)
-        self.assertEqual(app.radio(key='app_section').options[:2], ['법령은하', '개정안 검토 (국세)'])
+        self.assertEqual(app.radio(key='app_section').options[:2], ['법령 탐색', '개정안 검토 (국세)'])
         self.assertIn('국세', labels)
         self.assertNotIn('입법예고 의견', labels)
         self.assertFalse(any((t.key or '').startswith('op_') for t in app.text_input))

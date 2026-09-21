@@ -203,11 +203,11 @@ def render_html(data: dict, height: int = 720) -> str:
 
 def render_page(data: dict, height: int = 800) -> str:
     from html import escape
-    title = escape(data.get("galaxy_title", "국세 은하"))
+    title = escape(data.get("galaxy_title", "국세").replace(" 은하", ""))
     return (
         "<!doctype html><html lang='ko'><head><meta charset='utf-8'>"
         "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-        f"<title>{title} · 조문 영향 탐색</title>"
+        f"<title>법의 궤도 — {title}</title>"
         "<style>body{margin:0;background:#040914;padding:16px}</style></head><body>"
         + render_html(data, height) + "</body></html>"
     )

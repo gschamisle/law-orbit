@@ -94,7 +94,7 @@ def mark_sector(result, graph, sector):
     return result
 
 
-def present(data, graph, sector, *, domain="procurement", title="조달계약 은하", sectors=SECTORS):
+def present(data, graph, sector, *, domain="procurement", title="조달계약", sectors=SECTORS):
     from core.law_map import family
     data = deepcopy(data)
     data.update(domain=domain, galaxy_title=title + (' ('+sectors[sector]+')' if sector!='all' else ''))

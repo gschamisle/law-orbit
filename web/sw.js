@@ -1,5 +1,5 @@
-const SHELL='law-orbit-shell-v2';
-const ASSETS=['./','index.html','style.css?v=orbit-1','fonts.css','app.mjs?v=orbit-1','store.mjs','reading.mjs','query.mjs','renderer.html','app.webmanifest?v=orbit-1','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
+const SHELL='law-orbit-shell-labels-v7';
+const ASSETS=['./','index.html','style.css?v=orbit-labels-7','fonts.css','app.mjs?v=orbit-labels-7','store.mjs','reading.mjs','special.mjs','query.mjs','renderer.html','app.webmanifest?v=orbit-1','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{

@@ -60,7 +60,7 @@ def _map(bundle: dict) -> dict:
 
 
 def _present(data):
-    return {**data,'domain':'local_tax','galaxy_title':'지방세 은하'}
+    return {**data,'domain':'local_tax','galaxy_title':'지방세'}
 
 
 def _open_region(region: dict, law: str, reference: str):
@@ -131,7 +131,7 @@ def render(law_api_key: str='', openai_api_key: str=''):
         with st.popover('자료 안내'): _source_info(manifest)
     try: bundle=_snapshot(str(folder),manifest['version'],region,manifest)
     except (OSError,ValueError,KeyError,TypeError):
-        st.error('선택 지역의 지방세 자료 검증 실패 · 다른 은하의 자료로 대체하지 않습니다.');return
+        st.error('선택 지역의 지방세 자료 검증 실패 · 다른 분야의 자료로 대체하지 않습니다.');return
     prefix='local_tax_'+(region or 'central')+'_';key=lambda n:prefix+n
     saved=st.session_state.setdefault('local_tax_saved_widgets',{})
     remember=lambda n,d:saved.get(region,{}).get(n,d)
@@ -161,7 +161,7 @@ def render(law_api_key: str='', openai_api_key: str=''):
     if selection and (selection[0] not in documents or not any(a['jo']==_target(selection[1]).jo for a in documents[selection[0]]['articles'])):
         st.session_state.pop(key('selection'),None);selection=None
         st.info('자료가 갱신되어 이전 선택 조문을 찾지 못했습니다. 수집 본문에서 다시 선택해 주세요.')
-    if selection and st.button('전체 은하로 돌아가기',key=key('clear')):
+    if selection and st.button('전체 보기',key=key('clear')):
         st.session_state.pop(key('selection'),None);selection=None
     graph=bundle['graph'];data=_map(bundle);rows=[];result=None
     if selection:
@@ -172,7 +172,7 @@ def render(law_api_key: str='', openai_api_key: str=''):
         data=focus_map(result,data,direction,True,external=False)
         st.caption(f"선택 범위의 직접 연결 근거 {len(rows):,}건 · 역인용은 수집·분석한 자료 범위입니다.")
     components.html(render_html(_present(data),height=720),height=740,scrolling=False)
-    st.download_button('은하 내려받기',render_page(_present(data)).encode('utf-8'),'지방세 은하.html','text/html',key=key('html'))
+    st.download_button('3D 화면 내려받기',render_page(_present(data)).encode('utf-8'),'지방세-법령연결.html','text/html',key=key('html'))
     if selection:
         document=documents[selection[0]];article=next(a for a in document['articles'] if a['jo']==_target(selection[1]).jo)
         national=[]

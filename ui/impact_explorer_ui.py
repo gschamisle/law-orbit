@@ -58,5 +58,5 @@ def render() -> None:
             st.write(row["reason"])
             st.caption("출처 위치: 조 단위 · 인용 주변 문맥과 현행본은 후속 검증 대상")
     a, b = st.columns(2)
-    a.download_button("영향 은하 저장", render_page(galaxy).encode("utf-8"), "조문영향은하.html", "text/html")
+    a.download_button("검토 결과 내려받기", render_page(galaxy).encode("utf-8"), "조문영향검토.html", "text/html")
     b.download_button("근거 목록 저장", json.dumps(result, ensure_ascii=False, indent=2).encode("utf-8"), "조문영향근거.json", "application/json")

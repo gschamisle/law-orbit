@@ -33,7 +33,7 @@ def analyze_focus(law: str, reference: str, graph: dict | None = None) -> dict:
     graph = graph if graph is not None else load_graph()
     from functools import partial
     from core import citation_scope as scopes
-    option = dict(allow_hyphen=graph.get("domain") == "fsc")
+    option = dict(allow_hyphen=graph.get("domain") in ("fsc", "forex"))
     target_input = partial(_target, **option)
     parse_target = partial(scopes.parse_target, **option)
     classify = partial(scopes.classify, **option)

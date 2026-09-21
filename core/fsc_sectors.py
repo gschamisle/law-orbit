@@ -63,7 +63,7 @@ def mark_sector(result: dict, graph: dict, sector: str) -> dict:
             'broad_rows': [mark(r) for r in result.get('broad_rows', [])]}
 
 def style_sector(data: dict, sector: str) -> dict:
-    data['galaxy_title'] = '금융 은하' + (' ('+SECTORS[sector]+')' if sector != 'all' else '')
+    data['galaxy_title'] = '금융' + (' ('+SECTORS[sector]+')' if sector != 'all' else '')
     for node in data['nodes']:
         if any(e.get('out_of_sector') for e in node.get('evidence', [])):
             node['status'] = '분야 밖 관련 조문 · '+node.get('status','')

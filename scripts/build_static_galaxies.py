@@ -19,9 +19,10 @@ from core.galaxy_focus import analyze_focus, _target, _norm
 from core.law_library import official_url
 from core.law_abbrev import law as short_law
 from core.law_galaxy import build as build_map
+from core.domain_navigation import DOMAINS
 
 ROOT=Path(__file__).resolve().parents[1]
-DOMAINS={'tax':'국세','procurement':'조달계약','fsc':'금융','local_tax':'지방세','housing':'국토건축주택','environment':'환경화학안전'}
+WORK_DOMAINS=('public_institutions','customs','treasury')
 PALETTE=['#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed','#cedc80','#ffa58e','#91a1ff']
 LIMIT=24*1024*1024
 FIELDS=('source_law','source_jo','source_title','source_ref','source_granularity','source_effective','source_url','target_law','target_ref','target_ref_recorded','target_url','target_effective','target_kind','target_status','target_provision_status','context','raw','cite_raw','reason','status','precision','direction','direction_label','neighbor_law','neighbor_jo','neighbor_ref','neighbor_kind','neighbor_title','kind','external','broad','source_start','source_end','evidence_id','annex_urls')
@@ -62,7 +63,7 @@ class EdgeIndex:
     omitted by older recorded target_ref values. Original edge order is retained.
     """
     def __init__(self,graph,documents):
-        self.graph=graph;self.hyphen=graph.get('domain')=='fsc'
+        self.graph=graph;self.hyphen=graph.get('domain') in ('fsc','forex')
         self.forward=defaultdict(set);self.reverse=defaultdict(set);self.broad=defaultdict(set)
         known=defaultdict(set)
         for d in documents:
@@ -122,7 +123,13 @@ def overview(graph,domain,ids,catalog):
         node.update(label=doc.get('label',node['label']),full_name=node['id'],web_law=ids.get(node['id'],''),web_jo='')
     colors={n['id']:n['color'] for n in data['nodes']}
     for point in data['dust']:point['c']=colors.get(point['law_id'],point['c'])
-    data.update(domain=domain,galaxy_title=DOMAINS[domain]+' 은하')
+    data.update(domain=domain,galaxy_title=DOMAINS[domain])
+    if domain in ('state_property','forex'):
+        from importlib import import_module
+        data=import_module('core.'+domain+'_layout').layout(data,graph)
+    if domain in WORK_DOMAINS:
+        from core.mofe_layout import layout
+        data=layout(data,graph)
     return data
 
 
@@ -144,6 +151,10 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
     for d in docs:
         if write_names is not None and d['name'] not in write_names:continue
         entry=metadata(d,domain,region);entry['id']=ids[d['name']]
+        if domain=='forex':
+            entry.update(source_notes=d.get('source_notes',[]),unparsed_provisions=d.get('unparsed_provisions',[]),
+                         pdf_url=safe_url(d.get('pdf_url','')),article_sectors={a['jo']:a.get('sectors',[]) for a in d['articles']})
+        if domain in WORK_DOMAINS:entry['article_sectors']={a['jo']:a.get('sectors',[]) for a in d['articles']}
         articles=[];parts=[];bucket={};bucket_articles=[];broad=[];inline={};small=len(d.get('articles',[]))<=24
         def flush():
             if not bucket:return
@@ -155,6 +166,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
         for a in d.get('articles',[]):
             jo=str(a['jo']);label=Provision(jo).label
             article=dict(jo=jo,label=label,title=a.get('title',''),text=a.get('text',''),deleted=bool(a.get('deleted')),effective=a.get('effective',d.get('effective','')))
+            if domain=='forex' or domain in WORK_DOMAINS:article['sectors']=a.get('sectors',[])
             try:
                 analyzed=index.focus(d['name'],label,broad=not articles)
                 if not articles:broad=[tidy(r,ids,index.hyphen) for r in analyzed.get('broad_rows',[])]
@@ -162,6 +174,8 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             except ValueError:
                 detail=dict(rows=[],analysis_error='이 조문 번호 형식의 연결은 미분석입니다.')
             detail['external']=[tidy(e,ids,index.hyphen) for e in external[(d['name'],jo)]]
+            if 'analyzed_articles' in d and jo not in d['analyzed_articles']:
+                detail['analysis_error']='이 조문은 국유재산 특례의 선택 분석 범위 밖입니다. 본문은 열람할 수 있으며, 표시된 역인용은 수집·분석한 출처 범위입니다.'
             detail['issues']=[{k:e[k] for k in ('raw','reason','kind','status') if k in e} for e in issues[(d['name'],jo)]]
             if national is not None and not region:detail['rows']+=national.get((d['name'],jo),[])
             bucket[jo]=detail;bucket_articles.append(article);articles.append(article)
@@ -233,6 +247,8 @@ def build(source,dest):
             # Keep the same no-unconnected-external-law overview as the tax app.
             entries,ids=export_documents(writer,domain,'',docs,graph)
             catalog=dict(laws=entries,overview=writer.data(overview(graph,domain,ids,entries)),coverage=graph.get('coverage_note','수집한 명시적 인용 범위입니다.'),built_at=graph['built_at'],sectors={'all':'전체 연결',**sectors})
+            if domain=='state_property':catalog['special_cases']=writer.data(export_special_cases(src['special_cases'],ids))
+            if domain in WORK_DOMAINS:catalog['workbench']=workbench(bundle,ids)
             count=len(entries)
         manifest['domains'].append(dict(id=domain,title=title,laws=count,catalog=writer.data(catalog),built_at=catalog['built_at']))
         print(domain+': exported '+str(count)+' documents',flush=True)
@@ -242,6 +258,27 @@ def build(source,dest):
     (dest.parent/(dest.name+'-report.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps({k:v for k,v in report.items() if k!='domains'},indent=2),flush=True)
     return manifest
+
+
+def workbench(bundle,ids):
+    from core.mofe_universe import assessment
+    result=assessment(bundle)
+    if result['decision']=='hold':raise ValueError('업무 질문의 인용 근거 검증을 통과하지 못한 분야입니다.')
+    result['cases']=[{**c,'law_id':ids[c['law']]} for c in result['cases'] if c['available']]
+    return result
+
+
+def export_special_cases(register,ids):
+    from copy import deepcopy
+    value=deepcopy(register)
+    value['source_url']=safe_url(value['source_url'])
+    value['annex_urls']=[safe_url(u) for u in value['annex_urls'] if safe_url(u)]
+    for row in value['rows']:
+        row['law_id']=ids.get(row['law'],'')
+        for key in ('source_url','law_url'):
+            if key in row:row[key]=safe_url(row[key])
+        row['annex_urls']=[safe_url(u) for u in row['annex_urls'] if safe_url(u)]
+    return value
 
 
 if __name__=='__main__':

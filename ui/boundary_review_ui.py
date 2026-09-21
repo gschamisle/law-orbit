@@ -60,7 +60,7 @@ def _result_view(result: dict) -> None:
             col.code(change[key]["text"], language=None, wrap_lines=True)
     st.caption(result["coverage_note"])
     a, b = st.columns(2)
-    a.download_button("신설 항 검토 은하 저장", render_page(galaxy).encode("utf-8"), "신설항검토은하.html", "text/html", key="boundary_html")
+    a.download_button("검토 결과 내려받기", render_page(galaxy).encode("utf-8"), "신설항-인용범위검토.html", "text/html", key="boundary_html")
     b.download_button("비교 원문과 근거 저장", json.dumps(result, ensure_ascii=False, indent=2).encode("utf-8"), "신설항검토근거.json", "application/json", key="boundary_json")
 
 

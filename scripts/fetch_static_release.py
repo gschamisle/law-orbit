@@ -4,7 +4,7 @@ from pathlib import Path, PurePosixPath
 from urllib.request import urlopen
 from scripts.validate_static_galaxies import validate
 
-RELEASE_PREFIX='https://github.com/gschamisle/tax-amendment-assistant/releases/download/'
+RELEASE_PREFIX='https://github.com/gschamisle/law-orbit/releases/download/'
 
 def fetch(metadata,destination):
     spec=json.loads(metadata.read_text(encoding='utf-8'))
