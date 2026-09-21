@@ -49,16 +49,16 @@ PROFILES = {
     required=(PUBLIC,PUBLIC+' 시행령','공기업·준정부기관 계약사무규칙','공기업·준정부기관 회계사무규칙'),
     law_queries=('공공기관','공기업'),rule_queries=('공공기관','공기업','기타공공기관'),rules=PUBLIC_RULES,
     required_rules=('공기업·준정부기관 회계기준','기타공공기관 계약사무 운영규정'),
-    sectors={'all':'전체 연결','governance':'지정·운영','contracts':'계약','accounting':'회계·결산','investment':'사업·투자'},
+    sectors={'all':'전체 연결','scope':'정의·적용범위','privatization':'민영화·특례','governance':'지정·운영','contracts':'계약','accounting':'회계·결산','investment':'사업·투자'},
     keywords={'governance':('지정','분류','임원','이사회','경영평가','공시','인사','정원'),
               'contracts':('계약','입찰','낙찰','조달','개발선정품'),
               'accounting':('회계','결산','재무','재정','감사','수익','비용'),
               'investment':('사업','투자','출자','예비타당성','총사업비')},
     default=PUBLIC,
     purpose='공공기관의 지정·운영과 계약·회계·사업관리 규정의 인용 근거를 확인합니다.',
-    limitations=['기관별 정관·내규와 개별 설립법은 미수집입니다.',
+    limitations=['선정한 외부 정의 차용 법령, 상법과 3개 설립법을 추가 수집했습니다. 전체 타법·기관별 정관·내규를 수집한 것은 아닙니다.',
                 '현행 경영지침·예산운용지침·경영평가편람은 이 조문 지도에 포함되지 않았습니다. 인사·보수·평가의 종합 검토 도구로 사용할 수 없습니다.',
-                '법제처 목록의 과거 조직·인사 지침과 연도별 지정 고시는 현행 정책으로 오인할 수 있어 기본 수집에서 제외합니다.'],
+                '2025·2026년 정기 지정 발표의 변경 내역은 별도 표시합니다. 전체 기관 명부·연중 변경은 미수집이며 발표일은 효력 발생일이 아닙니다.'],
     companion_sources=[{'title':'ALIO 공식 법령·지침 자료실 · 경영지침·예산운용지침 확인','url':'https://alio.go.kr/etc/etcLawList.do'},
        {'title':'2026년도 공공기관 경영평가편람 · 공식 원문 / 조문 미분석','url':'https://mofe.go.kr/com/bbs/detailComtPolbbsView.do?menuNo=5020200&searchBbsId1=MOSFBBS_000000000039&searchNttId1=MOSF_000000000076609'}],
     cases=((PUBLIC,'39','계약·회계 규정의 위임 근거는 어디인가?','회계사무규칙·계약사무규칙에서 이 조문을 인용하는 근거를 확인합니다.'),
@@ -102,6 +102,9 @@ PROFILES = {
 def selected(domain,name,authority,provider):
     from core.procurement_collection import authorities
     p=PROFILES[domain];actual=authorities(authority)
+    if domain=='public_institutions' and actual:
+        from core.public_institution_scope import role
+        if role(name,provider):return True  # Explicit cross-ministry reference list; body authority still verified against API inventory.
     allowed={'재정경제부','관세청'} if domain=='customs' else {'재정경제부'}
     if not actual or not actual.issubset(allowed):return False
     n=norm(name)

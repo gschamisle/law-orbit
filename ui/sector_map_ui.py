@@ -56,6 +56,9 @@ def render(profile, bundle_path):
     except (OSError,ValueError,KeyError,TypeError):
         st.error(profile['title']+' 데이터 검증 실패 · 수집 자료를 확인해 주세요.');return
     graph=bundle['graph'];docs=documents(bundle['source']);by_name={d['name']:d for d in docs}
+    if domain=='public_institutions' and graph.get('public_scope'):
+        from ui.public_scope_ui import render as render_public_scope
+        render_public_scope(graph['public_scope'],by_name,prefix=state_prefix)
     work=bundle.get('assessment')
     if work:
         st.caption(work['purpose'])

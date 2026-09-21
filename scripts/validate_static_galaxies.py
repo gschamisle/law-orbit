@@ -32,7 +32,11 @@ def validate(root, *, allow_legacy_menu=False):
         if len(raw)!=ref['bytes'] or hashlib.sha256(raw).hexdigest()!=ref['sha256']:raise ValueError('Asset mismatch')
         if len(raw)>25*1024*1024:raise ValueError('Free hosting asset limit exceeded')
         data=json.loads(gzip.decompress(raw))
-        if isinstance(data,dict) and 'meta' in data:
+        if isinstance(data,dict) and data.get('kind')=='delegation-baseline':
+            if data['meta']['domain'] not in ('tax','public_institutions'):raise ValueError('Invalid delegation baseline domain')
+            if data.get('schema')!=1 or len({a['jo'] for a in data['articles']})!=len(data['articles']):raise ValueError('Invalid delegation baseline')
+            if any(not isinstance(a.get('text'),str) for a in data['articles']):raise ValueError('Missing baseline text')
+        elif isinstance(data,dict) and 'meta' in data:
             meta=data['meta'];documents.add(meta['id']);articles+=len(data['articles'])
             by_id[meta['id']]=(meta,{a['jo'] for a in data['articles']})
             if meta['domain'] not in [d['id'] for d in manifest['domains']]:raise ValueError('Invalid document domain')

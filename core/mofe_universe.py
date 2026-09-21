@@ -13,11 +13,14 @@ def coverage(domain):
     return (PROFILES[domain]['purpose']+' '+' '.join(PROFILES[domain]['limitations'])+
             ' 업무 태그는 조문 제목·본문 키워드에 따른 탐색 보조이며 법적 적용범위 판정이 아닙니다. '
             '수집 본칙의 명시적 인용을 분석합니다. 따옴표 속 조문 등 대상이 불명확한 인용은 확인 목록으로 남깁니다. 별표·서식 본문과 부칙은 미분석이며, '
-            '외부 법령의 본문·역인용은 점검하지 않았습니다. 인용선은 동시개정 의무가 아닙니다.')
+            '미수집 외부 법령의 본문·역인용은 점검하지 않았습니다. 인용선은 동시개정 의무가 아닙니다.')
 
 def build_graph(source):
     domain=source['domain'];graph=shared.build_graph(source,domain=domain,coverage_note=coverage(domain))
     graph['article_catalog']={d['name']:[dict(jo=a['jo'],title=a['title'],sectors=a['sectors']) for a in d['articles']] for d in documents(source)}
+    if domain=='public_institutions':
+        from core.public_institution_scope import build_scope
+        graph['public_scope']=build_scope(source,graph)
     return graph
 
 def validate_bundle(bundle,domain):
@@ -25,6 +28,9 @@ def validate_bundle(bundle,domain):
     for d in documents(bundle['source']):
         if not selected(domain,d['name'],d['managing_authority'],d['provider']):raise ValueError('소관·업무 범위 외 자료')
         if 'analyzed_articles' in d:raise ValueError('선택한 본칙의 임의 분석 생략')
+    if domain=='public_institutions' and bundle['graph'].get('public_scope'):
+        from core.public_institution_scope import validate_scope
+        validate_scope(bundle['graph']['public_scope'],bundle['source'],bundle['graph'])
     return bundle
 
 def load_bundle(domain,file=None):
