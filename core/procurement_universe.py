@@ -28,7 +28,7 @@ def build_graph(source, *, domain="procurement", coverage_note=None, article_ada
     graph.update(domain=domain, tax_laws=[], coverage_note=coverage_note or (
         '국가계약 법령·재경부 계약예규와 선정한 조달청·지방계약 자료의 명시적 인용망입니다. '
         '전체 공공기관 계약규정·조례를 수집한 것은 아닙니다. 미수집 대상은 본문·역인용 미점검입니다. '
-        '장·절·항목 형식, 첨부파일 본문·별표·부칙은 미분석입니다. 인용 관계는 동시개정 의무를 뜻하지 않습니다.'))
+        '문단 내부 참조, 미확보 첨부파일 본문·별표·부칙은 미분석입니다. 인용 관계는 동시개정 의무를 뜻하지 않습니다.'))
     by_name = {d['name']:d for d in documents(source)}
     unindexed = {norm(n):d for n,d in by_name.items() if not d.get('articles')}
     for edge in graph['edges'] + graph['external_references']:
@@ -43,6 +43,13 @@ def build_graph(source, *, domain="procurement", coverage_note=None, article_ada
                                for d in indexed for a in d['articles'] for issue in a.get('citation_issues',[])]
     graph['coverage'] = dict(scope=source['inventory']['scope'], supplement='not-indexed', annex_body='not-indexed',
                              chapters_sections='not-indexed', external_reverse='not-collected', semantic_similarity='not-analyzed')
+    if domain in ('procurement', 'treasury'):
+        from core.ftc_text_citations import collect_text_citations, validate_text_citations
+        rows, issues = collect_text_citations(source, profile=domain)
+        validate_text_citations(source, rows)
+        graph.update(text_citations=rows, text_citation_issues=issues)
+        graph['coverage']['guidance_text']='explicit-citations; internal paragraph references not analyzed'
+        graph['coverage_note'] += ' 확보된 문단형 지침·고시의 명시적 인용은 분석하며 내부 문단 간 참조·이미지·표 본문은 미분석입니다.'
     return graph
 
 
@@ -70,6 +77,9 @@ def validate_bundle(bundle, *, domain="procurement"):
         raise ValueError('기본 지도에 미수집 대상이 포함되었습니다.')
     if any(e['source_law'] not in names or e['target_law'] in names for e in graph.get('external_references',[])):
         raise ValueError('외부 인용 상태가 잘못되었습니다.')
+    if domain in ('procurement','treasury'):
+        from core.ftc_text_citations import validate_text_citations
+        validate_text_citations(source, graph.get('text_citations',[]))
     return bundle
 
 

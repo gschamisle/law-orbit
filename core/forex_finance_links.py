@@ -13,6 +13,9 @@ from core.fsc_administrative import adapter, aliases_from, provision_blocks
 from core.universe_builder import block_at, QUALIFIER
 
 PAIR = ('forex', 'fsc')
+PAIRS = (PAIR, ('procurement', 'public_institutions'))
+BRIDGE_KINDS = {PAIR: 'forex-finance-bridge', PAIRS[1]: 'procurement-public-bridge'}
+PAIR_LABELS = {PAIR: '외환·금융', PAIRS[1]: '조달계약·공공기관'}
 
 
 def norm(value):
@@ -50,10 +53,10 @@ def make_edge(doc, article, citation):
                 evidence_id=hashlib.sha256(repr(identity).encode()).hexdigest()[:20], **c)
 
 
-def bridge(snapshots):
+def bridge(snapshots, *, pair=PAIR):
     """Each snapshot has entries, documents, details keyed by public document id."""
-    if set(snapshots) != set(PAIR):
-        raise ValueError('Only forex and finance may participate in this bridge')
+    if pair not in PAIRS or set(snapshots) != set(pair):
+        raise ValueError('Only an explicitly supported domain pair may participate in this bridge')
     docs, entries, by_name = {}, {}, {}
     for domain, snap in snapshots.items():
         entries[domain] = {e['id']: e for e in snap['entries']}
@@ -65,12 +68,12 @@ def bridge(snapshots):
             by_name[domain][key] = entry
             docs[entry['id']] = document(entry, snap['documents'][entry['id']])
     links, rejected, recovered, annex_count = [], [], [], 0
-    suppressed = {d: defaultdict(lambda: defaultdict(set)) for d in PAIR}
-    resolved_issues = {d: defaultdict(lambda: defaultdict(set)) for d in PAIR}
+    suppressed = {d: defaultdict(lambda: defaultdict(set)) for d in pair}
+    resolved_issues = {d: defaultdict(lambda: defaultdict(set)) for d in pair}
     seen = set()
 
     def add(domain, entry, article, edge, origin=None):
-        peer = PAIR[1] if domain == PAIR[0] else PAIR[0]
+        peer = pair[1] if domain == pair[0] else pair[0]
         name = norm(edge.get('target_law', ''))
         # A shared document already available in this domain stays in that domain.
         if name in by_name[domain] or name not in by_name[peer]:
@@ -114,7 +117,7 @@ def bridge(snapshots):
         return True
 
     for domain, snap in snapshots.items():
-        peer = PAIR[1] if domain == PAIR[0] else PAIR[0]
+        peer = pair[1] if domain == pair[0] else pair[0]
         corpus = [docs[e['id']] for e in snap['entries']]
         corpus += [docs[e['id']] for n, e in by_name[peer].items() if n not in by_name[domain]]
         # Match complete official names, never fuzzy names or short generic aliases.
@@ -153,10 +156,10 @@ def bridge(snapshots):
                         resolved_issues[domain][entry['id']][article['jo']].add(c['raw'])
                         recovered.append(dict(source=entry['name'], jo=article['jo'], raw=c['raw'], target_ref=c['target_ref']))
     # Both domains use the same evidence edges, evaluated by the existing engine.
-    graph = dict(domain='forex', built_at=' / '.join(snapshots[d]['built_at'] for d in PAIR),
+    graph = dict(domain=pair[0], built_at=' / '.join(snapshots[d]['built_at'] for d in pair),
                  laws=sorted({d['name'] for d in docs.values()}), edges=links, catalog=[],
-                 coverage_note='외환·금융 수집 판본 사이의 명시적 인용만 대조합니다. 별표 본문·의미상 관계는 미분석입니다.')
-    return dict(graph=graph, documents=list(docs.values()), entries=entries,
+                 coverage_note=PAIR_LABELS[pair]+' 수집 판본 사이의 명시적 인용만 대조합니다. 별표 본문·의미상 관계는 미분석입니다.')
+    return dict(pair=pair, graph=graph, documents=list(docs.values()), entries=entries,
                 suppressed=suppressed, resolved_issues=resolved_issues,
                 report=dict(edges=len(links), articles=sum(e['target_kind']=='article' for e in links),
                             law_references=sum(e['target_kind']=='law' for e in links), annexes=annex_count,

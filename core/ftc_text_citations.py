@@ -53,20 +53,38 @@ def prepare_text_aliases(document):
             document['aliases'][alias]=target
             document['alias_evidence'].append(dict(alias=alias,target_law=target,raw=text[m.start():m.end()],start=m.start(),end=m.end()))
 
-def collect_text_citations(source):
+# Opt-in profiles: numeric items are source locations, never invented legal articles.
+TEXT_DOMAINS = ('ftc', 'treasury', 'procurement')
+ITEM_SECTION = re.compile(r'(?m)^[ \t]*(?:[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫIVX]+\.|\d+(?:-\d+)*\.|[□■○]\s*)[^\n]+')
+
+def source_locator(heading, profile):
+    label=heading[0].strip()
+    if profile!='ftc':
+        number=re.match(r'\d+(?:-\d+)*\.\s*(?:\([^()\n]*\))?', label)
+        if number:return number[0].strip()
+    return label
+
+def collect_text_citations(source, *, profile='ftc'):
+    if profile not in TEXT_DOMAINS or source.get('domain', profile) != profile:
+        raise ValueError('Unsupported guidance citation profile')
     docs=source['laws']+source['administrative_rules'];by_name=canonical_documents(docs)
     rows=[];issues=[]
     for d in docs:
         if d['provider']!='admrul' or d.get('articles'):continue
-        if d.get('analysis_error','').startswith('공식 조문번호 중복'):continue
+        if '조문번호 중복' in d.get('analysis_error','') or d.get('coverage',{}).get('provisions')=='blocked-duplicate-number':continue
         text=main_text(d);scan=normalized_quotes(text)
-        headings=list(SECTION.finditer(text))
+        if not text.strip():continue  # Missing attachments are not analyzed empty documents.
+        parsing_doc=deepcopy(d)
+        if profile!='ftc':
+            parsing_doc['citation_policy']='mofe-explicit'
+            prepare_text_aliases(parsing_doc)
+        headings=list((SECTION if profile=='ftc' else ITEM_SECTION).finditer(text))
         # Section boundaries keep relative references from borrowing another section's owner.
         starts=sorted(set([0]+[h.start() for h in headings]+[len(text)]))
         for start,end in zip(starts,starts[1:]):
             raw=text[start:end];part={'text':scan[start:end],'jo':''}
-            locator=next((h[0].strip() for h in reversed(headings) if h.start()<=start),'본문')
-            for c in adapter(deepcopy(d),part,docs):
+            locator=next((source_locator(h,profile) for h in reversed(headings) if h.start()<=start),'본문')
+            for c in adapter(deepcopy(parsing_doc),part,docs):
                 dest=by_name.get(norm(c['target_name']));kind=c.get('kind','article')
                 if kind=='law' and not dest and not c['target_name'].endswith(('법','법률','시행령','시행규칙','규칙','고시','지침','기준','규정','요령')):continue
                 a,b=start+c['start'],start+c['end'];owner=dest['name'] if dest else c['target_name']

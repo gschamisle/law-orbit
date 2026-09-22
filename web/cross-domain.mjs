@@ -1,7 +1,10 @@
 // Optional evidence overlay. Catalogs, selections and original shards stay separate.
+export const bridgePeers={forex:'fsc',fsc:'forex',procurement:'public_institutions',public_institutions:'procurement'};
+export const bridgeNames={forex:'외환',fsc:'금융',procurement:'조달계약',public_institutions:'공공기관'};
+export function bridgeEditions(bridge){return Object.entries(bridge.editions).map(([id,date])=>`${bridgeNames[id]} ${date}`).join(', ');}
 export function validateBridge(value,domain,manifest,catalog){
- const peer=domain==='forex'?'fsc':domain==='fsc'?'forex':null;
- if(!peer||value.kind!=='forex-finance-bridge'||value.schema!==1||value.domain!==domain||value.peer!==peer)throw Error('분야 간 연결 자료의 범위가 맞지 않습니다.');
+ const peer=bridgePeers[domain],kind=['forex','fsc'].includes(domain)?'forex-finance-bridge':'procurement-public-bridge';
+ if(!peer||value.kind!==kind||value.schema!==1||value.domain!==domain||value.peer!==peer)throw Error('분야 간 연결 자료의 범위가 맞지 않습니다.');
  const other=manifest.domains.find(d=>d.id===peer);
  if(value.editions[domain]!==catalog.built_at||value.editions[peer]!==other?.built_at)throw Error('분야 간 연결 자료와 본문의 수집 판본이 다릅니다.');
  if(value.entries.some(e=>e.domain!==peer)||new Set(value.entries.map(e=>e.id)).size!==value.entries.length)throw Error('연결 대상의 분야 정보가 올바르지 않습니다.');
@@ -25,7 +28,7 @@ export function combineConnections(detail,broad,bridge,id,jo,enabled=true){
 export function bridgeLookup(lookup,bridge){return new Map([...lookup,...(bridge?.entries||[]).map(e=>[e.id,e])]);}
 export function bridgeLabel(row){
  if(!row.cross_domain)return '';
- if(row.neighbor_domain==='forex')return '분야 밖 관련 조문 · 외환';
+ if(row.neighbor_domain!=='fsc')return '분야 밖 관련 조문 · '+(bridgeNames[row.neighbor_domain]||'확인 필요');
  const sectors={banking:'은행',securities:'증권·자산운용',insurance:'보험',credit:'여신·서민금융',digital:'전자금융',common:'공통'};
  const tags=(row.neighbor_sectors||[]).map(s=>sectors[s]).filter(Boolean);
  return '분야 밖 관련 조문 · 금융'+(tags.length?' / '+tags.join('·'):'');

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import shutil
 
-from core.forex_finance_links import PAIR, bridge
+from core.forex_finance_links import PAIR, BRIDGE_KINDS, bridge
 from core.citation_scope import Provision
 from scripts.build_static_galaxies import Writer, EdgeIndex, tidy, shell, ROOT
 from scripts.validate_static_galaxies import validate
@@ -37,12 +37,13 @@ def snapshot(root, domain):
 
 
 def payloads(result, snapshots):
+    pair = result.get('pair', PAIR)
     graph = result['graph']; index = EdgeIndex(graph, result['documents'])
     edge_domains = {e['evidence_id']:(e['source_domain'],e['target_domain']) for e in graph['edges']}
-    owners = {d: {e['name']: e for e in snapshots[d]['entries']} for d in PAIR}
+    owners = {d: {e['name']: e for e in snapshots[d]['entries']} for d in pair}
     payload = {}
-    for domain in PAIR:
-        peer = next(d for d in PAIR if d != domain)
+    for domain in pair:
+        peer = next(d for d in pair if d != domain)
         ids = {name: e['id'] for name, e in owners[peer].items()}
         ids.update({name: e['id'] for name, e in owners[domain].items()})
         peer_entries = {}; laws = {}; broad = {}
@@ -73,28 +74,28 @@ def payloads(result, snapshots):
                     if r['neighbor_law'] in owners[peer] and r['neighbor_law'] not in owners[domain] and belongs(r)]
             if law_details:
                 laws[entry['id']] = law_details
-        payload[domain] = dict(kind='forex-finance-bridge', schema=1, domain=domain, peer=peer,
-            editions={d:snapshots[d]['built_at'] for d in PAIR}, entries=list(peer_entries.values()),
+        payload[domain] = dict(kind=BRIDGE_KINDS[pair], schema=1, domain=domain, peer=peer,
+            editions={d:snapshots[d]['built_at'] for d in pair}, entries=list(peer_entries.values()),
             laws=laws, broad={k:v for k,v in broad.items() if v}, coverage=graph['coverage_note'])
     return payload
 
 
-def attach_bridge(root, manifest, writer=None):
+def attach_bridge(root, manifest, writer=None, *, pair=PAIR):
     """Attach evidence for the exact editions in a newly generated static site."""
-    if manifest.get('cross_domain'):
-        raise ValueError('This build already has a bridge; use its original base')
+    if set(manifest.get('cross_domain', {})) & set(pair):
+        raise ValueError('This build already has a bridge for this pair; use its original base')
     original_domains = json.loads(json.dumps(manifest['domains']))
-    snapshots = {d:snapshot(root, next(e for e in manifest['domains'] if e['id']==d)) for d in PAIR}
+    snapshots = {d:snapshot(root, next(e for e in manifest['domains'] if e['id']==d)) for d in pair}
     print('Source editions verified; building cross-domain evidence', flush=True)
-    result = bridge(snapshots)
+    result = bridge(snapshots, pair=pair)
     payload = payloads(result, snapshots)
     writer = writer or Writer(root)
-    manifest['cross_domain'] = {d:writer.data(payload[d]) for d in PAIR}
+    manifest.setdefault('cross_domain', {}).update({d:writer.data(payload[d]) for d in pair})
     if manifest['domains'] != original_domains:
         raise ValueError('Existing domain metadata changed')
     return dict(result['report'], original_domains_unchanged=True,
-                added_bytes=sum(r['bytes'] for r in manifest['cross_domain'].values()),
-                editions={d:snapshots[d]['built_at'] for d in PAIR})
+                added_bytes=sum(manifest['cross_domain'][d]['bytes'] for d in pair),
+                editions={d:snapshots[d]['built_at'] for d in pair})
 
 
 def build(base, destination):

@@ -2,6 +2,8 @@
 import argparse,gzip,hashlib,json
 from pathlib import Path
 from core.domain_navigation import DOMAINS
+from core.forex_finance_links import PAIRS, BRIDGE_KINDS
+from core.ftc_text_citations import TEXT_DOMAINS
 
 
 def validate(root, *, allow_legacy_menu=False):
@@ -40,13 +42,13 @@ def validate(root, *, allow_legacy_menu=False):
         elif isinstance(data,dict) and 'meta' in data:
             meta=data['meta'];documents.add(meta['id']);articles+=len(data['articles'])
             by_id[meta['id']]=(meta,{a['jo'] for a in data['articles']})
-            if meta['domain']=='ftc' and meta.get('text_analysis'):text_bodies[meta['id']]=data['unstructured_text']
+            if meta['domain'] in TEXT_DOMAINS and meta.get('text_analysis'):text_bodies[meta['id']]=data['unstructured_text']
             if meta['domain'] not in [d['id'] for d in manifest['domains']]:raise ValueError('Invalid document domain')
             for article in data['articles']:
                 if 'detail' not in article and article['jo'] not in data.get('details',{}):raise ValueError('Missing article connections')
         if isinstance(data,dict) and data.get('workbench'):
             workbenches.append(data['workbench'])
-        if isinstance(data,dict) and data.get('kind')=='forex-finance-bridge':
+        if isinstance(data,dict) and data.get('kind') in BRIDGE_KINDS.values():
             bridges.append(data)
         if isinstance(data,dict) and data.get('kind')=='special-annex-register':
             special_rows+=data['rows']
@@ -57,11 +59,11 @@ def validate(root, *, allow_legacy_menu=False):
         references(data)
     for row in text_rows:
         meta,numbers=by_id[row['source_id']]
-        if meta['domain']!='ftc' or meta['name']!=row['source_law'] or numbers or row.get('source_jo'):raise ValueError('Invalid text evidence source')
+        if meta['domain'] not in TEXT_DOMAINS or meta['name']!=row['source_law'] or numbers or row.get('source_jo'):raise ValueError('Invalid text evidence source')
         if text_bodies[row['source_id']][row['source_start']:row['source_end']]!=row['raw']:raise ValueError('Text evidence mismatch')
         if row.get('target_id'):
             target_meta,target_numbers=by_id[row['target_id']]
-            if target_meta['domain']!='ftc' or target_meta['name']!=row['target_law']:raise ValueError('Text citation domain mismatch')
+            if target_meta['domain']!=meta['domain'] or target_meta['name']!=row['target_law']:raise ValueError('Text citation domain mismatch')
             if row['target_kind']=='article':
                 from core.citation_scope import parse_target
                 if parse_target(row['target_ref']).jo not in target_numbers:raise ValueError('Text citation target missing')
@@ -78,11 +80,14 @@ def validate(root, *, allow_legacy_menu=False):
             if meta['domain']!='state_property' or meta['name']!=row['law']:raise ValueError('Annex target domain or title mismatch')
             if not set(row.get('article_numbers',[])).issubset(numbers):raise ValueError('Annex target article missing')
         elif row['status']=='matched':raise ValueError('Matched annex target missing')
-    if set(manifest.get('cross_domain',{})) not in (set(),{'forex','fsc'}):raise ValueError('Invalid cross-domain scope')
+    cross_domains=set(manifest.get('cross_domain',{}))
+    if cross_domains-set(d for pair in PAIRS for d in pair):raise ValueError('Invalid cross-domain scope')
+    if any(cross_domains & set(pair) and not set(pair)<=cross_domains for pair in PAIRS):raise ValueError('Incomplete domain pair')
     if len(bridges)!=len(manifest.get('cross_domain',{})):raise ValueError('Missing cross-domain assets')
     for bridge in bridges:
         domain=bridge['domain'];peer=bridge['peer']
-        if {domain,peer}!={'forex','fsc'} or bridge['schema']!=1:raise ValueError('Mixed bridge domains')
+        pair=next((p for p in PAIRS if set(p)=={domain,peer}),None)
+        if not pair or bridge['schema']!=1 or bridge['kind']!=BRIDGE_KINDS[pair]:raise ValueError('Mixed bridge domains')
         for d,edition in bridge['editions'].items():
             if next(e['built_at'] for e in manifest['domains'] if e['id']==d)!=edition:raise ValueError('Bridge edition mismatch')
         neighbors={e['id']:e for e in bridge['entries']}
@@ -104,7 +109,7 @@ def validate(root, *, allow_legacy_menu=False):
     if len(files)>20000:raise ValueError('Cloudflare free file limit exceeded')
     if sum(p.stat().st_size for p in files)>1024**3:raise ValueError('GitHub Pages site limit exceeded')
     if {p.relative_to(root).as_posix() for p in (root/'data').glob('*.gz')}!=seen:raise ValueError('Unexpected or unreferenced data files')
-    return dict(status='passed',version=manifest['version'],data_files=len(seen),site_files=len(files),data_bytes=total,documents=len(documents),articles=articles)
+    return dict(status='passed',version=manifest['version'],data_files=len(seen),site_files=len(files),data_bytes=total,site_bytes=sum(p.stat().st_size for p in files),documents=len(documents),articles=articles)
 
 
 if __name__=='__main__':

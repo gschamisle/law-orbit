@@ -53,6 +53,8 @@ MODULES: tuple[str, ...] = (
     "scripts.test_state_property",
     "scripts.test_forex",
     "scripts.test_ftc",
+    "scripts.test_mofe_reuse",
+    "scripts.test_forex_finance_links",
     "scripts.test_ftc_ui",
     "scripts.test_mofe_domains",
     "scripts.test_public_institution_scope",

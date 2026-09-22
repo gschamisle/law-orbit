@@ -144,7 +144,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
     index=EdgeIndex(graph,docs);result=[]
     external=defaultdict(list);issues=defaultdict(list)
     text_forward=defaultdict(list);text_reverse=defaultdict(list)
-    if domain=='ftc':
+    if graph.get('text_citations'):
         from core.ftc_text_citations import reading_row
         for edge in graph.get('text_citations',[]):
             text_forward[edge['source_law']].append(tidy(reading_row(edge,'forward'),ids,False))
@@ -164,7 +164,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
     for d in docs:
         if write_names is not None and d['name'] not in write_names:continue
         entry=metadata(d,domain,region);entry['id']=ids[d['name']]
-        if domain=='ftc' and d.get('text_analysis'):entry['text_analysis']=d['text_analysis']
+        if domain in ('ftc','treasury','procurement') and d.get('text_analysis'):entry['text_analysis']=d['text_analysis']
         if domain=='forex':
             entry.update(source_notes=d.get('source_notes',[]),unparsed_provisions=d.get('unparsed_provisions',[]),
                          pdf_url=safe_url(d.get('pdf_url','')),article_sectors={a['jo']:a.get('sectors',[]) for a in d['articles']})
@@ -205,7 +205,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             body=body_text(d['raw_body_blocks'])
         entry['parts']=parts
         extra={}
-        if domain=='ftc' and d.get('text_analysis'):
+        if domain in ('ftc','treasury','procurement') and d.get('text_analysis'):
             extra=dict(text_connections=text_forward[d['name']],text_issues=[i for i in graph.get('text_citation_issues',[]) if i['source_law']==d['name']])
         entry['file']=writer.data(dict(meta=entry,articles=articles,details=inline,broad=broad,unstructured_text=body,**extra))
         result.append(entry)
@@ -272,6 +272,8 @@ def build(source,dest,previous_site=None):
                 from core.ftc_universe import overview_graph
                 map_graph=overview_graph(bundle)
             catalog=dict(laws=entries,overview=writer.data(overview(map_graph,domain,ids,entries)),coverage=graph.get('coverage_note','수집한 명시적 인용 범위입니다.'),built_at=graph['built_at'],sectors={'all':'전체 연결',**sectors})
+            if domain in ('treasury','procurement'):
+                catalog['text_summary']=dict(documents=sum(bool(d.get('text_analysis')) for d in docs),citations=len(graph.get('text_citations',[])),issues=len(graph.get('text_citation_issues',[])))
             if domain=='state_property':catalog['special_cases']=writer.data(export_special_cases(src['special_cases'],ids))
             if domain in WORK_DOMAINS:catalog['workbench']=workbench(bundle,ids)
             count=len(entries)
@@ -281,6 +283,7 @@ def build(source,dest,previous_site=None):
         print(domain+': exported '+str(count)+' documents',flush=True)
     from scripts.build_forex_finance_site import attach_bridge
     bridge_report=attach_bridge(dest,manifest,writer)
+    bridge_report['procurement_public']=attach_bridge(dest,manifest,writer,pair=('procurement','public_institutions'))
     manifest['version']=hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()[:20]
     (dest/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     report=dict(version=manifest['version'],data_files=len(writer.assets),data_bytes=sum(writer.assets.values()),largest_asset=max(writer.assets.values()),domains=manifest['domains'],cross_domain=bridge_report)

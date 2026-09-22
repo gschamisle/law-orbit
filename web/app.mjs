@@ -1,7 +1,7 @@
 import {mountPublicScope} from './public-scope.mjs';
 import {createDelegationReview} from './delegation-ui.mjs';
 import {loadReading} from './reading.mjs';
-import {validateBridge,combineConnections,bridgeLookup,bridgeLabel} from './cross-domain.mjs';
+import {validateBridge,combineConnections,bridgeLookup,bridgeLabel,bridgePeers,bridgeNames,bridgeEditions} from './cross-domain.mjs';
 import {selectCases,deadlineLabels,statusLabels,dateLabel} from './special.mjs';
 import {data,cached,saveAll,clearSaved} from './store.mjs';
 import {target,refine,matchingArticles,safeLink,focusMap,normalize} from './query.mjs';
@@ -27,7 +27,7 @@ function allLaws(){return [...catalog.laws,...(regional?.laws||[])];}
 function usesArticleTags(){return domain==='forex'||!!catalog?.workbench;}
 function readableUnstructured(document){
  const raw=document.unstructured_text||'';
- if(!['public_institutions','customs','treasury','ftc'].includes(document.meta?.domain))return raw;
+ if(!['public_institutions','customs','treasury','ftc','procurement'].includes(document.meta?.domain))return raw;
  const hasImages=/<\/?img\b[^>]*>/i.test(raw);
  const plain=raw.replace(/<\/?img\b[^>]*>/gi,'').replace(/\n[ \t]*\n(?:[ \t]*\n)+/g,'\n\n').trim();
  return (hasImages?'[이미지·도표는 공식 원문에서 확인하세요.]\n\n':'')+plain;
@@ -39,7 +39,7 @@ function renderWorkbench(){
  head.append(text('h2','업무 질문으로 시작'),text('span',`조문 분석 ${work.indexed_documents} / 수집 ${work.documents}개 문서`,'muted small'));box.append(head,text('p',work.purpose,'muted small'));
  const cases=document.createElement('div');cases.className='work-cases';
  for(const c of work.cases){const b=text('button',c.title,'work-case');b.type='button';b.append(text('small',`${c.law} 제${c.jo}조 · 다른 문서의 연결 조문 ${c.connected_articles}개`));b.title=c.description;b.onclick=()=>navigate(domain,{sector:'all',law:c.law_id,reference:`제${c.jo}조`,query:''});cases.append(b);}box.append(cases);
- const scope=text('button',`지원 범위·빠진 자료 확인${work.unindexed.length?' · '+work.unindexed.length+'개 문서는 조문 미분석':''} ↗`,'work-scope quiet');scope.onclick=()=>$('coverage-open').click();box.append(scope);
+ const scope=text('button',`지원 범위·빠진 자료 확인${work.unindexed.length?' · '+work.unindexed.length+'개 문서의 분석 범위 확인':''} ↗`,'work-scope quiet');scope.onclick=()=>$('coverage-open').click();box.append(scope);
  if(work.public_scope)mountPublicScope(box,work.public_scope,{
   link,
   read:(law,jo)=>{const entry=[...lookup.values()].find(d=>d.name===law);if(entry)openReading(entry.id,jo);else note('이 법령의 본문은 미수집입니다.');},
@@ -67,7 +67,7 @@ async function navigate(id,overrides={}){
  delegation.reset();
  $('workbench').hidden=true;$('workbench').replaceChildren();
  closeReading();cancelSave();persist();domain=id;state={sector:'all',region:'',law:'',query:'',reference:'',direction:'both',review:true,broad:false,cross:true,relation:'all',...saved[id],...overrides};const token=++epoch;busy(true);note('');doc=detail=wanted=null;regional=null;cross=null;crossError='';
- $('cross-label').hidden=!manifest.cross_domain?.[id];$('cross-text').textContent=id==='forex'?'금융 연결 포함':'외환 연결 포함';$('cross').checked=state.cross;$('cross').disabled=true;
+ $('cross-label').hidden=!manifest.cross_domain?.[id];$('cross-text').textContent=(bridgeNames[bridgePeers[id]]||'관련 분야')+' 연결 포함';$('cross').checked=state.cross;$('cross').disabled=true;
  $('article-content').replaceChildren(text('p','법령 자료를 불러오고 있습니다.','muted'));$('evidence').replaceChildren();$('outside').replaceChildren();$('evidence-count').textContent='';domainButtons();
  try{
   const entry=manifest.domains.find(d=>d.id===id);if(!entry)throw Error('지원하지 않는 분야입니다.');
@@ -182,7 +182,7 @@ function renderConnections(){
  }
  $('evidence-count').textContent=`${currentRows.length.toLocaleString()}건`;
  $('connection-note').textContent=detail.analysis_error||`${catalog.built_at} 수집 자료 · 인용 문구의 범위를 대조한 결과입니다. 지도는 최대 180개 연결 대상을 표시하며 근거 목록은 모두 열람할 수 있습니다.`;
- if(cross&&state.cross)$('connection-note').textContent+=` 분야 밖 연결 ${currentRows.filter(r=>r.cross_domain).length}건 · 외환 ${cross.editions.forex}, 금융 ${cross.editions.fsc} 수집 판본.`;
+ if(cross&&state.cross)$('connection-note').textContent+=` 분야 밖 연결 ${currentRows.filter(r=>r.cross_domain).length}건 · ${bridgeEditions(cross)} 수집 판본.`;
  if(crossError)$('connection-note').textContent+=' '+crossError;
  const map=focusMap(currentRows,doc.meta,wanted,sectorMap(),relatedLookup());showMap(map);renderEvidence();
  const external=connected.external.filter(e=>!wanted.narrow||!e.source_scope||refine([{...e,direction:'forward',kind:e.target_kind||'article'}],wanted,{review:true}).length);
@@ -313,12 +313,13 @@ $('coverage-open').onclick=()=>{
  if(['tax','public_institutions'].includes(domain))content.append(text('p','후속 개정 점검은 수집 법률·시행령의 위임 문구와 이전 판본의 변경을 대조합니다. 과거 판본 미확보 시 신규 여부는 미대조이며, 위임 이행·개정 누락을 자동 확정하지 않습니다. 내부 개정안 비교는 로컬 앱에서 제공합니다.'));
  const work=catalog?.workbench;
  const summary=catalog?.collection_summary;
+ if(catalog?.text_summary){const t=catalog.text_summary;content.append(text('p',`문단 인용 분석 ${t.documents}개 문서 · 명시적 인용 근거 ${t.citations}건 · 해석 확인 ${t.issues}건. 내부 문단 간 참조·이미지·표 본문은 미분석입니다.`));}
  if(summary){
   content.append(text('p',`법령 ${summary.statutes}건 · 행정규칙 ${summary.administrative_rules}건 · 조문 분석 ${summary.indexed_documents}개 문서 / ${summary.articles}개 조문`),text('p',`문단 인용 분석 ${summary.text_analyzed_documents}개 문서 · 명시적 인용 ${summary.text_citations}건 · 시행예정 ${summary.scheduled}건은 현재 지도에서 제외했습니다.`),text('p',`해석 확인 목록: 조문 ${summary.unresolved}건 · 지침 문단 ${summary.text_unresolved}건. 인용 대상이나 범위를 확정하지 못한 사례는 근거 목록에서 구분합니다.`));
  }
  if(work){content.append(text('h3','이 분야에서 확인할 수 있는 것'),text('p',work.purpose));for(const message of work.limitations)content.append(text('p',message));content.append(text('p','업무 태그는 제목·본문 키워드에 따른 탐색 보조 분류입니다. 법적 적용 범위의 판정이 아닙니다. 지도에 쓰는 짧은 이름은 표시용 약칭이며, 공식 명칭은 본문 상단에서 확인합니다.'));
   for(const source of work.companion_sources){const p=document.createElement('p');p.append(link(source.url,source.title+' ↗'));content.append(p);}
-  if(work.unindexed.length){const details=document.createElement('details');details.append(text('summary',`조문 연결 미분석 자료 ${work.unindexed.length}건`));for(const item of work.unindexed){const p=document.createElement('p');p.append(link(item.url,item.name+' ↗'),text('span',' · '+item.status));details.append(p);}content.append(details);}
+  if(work.unindexed.length){const details=document.createElement('details');details.append(text('summary',`문단형·미분석 자료 ${work.unindexed.length}건`));for(const item of work.unindexed){const p=document.createElement('p');p.append(link(item.url,item.name+' ↗'),text('span',' · '+item.status));details.append(p);}content.append(details);}
   if(work.unavailable_selected_rules.length)content.append(text('p','선정했으나 이번 수집 목록에서 확인하지 못한 자료: '+work.unavailable_selected_rules.join(', ')));
  }
  $('coverage').showModal();

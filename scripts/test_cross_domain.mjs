@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {combineConnections,bridgeLookup,validateBridge,bridgeLabel} from '../web/cross-domain.mjs';
+import {combineConnections,bridgeLookup,validateBridge,bridgeLabel,bridgeEditions} from '../web/cross-domain.mjs';
 import {loadReading} from '../web/reading.mjs';
 import {target,refine,focusMap} from '../web/query.mjs';
 const row={cross_domain:true,neighbor_domain:'fsc',neighbor_id:'fi',neighbor_law:'금융규정',neighbor_kind:'article',neighbor_jo:'2',neighbor_ref:'제2조',direction:'forward',source_id:'fx',target_id:'fi',source_ref:'제1조제2항',source_granularity:'block',source_scope:{scopes:[[['1','2','',''],['1','2','',''],-1]]},kind:'article',neighbor_sectors:['banking'],status:'exact'};
@@ -35,3 +35,17 @@ assert.equal(map.nodes[0].web_law,'fx');assert.equal(map.nodes[1].web_law,'fi');
 const annex=focusMap([{...row,annex_unanalyzed:true,neighbor_kind:'annex',neighbor_jo:'별표 4-1'}],{id:'fx',name:'외환규정'},target('제1조'),{},lookup);
 assert.equal(annex.nodes[1].web_law,'');
 console.log('Cross-domain browser logic checks passed');
+
+// Same independent-reader behavior for procurement/public institutions.
+const contractRow={...row,neighbor_domain:'public_institutions',neighbor_sectors:[]};
+const contractEntry={...entry,domain:'public_institutions'};
+const contract={...b,kind:'procurement-public-bridge',domain:'procurement',peer:'public_institutions',editions:{procurement:'20260919',public_institutions:'20260921'},entries:[contractEntry],laws:{fx:{'1':{rows:[contractRow],suppressed:[],resolved_issues:[]}}}};
+const contractManifest={domains:[{id:'procurement',built_at:'20260919'},{id:'public_institutions',built_at:'20260921'}]};
+assert.equal(validateBridge(contract,'procurement',contractManifest,{...catalog,built_at:'20260919'}),contract);
+assert.match(bridgeLabel(contractRow),/공공기관/);
+assert.match(bridgeEditions(contract),/조달계약 20260919, 공공기관 20260921/);
+assert.throws(()=>validateBridge({...contract,kind:'forex-finance-bridge'},'procurement',contractManifest,{...catalog,built_at:'20260919'}));
+assert.equal(combineConnections(detail,[],contract,'fx','1',false).rows.length,0);
+const isolated=await loadReading({id:'fi',jo:'2'},{catalog,lookup:bridgeLookup(ownLookup,contract),currentDoc,read:async()=>({meta:contractEntry,articles:[{jo:'2',text:'공공기관 수집 본문'}]})});
+assert.equal(isolated.article.text,'공공기관 수집 본문');
+assert.equal(currentDoc.meta.id,'fx');assert.equal(JSON.stringify(state),stateBefore);
