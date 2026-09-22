@@ -13,6 +13,7 @@ DOMAINS = {
     'public_institutions': '공공기관',
     'treasury': '국고·회계',
     'fsc': '금융',
+    'ftc': '공정거래',
     'local_tax': '지방세',
     'housing': '국토건축주택',
     'environment': '환경화학안전',

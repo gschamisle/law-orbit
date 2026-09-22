@@ -17,14 +17,14 @@ def documents(source):
     return source['laws'] + source.get('administrative_rules', [])
 
 
-def build_graph(source, *, domain="procurement", coverage_note=None):
+def build_graph(source, *, domain="procurement", coverage_note=None, article_adapter=None):
     from core.universe_builder import build_universe
     from core.fsc_administrative import adapter
     indexed = [d for d in documents(source) if d.get('articles')]
     if not indexed or any(d.get('category') != domain for d in indexed):
         raise ValueError(f'{domain} 전용 데이터가 아닙니다.')
     graph = build_universe({**source, 'laws':indexed}, focus_categories=(domain,),
-                           preserve_external=True, article_adapter=adapter)
+                           preserve_external=True, article_adapter=article_adapter or adapter)
     graph.update(domain=domain, tax_laws=[], coverage_note=coverage_note or (
         '국가계약 법령·재경부 계약예규와 선정한 조달청·지방계약 자료의 명시적 인용망입니다. '
         '전체 공공기관 계약규정·조례를 수집한 것은 아닙니다. 미수집 대상은 본문·역인용 미점검입니다. '

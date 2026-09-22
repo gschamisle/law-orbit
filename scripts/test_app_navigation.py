@@ -10,7 +10,7 @@ class NavigationTests(unittest.TestCase):
         self.assertFalse(app.exception,str(app.exception))
         self.assertEqual(app.radio(key='app_section').options[:2],['법령 탐색','개정안 검토 (국세)'])
         self.assertEqual(app.radio(key='app_section').value,'galaxy')
-        self.assertEqual([t.label for t in app.tabs],['국세','조달계약','관세·통관','외환','국유재산','공공기관','국고·회계','금융','지방세','국토건축주택','환경화학안전'])
+        self.assertEqual([t.label for t in app.tabs],['국세','조달계약','관세·통관','외환','국유재산','공공기관','국고·회계','금융','공정거래','지방세','국토건축주택','환경화학안전'])
         self.assertNotIn('법령 관계도 (평면)', app.radio(key='lm_view').options)
         self.assertFalse(any((s.key or '') in ('lm_g_min','lm_g_arts','fsc_minimum','fsc_points') for s in app.slider))
         self.assertTrue(any('현재 국세 개정안만 지원합니다.' in c.value for c in app.caption))

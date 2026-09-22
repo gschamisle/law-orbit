@@ -4,10 +4,11 @@ from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 from core import procurement_universe, housing_universe, environment_universe, state_property_universe, forex_universe
-from core import public_institutions_universe, customs_universe, treasury_universe
+from core import public_institutions_universe, customs_universe, treasury_universe, ftc_universe
 from core.procurement_universe import documents, sector_graph, mark_sector, article_for, external_evidence
 APIS={'procurement':procurement_universe,'housing':housing_universe,'environment':environment_universe,'state_property':state_property_universe,'forex':forex_universe}
 APIS.update(public_institutions=public_institutions_universe,customs=customs_universe,treasury=treasury_universe)
+APIS['ftc']=ftc_universe
 from ui.law_library_ui import render as render_library
 
 
@@ -19,8 +20,11 @@ def snapshot(path, stamp, domain):
 @st.cache_data(show_spinner=False)
 def overview(path, stamp, sector, domain, palette_version='families-v4-domain-labels'):
     from core.law_galaxy import build
-    graph=snapshot(path,stamp,domain)['graph']
-    return APIS[domain].present(build(2,160,include_external=False,graph=sector_graph(graph,sector)),graph,sector)
+    bundle=snapshot(path,stamp,domain)
+    graph=APIS[domain].overview_graph(bundle) if domain=='ftc' else bundle['graph']
+    data=build(2,160,include_external=False,graph=sector_graph(graph,sector))
+    if domain=='ftc':data['dust']=[d for d in data['dust'] if d.get('jo') and d['jo']!='제조']
+    return APIS[domain].present(data,graph,sector)
 
 
 @st.cache_data(show_spinner=False)
@@ -82,6 +86,7 @@ def render(profile, bundle_path):
             else:
                 st.caption(f"수집 {date(graph['built_at'])} · 법령 {summary['statutes']}건 · 행정규칙 {summary['administrative_rules']}건 · 조문 분석 {summary['indexed_documents']}건")
             st.write(graph['coverage_note'])
+            if domain=='ftc':st.caption(f"문단 인용 분석 {summary['text_analyzed_documents']}개 자료 · 명시적 인용 {summary['text_citations']}건")
             if work:
                 for item in work['companion_sources']:st.link_button(item['title'],item['url'])
             for document in docs:
@@ -162,6 +167,15 @@ def render(profile, bundle_path):
                                '공식 원문':e['source_url']} for e in contexts],hide_index=True,width='stretch')
 
         with st.expander(f'인용·역인용 근거 · {len(rows)}건'):evidence_table(rows)
+        if domain=='ftc':
+            from core.ftc_text_citations import reading_row
+            from core.citation_scope import parse_scope,parse_target,scope_relation
+            target=parse_target(selection[1])
+            text_rows=[reading_row(e,'reverse') for e in graph.get('text_citations',[]) if e['target_law']==law and e['target_kind']=='article'
+                       and any(scope_relation(s,target) for s in parse_scope(e['target_ref']).scopes)]
+            with st.expander(f'이 조문을 인용한 지침 문단 · {len(text_rows)}건'):
+                st.caption('문단형 지침의 원문 인용입니다. 지침 내부 문단 간 참조는 미분석입니다.')
+                evidence_table(text_rows)
         outside=[r for r in rows if r.get('out_of_sector')]
         if outside:
             with st.expander(f'분야 밖 관련 조문 · {len(outside)}건'):
@@ -182,7 +196,7 @@ def render(profile, bundle_path):
                            domain+'-인용근거.json','application/json',key=key('evidence'))
     unindexed=[d for d in docs if not d.get('articles') and (sector=='all' or sector in d['sectors'])]
     if unindexed:
-        with st.expander(f'조문 연결 미분석 자료 · {len(unindexed)}건'):
+        with st.expander(f'{"문단형 지침·분석 상태" if domain=="ftc" else "조문 연결 미분석 자료"} · {len(unindexed)}건'):
             name=st.selectbox('원문 확인 자료',[d['name'] for d in unindexed],key=key('raw_name'))
             d=by_name[name]
             st.caption(d.get('analysis_error','조문 형식 확인 필요'))
@@ -195,5 +209,10 @@ def render(profile, bundle_path):
                     text='[이미지·도표는 공식 원문에서 확인하세요.]\n\n'+re.sub(r'</?img\b[^>]*>','',text,flags=re.I).strip()
             if text:
                 with st.container(height=300):st.text(text)
+            if domain=='ftc':
+                from core.ftc_text_citations import reading_row
+                text_rows=[reading_row(e,'forward') for e in graph.get('text_citations',[]) if e['source_law']==name]
+                st.caption(f'본문에서 확인한 명시적 인용 {len(text_rows)}건 · 미수집 대상은 원문·역인용 미점검')
+                evidence_table(text_rows)
     widgets=('law','ref','direction','review','broad','kinds','library_query','library_article','library_scope')
     saved[sector]={n:st.session_state[key(n)] for n in widgets if key(n) in st.session_state}

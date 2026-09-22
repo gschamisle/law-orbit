@@ -122,6 +122,11 @@ def overview(graph,domain,ids,catalog):
         if domain!='tax':node['color']=PALETTE[int(hashlib.sha256(node['family'].encode()).hexdigest()[:8],16)%len(PALETTE)]
         node.update(label=doc.get('label',node['label']),full_name=node['id'],web_law=ids.get(node['id'],''),web_jo='')
     colors={n['id']:n['color'] for n in data['nodes']}
+    if domain=='ftc':
+        data['dust']=[d for d in data['dust'] if d.get('jo') and d['jo']!='제조']
+        for node in data['nodes']:
+            d=byname.get(node['id'],{})
+            node.update(category='ftc',title=d.get('authority','공정거래위원회')+' · 시행 '+d.get('effective',''))
     for point in data['dust']:point['c']=colors.get(point['law_id'],point['c'])
     data.update(domain=domain,galaxy_title=DOMAINS[domain])
     if domain in ('state_property','forex'):
@@ -138,6 +143,14 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
     ids.update(central_ids or {})
     index=EdgeIndex(graph,docs);result=[]
     external=defaultdict(list);issues=defaultdict(list)
+    text_forward=defaultdict(list);text_reverse=defaultdict(list)
+    if domain=='ftc':
+        from core.ftc_text_citations import reading_row
+        for edge in graph.get('text_citations',[]):
+            text_forward[edge['source_law']].append(tidy(reading_row(edge,'forward'),ids,False))
+            if edge['target_status']=='collected' and edge['target_kind']=='article':
+                jo=_target(edge['target_ref']).jo
+                text_reverse[(edge['target_law'],jo)].append(tidy(reading_row(edge,'reverse'),ids,False))
     for e in graph.get('external_references',[]):external[(e['source_law'],str(e['source_jo']))].append(e)
     for e in graph.get('citation_issues',[])+graph.get('context_evidence',[]):issues[(e['source_law'],str(e['source_jo']))].append(e)
     if national is not None:
@@ -151,6 +164,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
     for d in docs:
         if write_names is not None and d['name'] not in write_names:continue
         entry=metadata(d,domain,region);entry['id']=ids[d['name']]
+        if domain=='ftc' and d.get('text_analysis'):entry['text_analysis']=d['text_analysis']
         if domain=='forex':
             entry.update(source_notes=d.get('source_notes',[]),unparsed_provisions=d.get('unparsed_provisions',[]),
                          pdf_url=safe_url(d.get('pdf_url','')),article_sectors={a['jo']:a.get('sectors',[]) for a in d['articles']})
@@ -173,6 +187,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
                 detail=dict(rows=[tidy(r,ids,index.hyphen) for r in analyzed['rows']],same_article_count=analyzed['same_article_count'],unplaced=analyzed['unplaced'])
             except ValueError:
                 detail=dict(rows=[],analysis_error='이 조문 번호 형식의 연결은 미분석입니다.')
+            detail['rows']+=text_reverse[(d['name'],jo)]
             detail['external']=[tidy(e,ids,index.hyphen) for e in external[(d['name'],jo)]]
             if 'analyzed_articles' in d and jo not in d['analyzed_articles']:
                 detail['analysis_error']='이 조문은 국유재산 특례의 선택 분석 범위 밖입니다. 본문은 열람할 수 있으며, 표시된 역인용은 수집·분석한 출처 범위입니다.'
@@ -187,7 +202,10 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             from core.fsc_administrative import body_text
             body=body_text(d['raw_body_blocks'])
         entry['parts']=parts
-        entry['file']=writer.data(dict(meta=entry,articles=articles,details=inline,broad=broad,unstructured_text=body))
+        extra={}
+        if domain=='ftc' and d.get('text_analysis'):
+            extra=dict(text_connections=text_forward[d['name']],text_issues=[i for i in graph.get('text_citation_issues',[]) if i['source_law']==d['name']])
+        entry['file']=writer.data(dict(meta=entry,articles=articles,details=inline,broad=broad,unstructured_text=body,**extra))
         result.append(entry)
     return result,ids
 
@@ -247,15 +265,21 @@ def build(source,dest):
             docs=src['laws']+src.get('administrative_rules',[])
             # Keep the same no-unconnected-external-law overview as the tax app.
             entries,ids=export_documents(writer,domain,'',docs,graph)
-            catalog=dict(laws=entries,overview=writer.data(overview(graph,domain,ids,entries)),coverage=graph.get('coverage_note','수집한 명시적 인용 범위입니다.'),built_at=graph['built_at'],sectors={'all':'전체 연결',**sectors})
+            map_graph=graph
+            if domain=='ftc':
+                from core.ftc_universe import overview_graph
+                map_graph=overview_graph(bundle)
+            catalog=dict(laws=entries,overview=writer.data(overview(map_graph,domain,ids,entries)),coverage=graph.get('coverage_note','수집한 명시적 인용 범위입니다.'),built_at=graph['built_at'],sectors={'all':'전체 연결',**sectors})
             if domain=='state_property':catalog['special_cases']=writer.data(export_special_cases(src['special_cases'],ids))
             if domain in WORK_DOMAINS:catalog['workbench']=workbench(bundle,ids)
             count=len(entries)
         manifest['domains'].append(dict(id=domain,title=title,laws=count,catalog=writer.data(catalog),built_at=catalog['built_at']))
         print(domain+': exported '+str(count)+' documents',flush=True)
+    from scripts.build_forex_finance_site import attach_bridge
+    bridge_report=attach_bridge(dest,manifest,writer)
     manifest['version']=hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()[:20]
     (dest/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-    report=dict(version=manifest['version'],data_files=len(writer.assets),data_bytes=sum(writer.assets.values()),largest_asset=max(writer.assets.values()),domains=manifest['domains'])
+    report=dict(version=manifest['version'],data_files=len(writer.assets),data_bytes=sum(writer.assets.values()),largest_asset=max(writer.assets.values()),domains=manifest['domains'],cross_domain=bridge_report)
     (dest.parent/(dest.name+'-report.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps({k:v for k,v in report.items() if k!='domains'},indent=2),flush=True)
     return manifest

@@ -96,6 +96,7 @@ const stars=Array.from({length:230},(_,i)=>({x:((i*719+37)%997)/997,y:((i*421+53
 const rgba=(hex,a)=>{const c=hex.replace('#','');return `rgba(${parseInt(c.slice(0,2),16)},${parseInt(c.slice(2,4),16)},${parseInt(c.slice(4,6),16)},${a})`};
 const label=n=>n.label+(n.subtitle?' '+n.subtitle:'');
 const fsc=D.domain==='fsc';
+const ftc=D.domain==='ftc';
 const localTax=D.domain==='local_tax';
 const procurement=D.domain==='procurement';
 const housing=D.domain==='housing';
@@ -115,6 +116,7 @@ root.addEventListener('keydown',e=>{if(e.key==='Escape'&&!infoPanel.hidden){e.pr
 root.addEventListener('pointerdown',e=>{if(!infoPanel.hidden&&!infoPanel.contains(e.target)&&!infoToggle.contains(e.target))setInfoOpen(false)});
 const displayTitle=(D.galaxy_title||'국세').replace(/\s*은하/g,'');
 root.setAttribute('aria-label',displayTitle+' 법령 탐색');
+if(ftc)$('g-domain').textContent='FAIR TRADE / RELATION ATLAS';
 if(fsc)$('g-domain').textContent='FINANCIAL LAW / RELATION ATLAS';
 if(localTax)$('g-domain').textContent='LOCAL TAX / RELATION ATLAS';
 if(environment)$('g-domain').textContent='ENVIRONMENT / CHEMICAL SAFETY';
@@ -125,12 +127,12 @@ if(procurement)$('g-domain').textContent='PUBLIC PROCUREMENT / RELATION ATLAS';
 if(D.work_domain_label)$('g-domain').textContent=D.work_domain_label+' / RELATION ATLAS';
 $('g-title').textContent=boundary?'신설 항 검토':spotlight?'조문 연결 지도':impact?'개정 영향 탐색':displayTitle;
 $('g-subtitle').textContent=boundary?`${D.example?'가상 예시 · ':''}${D.target} · ${D.change_summary}`:spotlight?`${D.target} · ${D.direction}`:impact?D.target:'법령과 조문의 직접 인용·역인용을 살펴보세요.';
-$('g-mode').textContent=boundary?'CITATION SCOPE / REVIEW':spotlight?'CITATIONS / BOTH DIRECTIONS':impact?'AMENDMENT IMPACT / 01':(forex?'FOREIGN EXCHANGE / ATLAS':stateProperty?'NATIONAL PROPERTY / ATLAS':environment?'ENVIRONMENT / ATLAS':housing?'LAND & HOUSING / ATLAS':procurement?'PROCUREMENT / ATLAS':localTax?'LOCAL TAX / ATLAS':fsc?'FSC LAW / ATLAS':'KOREAN TAX LAW / ATLAS');
+$('g-mode').textContent=boundary?'CITATION SCOPE / REVIEW':spotlight?'CITATIONS / BOTH DIRECTIONS':impact?'AMENDMENT IMPACT / 01':(ftc?'FAIR TRADE / ATLAS':forex?'FOREIGN EXCHANGE / ATLAS':stateProperty?'NATIONAL PROPERTY / ATLAS':environment?'ENVIRONMENT / ATLAS':housing?'LAND & HOUSING / ATLAS':procurement?'PROCUREMENT / ATLAS':localTax?'LOCAL TAX / ATLAS':fsc?'FSC LAW / ATLAS':'KOREAN TAX LAW / ATLAS');
 if(D.work_domain_label&&!impact)$('g-mode').textContent=D.work_domain_label+' / ATLAS';
 $('g-footnote').textContent=`${D.built_at||'저장 그래프'} 기준 · ${boundary?'점선은 범위·문맥 검토 후보입니다':impact?'직접 연결 · 화살표는 인용 방향':'법령군별 색상 · 화면상 거리는 법적 영향의 크기가 아닙니다'}`;
 if(forex&&!impact)$('g-footnote').textContent=`${D.built_at} 기준 · 작은 점은 조문 · 색상은 업무 태그 · 인용선은 개정 의무가 아닙니다`;
 if(spotlight)$('g-reset').textContent='연결 전체 보기';
-const legends=spotlight?[['#66e5ed','인용하는 곳 →'],['#ffc77a','← 인용해 오는 곳'],['#e8a1cc','문맥·출처 확인 (점선)']]:boundary?[['#ffc77a','범위 재검토 (점선)'],['#88b8ff','문언상 포함'],['#e8a1cc','문맥 확인 (점선)']]:impact?[['#66efce','직접'],['#ffc77a','범위'],['#88b8ff','상위'],['#c6a3ff','하위'],['#e8a1cc','문맥 확인']]:environment?[['#80b4ff','법령·고시 묶음별 색상']]:housing?[['#80b4ff','法과 공간 · 법령 묶음별 색상']]:procurement?[['#80b4ff','법령·예규 묶음별 색상']]:fsc?[['#7fb4ff','금융 법령·규정'],['#68e0cb','법률 · 감독규정 · 시행세칙']]:[['#5b8cff','소득세'],['#3ddc84','법인세'],['#ff6b8a','조세특례'],['#c084fc','상속·증여'],['#2dd4bf','국제조세']];
+const legends=spotlight?[['#66e5ed','인용하는 곳 →'],['#ffc77a','← 인용해 오는 곳'],['#e8a1cc','문맥·출처 확인 (점선)']]:boundary?[['#ffc77a','범위 재검토 (점선)'],['#88b8ff','문언상 포함'],['#e8a1cc','문맥 확인 (점선)']]:impact?[['#66efce','직접'],['#ffc77a','범위'],['#88b8ff','상위'],['#c6a3ff','하위'],['#e8a1cc','문맥 확인']]:ftc?[['#80b4ff','법령·지침별 색상'],['#68dfc4','문단 인용은 실제 원문 위치로 표시']]:environment?[['#80b4ff','법령·고시 묶음별 색상']]:housing?[['#80b4ff','法과 공간 · 법령 묶음별 색상']]:procurement?[['#80b4ff','법령·예규 묶음별 색상']]:fsc?[['#7fb4ff','금융 법령·규정'],['#68e0cb','법률 · 감독규정 · 시행세칙']]:[['#5b8cff','소득세'],['#3ddc84','법인세'],['#ff6b8a','조세특례'],['#c084fc','상속·증여'],['#2dd4bf','국제조세']];
 $('g-legend').innerHTML=(D.work_domain_label&&!impact?[['#80b4ff','법령·규정 묶음별 색상']]:forex&&!impact?[['#a8baff','기본체계'],['#68dfc4','지급·송금'],['#c09cff','자본거래'],['#f3be78','업무·시장'],['#ef96bb','보고·검사']]:stateProperty&&!spotlight?[['#80b4ff','법령·지침 묶음별 색상'],['#68dbc2','특례 등재는 별도 목록에서 확인']]:localTax&&!spotlight?[['#68dbc2','지방세법'],['#efb975','감면·특례'],['#8bbef5','기본·징수'],['#d5c78d','선택 지역 조례·규칙']]:legends).map(([c,t])=>`<span><i class="g-dot" style="background:${c}"></i>${t}</span>`).join('');
 D.nodes.filter(n=>!n.context_only).forEach(n=>{const o=document.createElement('option');o.value=n.id;o.textContent=label(n);$('g-select').append(o)});
 function links(){return selected?allLinks.filter(l=>l.a===selected.id||l.b===selected.id):D.links}
@@ -174,7 +176,7 @@ function draw(ts){
   ctx.strokeStyle=rgba(n.color,chosen?.8:.25);ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(q.x,q.y,rr*(chosen?2.5:1.9),rr*.85,-.3,0,Math.PI*2);ctx.stroke();ctx.fillStyle=n.color;ctx.shadowBlur=chosen?20:8;ctx.shadowColor=n.color;ctx.beginPath();ctx.arc(q.x,q.y,rr,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(q.x-rr*.22,q.y-rr*.22,Math.max(1,rr*.28),0,Math.PI*2);ctx.fill();
   if(chosen||n.is_target){ctx.strokeStyle=rgba(n.color,.12+.08*Math.sin(clock*1.5));ctx.beginPath();ctx.arc(q.x,q.y,rr*3.4+Math.sin(clock)*3,0,Math.PI*2);ctx.stroke()}
   let show=!n.context_only&&(impact||chosen||hover?.id===n.id||(selected&&neighbor.has(n.id))||n.tier===0);
-  if(show&&(spotlight||fsc||localTax||procurement||housing||environment||stateProperty||forex||D.work_domain_label)){ctx.font="13px 'MaruBuri',serif";const width=Math.max(ctx.measureText(n.label).width,ctx.measureText(n.subtitle||'').width)+12,box={x:q.x-width/2,y:q.y-rr-29,w:width,h:rr*2+55};const overlaps=labelBoxes.some(b=>b.id!==n.id&&box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y);if(overlaps&&!chosen&&!n.is_target&&hover?.id!==n.id&&!(disc&&n.primary))show=false;else labelBoxes.push(box);}
+  if(show&&(spotlight||fsc||ftc||localTax||procurement||housing||environment||stateProperty||forex||D.work_domain_label)){ctx.font="13px 'MaruBuri',serif";const width=Math.max(ctx.measureText(n.label).width,ctx.measureText(n.subtitle||'').width)+12,box={x:q.x-width/2,y:q.y-rr-29,w:width,h:rr*2+55};const overlaps=labelBoxes.some(b=>b.id!==n.id&&box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y);if(overlaps&&!chosen&&!n.is_target&&hover?.id!==n.id&&!(disc&&n.primary))show=false;else labelBoxes.push(box);}
   if(show){ctx.font=`${chosen||n.is_target||disc&&n.primary?'700':'400'} ${impact||disc&&n.primary?13:12}px 'MaruBuri',serif`;ctx.textAlign='center';ctx.fillStyle=on?'#e1eefa':'#7f93ac';ctx.shadowBlur=6;ctx.shadowColor='#020610';ctx.fillText(n.label,q.x,q.y-rr-13);if(n.subtitle){ctx.font="11px 'MaruBuri',serif";ctx.fillStyle='#9dafc6';ctx.fillText(n.subtitle,q.x,q.y+rr+19)}ctx.shadowBlur=0}
   if(!n.context_only)hit.push({n,q,rr:Math.max(rr+8,14)});
  }ctx.globalAlpha=1;frameId=requestAnimationFrame(draw);

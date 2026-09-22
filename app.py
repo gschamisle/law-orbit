@@ -4,7 +4,7 @@ from config import LAW_API_KEY, OPENAI_API_KEY, ENABLE_HWPX_OUTPUT, ENABLE_DRAFT
 from ui import (fsc_map_ui, law_map_ui, local_tax_map_ui, procurement_map_ui, housing_map_ui, environment_map_ui, state_property_map_ui, forex_map_ui, amendment_review_ui, article_relations_ui,
                 new_article_ui, stage1_draft, stage2_crossref, stage3_output)
 from ui.styles import inject_global_css
-from ui import mofe_map_ui
+from ui import mofe_map_ui, ftc_map_ui
 
 APP_TITLE = '이 조문 건드리면 다 죽는 거야'
 st.set_page_config(page_title=APP_TITLE, page_icon='✦', layout='wide', initial_sidebar_state='expanded')
@@ -65,10 +65,11 @@ with st.container(key='page_galaxy'):
       <p>개정하기 전에, 이 조문이 연결한 세계부터 살펴보세요.</p>
     </header>''', unsafe_allow_html=True)
     from core.domain_navigation import DOMAINS
-    tax, procurement, customs, forex, state_property, public_institutions, treasury, finance, local_tax, housing, environment = st.tabs(list(DOMAINS.values()))
+    tax, procurement, customs, forex, state_property, public_institutions, treasury, finance, ftc, local_tax, housing, environment = st.tabs(list(DOMAINS.values()))
     with tax: law_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with procurement: procurement_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with finance: fsc_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
+    with ftc: ftc_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with local_tax: local_tax_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with housing: housing_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
     with environment: environment_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
