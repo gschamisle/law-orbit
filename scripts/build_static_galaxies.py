@@ -194,7 +194,9 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             detail['issues']=[{k:e[k] for k in ('raw','reason','kind','status') if k in e} for e in issues[(d['name'],jo)]]
             if national is not None and not region:detail['rows']+=national.get((d['name'],jo),[])
             bucket[jo]=detail;bucket_articles.append(article);articles.append(article)
-            if len(bucket)>=24:flush()
+            # Keep FTC citation shards coarser to stay within static hosting's
+            # file-count budget while preserving every provision and citation.
+            if len(bucket)>=(96 if domain=='ftc' else 24):flush()
         flush()
         # Do not claim an unstructured administrative text was analyzed.
         body=''
@@ -227,7 +229,7 @@ def shell(dest):
     (dest/'renderer.html').write_text(prefix+html+'</html>',encoding='utf-8')
 
 
-def build(source,dest):
+def build(source,dest,previous_site=None):
     if dest.exists():raise ValueError('Choose a new empty destination; existing builds are preserved')
     dest.mkdir(parents=True);writer=Writer(dest);shell(dest)
     manifest=dict(schema=1,title='법의 궤도',domains=[])
@@ -273,6 +275,8 @@ def build(source,dest):
             if domain=='state_property':catalog['special_cases']=writer.data(export_special_cases(src['special_cases'],ids))
             if domain in WORK_DOMAINS:catalog['workbench']=workbench(bundle,ids)
             count=len(entries)
+        from scripts.delegation_baseline import attach_catalog
+        attach_catalog(writer,domain,catalog,previous_site)
         manifest['domains'].append(dict(id=domain,title=title,laws=count,catalog=writer.data(catalog),built_at=catalog['built_at']))
         print(domain+': exported '+str(count)+' documents',flush=True)
     from scripts.build_forex_finance_site import attach_bridge
@@ -290,6 +294,11 @@ def workbench(bundle,ids):
     result=assessment(bundle)
     if result['decision']=='hold':raise ValueError('업무 질문의 인용 근거 검증을 통과하지 못한 분야입니다.')
     result['cases']=[{**c,'law_id':ids[c['law']]} for c in result['cases'] if c['available']]
+    if bundle['graph'].get('public_scope'):
+        from copy import deepcopy
+        from core.public_designations import load
+        result['public_scope']=deepcopy(bundle['graph']['public_scope'])
+        result['public_scope']['designations']=load()
     return result
 
 
@@ -308,4 +317,5 @@ def export_special_cases(register,ids):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--source-root',type=Path,required=True);p.add_argument('--destination',type=Path,required=True)
-    a=p.parse_args();build(a.source_root.resolve(),a.destination.resolve())
+    p.add_argument('--previous-site',type=Path,help='Previous verified public site for amendment comparison')
+    a=p.parse_args();build(a.source_root.resolve(),a.destination.resolve(),a.previous_site)

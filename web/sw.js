@@ -1,5 +1,5 @@
-const SHELL='law-orbit-shell-ftc-v2';
-const ASSETS=['./','index.html','style.css?v=orbit-ftc-v2','fonts.css','app.mjs?v=orbit-ftc-v2','store.mjs','reading.mjs','cross-domain.mjs','special.mjs','query.mjs','renderer.html','app.webmanifest?v=orbit-1','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
+const SHELL='law-orbit-shell-ftc-v3';
+const ASSETS=['./','index.html','style.css?v=orbit-ftc-v3','fonts.css','app.mjs?v=orbit-ftc-v3','store.mjs','reading.mjs','cross-domain.mjs','special.mjs','public-scope.mjs','delegation.css?v=orbit-ftc-v3','delegation.mjs','delegation-ui.mjs','query.mjs','renderer.html','app.webmanifest?v=orbit-1','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{

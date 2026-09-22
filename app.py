@@ -5,12 +5,14 @@ from ui import (fsc_map_ui, law_map_ui, local_tax_map_ui, procurement_map_ui, ho
                 new_article_ui, stage1_draft, stage2_crossref, stage3_output)
 from ui.styles import inject_global_css
 from ui import mofe_map_ui, ftc_map_ui
+from ui import delegation_review_ui
 
 APP_TITLE = '이 조문 건드리면 다 죽는 거야'
 st.set_page_config(page_title=APP_TITLE, page_icon='✦', layout='wide', initial_sidebar_state='expanded')
 inject_global_css()
 
 pages = [('galaxy', '법령 탐색', None), ('review', '개정안 검토 (국세)', amendment_review_ui)]
+pages.append(('followup', '후속 개정 점검 (국세·공공기관)', delegation_review_ui))
 if ENABLE_WIP_TABS:
     pages += [('relations', '조문 연관 조회', article_relations_ui), ('new_article', '신설 조문 검토', new_article_ui)]
 if ENABLE_DRAFT_TAB:

@@ -67,8 +67,20 @@ def prepare_source(source):
         # Display abbreviations are not legal citation aliases.
         d['citation_names']=list(dict.fromkeys([n for n in (d['name'],d.get('short_name')) if n]))
         d['sectors']=tags(domain,d['name'],'')
+        reference_role=''
+        if domain=='public_institutions':
+            from core.public_institution_scope import role, PUBLIC, PRIVATE
+            reference_role=role(d['name'],d['provider'])
+            d['collection_role']=reference_role or 'core'
         for a in d['articles']:
             a['sectors']=tags(domain,'',a.get('title','')+' '+a['text'])
+            if reference_role:
+                a['sectors']=list(dict.fromkeys(a['sectors']+(['scope'] if reference_role=='scope-reference' else ['privatization'])))
+            if domain=='public_institutions':
+                if norm(d['name'])==norm(PUBLIC) and a['jo'] in ('2','4','5','6'):
+                    a['sectors']=list(dict.fromkeys(a['sectors']+['scope']))
+                if norm(d['name'])==norm(PRIVATE):
+                    a['sectors']=list(dict.fromkeys(a['sectors']+['privatization']))
             d['sectors']=list(dict.fromkeys(d['sectors']+a['sectors']))
         from core.mofe_citations import prepare_aliases
         prepare_aliases(d)
