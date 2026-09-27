@@ -44,7 +44,11 @@ def scopes(raw,hyphen):
 
 
 class Writer:
-    def __init__(self,dest):self.dest=dest;self.assets={}
+    def __init__(self,dest):
+        self.dest=dest;self.assets={}
+        manifest=dest/'manifest.json'
+        if manifest.exists() and read(manifest).get('data_packs'):
+            raise ValueError('Unpack the previous site into a new directory before an incremental build: scripts.compact_static_galaxies --unpack')
     def data(self,value):
         raw=json.dumps(value,ensure_ascii=False,separators=(',',':')).encode()
         content=gzip.compress(raw,compresslevel=6,mtime=0)

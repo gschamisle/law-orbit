@@ -11,15 +11,11 @@ from core.forex_finance_links import PAIR, BRIDGE_KINDS, bridge
 from core.citation_scope import Provision
 from scripts.build_static_galaxies import Writer, EdgeIndex, tidy, shell, ROOT
 from scripts.validate_static_galaxies import validate
+from scripts.static_storage import Storage
 
 
 def unpack(root, ref):
-    if ref['url'] != 'data/'+ref['sha256']+'.json.gz':
-        raise ValueError('Invalid static reference')
-    raw = (root/ref['url']).read_bytes()
-    if len(raw) != ref['bytes'] or hashlib.sha256(raw).hexdigest() != ref['sha256']:
-        raise ValueError('Static edition checksum mismatch')
-    return json.loads(gzip.decompress(raw))
+    return Storage(root).read(ref)
 
 
 def snapshot(root, domain):

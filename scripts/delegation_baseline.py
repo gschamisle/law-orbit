@@ -3,17 +3,13 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
+from scripts.static_storage import Storage
 
 DOMAINS = ('tax', 'public_institutions')
 
 
 def read_ref(root, ref):
-    if ref['url'] != 'data/' + ref['sha256'] + '.json.gz':
-        raise ValueError('Unsafe baseline shard path')
-    raw = (Path(root) / ref['url']).read_bytes()
-    if len(raw) != ref['bytes'] or hashlib.sha256(raw).hexdigest() != ref['sha256']:
-        raise ValueError('Baseline checksum mismatch')
-    return json.loads(gzip.decompress(raw))
+    return Storage(root).read(ref)
 
 
 def eligible(entry):
