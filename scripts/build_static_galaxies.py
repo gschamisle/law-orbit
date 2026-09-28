@@ -22,7 +22,7 @@ from core.law_galaxy import build as build_map
 from core.domain_navigation import DOMAINS
 
 ROOT=Path(__file__).resolve().parents[1]
-WORK_DOMAINS=('public_institutions','customs','treasury')
+WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical')
 PALETTE=['#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed','#cedc80','#ffa58e','#91a1ff']
 LIMIT=24*1024*1024
 FIELDS=('source_law','source_jo','source_title','source_ref','source_granularity','source_effective','source_url','target_law','target_ref','target_ref_recorded','target_url','target_effective','target_kind','target_status','target_provision_status','context','raw','cite_raw','reason','status','precision','direction','direction_label','neighbor_law','neighbor_jo','neighbor_ref','neighbor_kind','neighbor_title','kind','external','broad','source_start','source_end','evidence_id','annex_urls')
@@ -95,6 +95,8 @@ class EdgeIndex:
 
 def tidy(row,ids,hyphen):
     out={k:row[k] for k in FIELDS if k in row}
+    for key in ('source_layer','source_unit','source_text_sha256','source_file_sha256'):
+        if key in row:out[key]=row[key]
     for key in ('source_url','target_url'):
         if key in out:out[key]=safe_url(out[key])
     if 'annex_urls' in out:out['annex_urls']=[safe_url(u) for u in out['annex_urls'] if safe_url(u)]
@@ -209,6 +211,24 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             body=body_text(d['raw_body_blocks'])
         entry['parts']=parts
         extra={}
+        if domain=='medical':
+            from core.annex_analysis import validate_analysis
+            extra['annexes']=[]
+            for annex in d.get('annexes',[]):
+                analysis=annex.get('body_analysis')
+                item={k:annex.get(k) for k in ('ref','title','effective','urls')}
+                item['status']='explicit-citations' if analysis else 'not-analyzed'
+                item['connections']=[]
+                if analysis:
+                    validate_analysis(analysis);item['analysis']=analysis
+                    for e in graph['edges']+graph['external_references']:
+                        if e['source_law']!=d['name'] or e['source_jo']!=annex['ref'] or e.get('source_layer')!='annex-body':continue
+                        kind=e['target_kind']
+                        try:jo=_target(e['target_ref']).jo if kind=='article' else e['target_ref']
+                        except ValueError:continue
+                        row={**e,'raw':e['cite_raw'],'direction':'forward','neighbor_kind':kind,'neighbor_jo':jo,'neighbor_law':e['target_law'],'neighbor_ref':e['target_ref'],'external':e['target_law'] not in ids}
+                        item['connections'].append(tidy(row,ids,index.hyphen))
+                extra['annexes'].append(item)
         if domain in ('ftc','treasury','procurement') and d.get('text_analysis'):
             extra=dict(text_connections=text_forward[d['name']],text_issues=[i for i in graph.get('text_citation_issues',[]) if i['source_law']==d['name']])
         entry['file']=writer.data(dict(meta=entry,articles=articles,details=inline,broad=broad,unstructured_text=body,**extra))
@@ -301,6 +321,11 @@ def workbench(bundle,ids):
     result=assessment(bundle)
     if result['decision']=='hold':raise ValueError('업무 질문의 인용 근거 검증을 통과하지 못한 분야입니다.')
     result['cases']=[{**c,'law_id':ids[c['law']]} for c in result['cases'] if c['available']]
+    if bundle['graph'].get('constitution_guide'):
+        from copy import deepcopy
+        result['constitution_guide']=deepcopy(bundle['graph']['constitution_guide'])
+        for row in result['constitution_guide']:
+            for side in ('constitution','related'):row[side]['law_id']=ids[row[side]['law']]
     if bundle['graph'].get('public_scope'):
         from copy import deepcopy
         from core.public_designations import load

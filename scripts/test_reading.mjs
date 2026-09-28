@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {loadReading,scopeHighlights,quoteHighlights,connectionHighlights,evidenceKey,collectReview,reviewHTML,reviewCSV} from '../web/reading.mjs';
+import {loadReading,scopeHighlights,quoteHighlights,connectionHighlights,evidenceKey,collectReview,reviewHTML,reviewCSV,provisionOptions} from '../web/reading.mjs';
+test('dropdown preserves real paragraph/item paths and does not use inline citations as headings',()=>{
+ const a={jo:'16',label:'제16조',text:'제16조(의제)\n① 본문에서 제99조제2항을 인용한다.\n1. 첫 항의 호\n가. 목\n② 두번째 항\n1. 다른 호\n'};
+ assert.deepEqual(provisionOptions(a).map(p=>p.value),['제16조','제16조제1항','제16조제1항제1호','제16조제1항제1호가목','제16조제2항','제16조제2항제1호']);
+ assert.equal(provisionOptions(a,'제16조제9항').at(-1).label,'제16조제9항 · 저장된 범위, 원문 확인');
+ assert.deepEqual(provisionOptions({jo:'1-2',label:'제1-2조',text:'제1-2조(내용)\n1. 호\n가. 목'}).map(p=>p.value),['제1-2조','제1-2조제1호','제1-2조제1호가목']);
+});
 const entry={id:'tax-a',name:'법인세법',domain:'tax',region:'',file:'body'};
 const doc={meta:entry,articles:[{jo:'32',text:'기준 조문'},{jo:'60',text:'읽을 조문'}]};
 const context={catalog:{laws:[entry]},lookup:new Map([[entry.id,entry]]),currentDoc:doc,read:async()=>{throw Error('unexpected network request');}};

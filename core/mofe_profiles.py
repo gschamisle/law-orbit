@@ -99,13 +99,30 @@ PROFILES = {
            ('국가채권 관리법','27','국가채권의 이행 연기는 어떤 규정과 연결되는가?','채권관리 법률과 하위 규정의 인용을 읽습니다.'))),
 }
 
+from core.labor_profile import PROFILE as LABOR_PROFILE
+# Reuse the work-area engine without reclassifying labor as a MOFE corpus.
+from core.constitution_profile import PROFILE as CONSTITUTION_PROFILE
+from core.medical_profile import PROFILE as MEDICAL_PROFILE
+WORK_PROFILES={**PROFILES,'labor':LABOR_PROFILE,'constitution':CONSTITUTION_PROFILE,'medical':MEDICAL_PROFILE}
+
 def selected(domain,name,authority,provider):
+    if domain=='constitution':
+        from core.constitution_profile import selected as constitution_selected
+        return constitution_selected(name,authority,provider)
     from core.procurement_collection import authorities
-    p=PROFILES[domain];actual=authorities(authority)
+    p=WORK_PROFILES[domain];actual=authorities(authority)
     if domain=='public_institutions' and actual:
         from core.public_institution_scope import role
         if role(name,provider):return True  # Explicit cross-ministry reference list; body authority still verified against API inventory.
-    allowed={'재정경제부','관세청'} if domain=='customs' else {'재정경제부'}
+    allowed=set(p['authorities']) if 'authorities' in p else ({'재정경제부','관세청'} if domain=='customs' else {'재정경제부'})
+    if domain=='medical' and norm(name) in {norm('의료법'+s) for s in ('',' 시행령',' 시행규칙')}:
+        allowed={'보건복지부','질병관리청'}
+        if '보건복지부' not in actual:return False
+    if domain=='labor':
+        from core.labor_profile import EQUALITY
+        if norm(name) in {norm(EQUALITY+s) for s in ('',' 시행령',' 시행규칙')}:
+            allowed={'고용노동부','성평등가족부'}
+            if '고용노동부' not in actual:return False
     if not actual or not actual.issubset(allowed):return False
     n=norm(name)
     if provider=='eflaw':return n in {norm(v) for v in p['statutes']}
@@ -113,5 +130,6 @@ def selected(domain,name,authority,provider):
     return n in {norm(v) for v in p['rules']} or (domain=='treasury' and n.endswith('회계처리지침'))
 
 def tags(domain,name,text):
-    p=PROFILES[domain];value=norm(name+' '+text)
-    return [s for s,words in p['keywords'].items() if any(norm(w) in value for w in words)] or [next(iter(p['keywords']))]
+    p=WORK_PROFILES[domain];value=norm(name+' '+text)
+    matches=[s for s,words in p['keywords'].items() if any(norm(w) in value for w in words)]
+    return matches if domain in ('labor','constitution','medical') else matches or [next(iter(p['keywords']))]

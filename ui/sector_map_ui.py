@@ -5,10 +5,14 @@ import streamlit as st
 import streamlit.components.v1 as components
 from core import procurement_universe, housing_universe, environment_universe, state_property_universe, forex_universe
 from core import public_institutions_universe, customs_universe, treasury_universe, ftc_universe
+from core import labor_universe, constitution_universe, medical_universe
 from core.procurement_universe import documents, sector_graph, mark_sector, article_for, external_evidence
 APIS={'procurement':procurement_universe,'housing':housing_universe,'environment':environment_universe,'state_property':state_property_universe,'forex':forex_universe}
 APIS.update(public_institutions=public_institutions_universe,customs=customs_universe,treasury=treasury_universe)
 APIS['ftc']=ftc_universe
+APIS['labor']=labor_universe
+APIS['constitution']=constitution_universe
+APIS['medical']=medical_universe
 from ui.law_library_ui import render as render_library
 
 
@@ -60,6 +64,14 @@ def render(profile, bundle_path):
     except (OSError,ValueError,KeyError,TypeError):
         st.error(profile['title']+' 데이터 검증 실패 · 수집 자료를 확인해 주세요.');return
     graph=bundle['graph'];docs=documents(bundle['source']);by_name={d['name']:d for d in docs}
+    if domain=='constitution':
+        with st.expander('관련 법률 안내 · 명시적 인용과 구분'):
+            st.caption('헌법의 원칙을 구체화하는 법률을 골라 소개합니다. 아래 안내는 인용선과 인용 건수에 포함하지 않습니다.')
+            for row in graph['constitution_guide']:
+                c,r=row['constitution'],row['related']
+                st.markdown('**헌법 제'+c['jo']+'조 · '+row['title']+' → '+r['law']+' 제'+r['jo']+'조**')
+                st.caption(row['reason'])
+                st.markdown('[헌법 원문]('+c['url']+') · [관련 법률 원문]('+r['url']+')')
     if domain=='public_institutions' and graph.get('public_scope'):
         from ui.public_scope_ui import render as render_public_scope
         render_public_scope(graph['public_scope'],by_name,prefix=state_prefix)
@@ -70,7 +82,8 @@ def render(profile, bundle_path):
             st.caption('수집 조문 간 인용 근거를 확인한 질문입니다. 개정 필요성의 자동 판정은 아닙니다.')
             for case in work['cases']:
                 if not case['available']:continue
-                if st.button(case['title'],key=state_prefix+'_case_'+case['jo'],width='content'):
+                case_key=state_prefix+'_case_'+(case['law']+'_' if domain=='labor' else '')+case['jo']
+                if st.button(case['title'],key=case_key,width='content'):
                     remembered=st.session_state.setdefault(state_prefix+'_saved_widgets',{})
                     remembered.setdefault('all',{}).update(law=case['law'],ref='제'+case['jo']+'조')
                     st.session_state[state_prefix+'_all_law']=case['law']
@@ -116,6 +129,17 @@ def render(profile, bundle_path):
                          format_func=lambda n:by_name[n]['display_name'],key=key('law'))
     picked=render_library(by_name[law],prefix=prefix,default_reference=remember('ref',profile['default_refs'].get(sector,'제1조')),remember=remember)
     if picked:st.session_state[key('ref')]=picked
+    if domain=='medical' and by_name[law].get('annexes'):
+        with st.expander('별표·서식 본문 읽기'):
+            annexes={a['ref']:a for a in by_name[law]['annexes']}
+            ref=st.selectbox('별표·서식',list(annexes),format_func=lambda r:r+' · '+annexes[r]['title'],key=key('annex_'+law))
+            annex=annexes[ref];analysis=annex.get('body_analysis')
+            for i,url in enumerate(annex.get('urls',[])):st.link_button(f'별표 원본 {i+1}',url)
+            if analysis:
+                st.caption('검증한 칸·문단 순서의 본문입니다. 병합 칸 귀속·내부 참조·정원 및 면적 산식은 미판정입니다.')
+                st.dataframe([{'위치':u['locator'],'본문':u['text']} for u in analysis['units']],hide_index=True)
+                st.download_button('별표 텍스트 내려받기',analysis['text'].encode('utf-8'),law+'-'+ref+'.txt',key=key('annex_text_'+law))
+            else:st.info('이 별표 본문은 미분석입니다. 공식 원본을 확인하세요.')
     previous=st.session_state.get(key('selection'))
     if previous and previous[0]!=law:st.session_state.pop(key('selection'),None)
     with right:

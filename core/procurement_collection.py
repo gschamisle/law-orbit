@@ -153,7 +153,7 @@ def collect_document(request, item, as_of, *, authority_validator=None):
             'analysis_error':('조문 분석 대기' if any(b.strip() for b in blocks) else 'API 본문 미제공 · 공식 첨부파일 확인 필요')}
 
 
-def collect_sources(request, inventory, cache_dir, progress=None, *, authority_validator=None):
+def collect_sources(request, inventory, cache_dir, progress=None, *, authority_validator=None, document_collector=None):
     cache_dir = Path(cache_dir)
     jobs = [r for r in inventory['records'] if r['state'] == 'current-candidate']
     def fetch(r):
@@ -165,7 +165,7 @@ def collect_sources(request, inventory, cache_dir, progress=None, *, authority_v
             if saved['sha256'] != digest: raise CollectionError('procurement-cache-integrity')
             if all(data.get(k)==r[k] for k in ('edition_key','name','managing_authority')) and data['fetched_at']==inventory['as_of']:
                 return data
-        data = collect_document(request, r, inventory['as_of'], authority_validator=authority_validator)
+        data = (document_collector or collect_document)(request, r, inventory['as_of'], authority_validator=authority_validator)
         digest = hashlib.sha256(json.dumps(data, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
         atomic_json(path, dict(sha256=digest, body=data))
         return data

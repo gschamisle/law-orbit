@@ -44,7 +44,7 @@ def resolved_name(cite, text, citations, own_law):
     return name
 
 
-def build_universe(source, *, focus_categories=("tax",), preserve_external=False, article_adapter=None, source_names=None):
+def build_universe(source, *, focus_categories=("tax",), preserve_external=False, article_adapter=None, source_names=None, annex_bodies=False):
     """Preserve the tax default; other domains are explicit opt-ins."""
     if (not isinstance(focus_categories, (tuple, list)) or not focus_categories
             or any(not isinstance(c, str) or not c for c in focus_categories)):
@@ -202,6 +202,19 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                         name = effective_law_name(cite,law['name'])
                         add(law,synthetic,name,f'제{cite.jo}조'+('의'+cite.jo_sub if cite.jo_sub else ''),
                             cite.raw,*cite.span,relation='byeolpyo',source_ref=annex['ref'],source_granularity='annex')
+    if annex_bodies:
+        for law in corpus:
+            if law.get('category') not in focus_categories or (source_names is not None and law['name'] not in source_names):continue
+            if [a['ref'] for a in law.get('annexes',[])]!=['별표']:continue
+            for article in law.get('articles',[]):
+                for m in re.finditer(r'(?<![가-힣])별표(?=와 같다)',article['text']):
+                    add(law,article,law['name'],'별표',m[0],m.start(),m.end(),kind='annex',relation='annex_reference')
+    annex_result = None
+    if annex_bodies:
+        from core.annex_analysis import collect_annex_citations
+        annex_result = collect_annex_citations(corpus, focus_categories, source_names)
+        edges.extend(annex_result['edges'])
+        if preserve_external: external_references.extend(annex_result['external_references'])
     edges.sort(key=lambda e:(e['source_law'],e['source_jo'],e['source_start'],e['target_law'],e['target_ref']))
     result = {'schema_version':2,'built_at':source['built_at'],'provider':source.get('provider',''),
             'laws':sorted(l['name'] for l in corpus), 'catalog':metadata, 'edges':edges,
@@ -211,6 +224,8 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
             'coverage_note':'수집한 세법령 내부 및 세법령↔선정 외부 법령의 연결입니다. 법령·정의 참조는 특정 조문 연결을 확정하지 않습니다. 별표 파일 본문·부칙·고시 및 회계기준 전문은 전수 해석하지 않았습니다.'}
     if preserve_external:
         result['external_references'] = sorted(external_references, key=lambda e:(e['source_law'], e['source_jo'], e['source_start']))
+    if annex_result is not None:
+        result['annex_analysis'] = {'coverage':annex_result['coverage'],'issues':annex_result['issues']}
     if focus_categories != ("tax",):
         result["focus_categories"] = list(focus_categories)
         result["focus_laws"] = sorted(l["name"] for l in corpus if l["category"] in focus_categories)

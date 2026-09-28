@@ -1,11 +1,14 @@
 import {mountPublicScope} from './public-scope.mjs';
+import {renderAnnex} from './annex.mjs';
+import {mountPageviews} from './pageviews.mjs';
 import {createDelegationReview} from './delegation-ui.mjs';
-import {loadReading,scopeHighlights,connectionHighlights,evidenceKey,collectReview,reviewHTML,reviewCSV} from './reading.mjs';
+import {loadReading,scopeHighlights,connectionHighlights,evidenceKey,collectReview,reviewHTML,reviewCSV,provisionOptions} from './reading.mjs';
 import {validateBridge,combineConnections,bridgeLookup,bridgeLabel,bridgePeers,bridgeNames,bridgeEditions} from './cross-domain.mjs';
 import {selectCases,deadlineLabels,statusLabels,dateLabel} from './special.mjs';
 import {data,cached,saveAll,clearSaved,configureStorage} from './store.mjs';
 import {target,refine,matchingArticles,safeLink,focusMap,normalize} from './query.mjs';
 const $=id=>document.getElementById(id),stateKey='law-galaxy-state:'+new URL('.',location.href).pathname;
+mountPageviews($('pageviews'));
 let manifest,catalog,regional,lookup=new Map(),domain='',state={},doc=null,detail=null,wanted=null,overview=null,epoch=0,currentRows=[],limit=40,saveController=null;
 let reading=null,readingEpoch=0;
 let selectedEvidence=new Set(),exportRows=[],exportUnresolved=[],exportEpoch=0,exportUrls=[];
@@ -22,13 +25,13 @@ function cancelSave(){saveController?.abort();saveController=null;$('save-law').
 function text(tag,value,cls=''){const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;}
 function link(url,label){const href=safeLink(url);if(!href)return text('span','공식 출처 확인 필요','muted');const e=text('a',label);e.href=href;e.target='_blank';e.rel='noopener noreferrer';return e;}
 function option(value,label){const e=text('option',label);e.value=value;return e;}
-function displayLaw(d){return d.name.length<=22?d.name:d.label;}
+function displayLaw(d){return d.domain==='labor'||d.name.length<=22?d.name:d.label;}
 function connection(){const e=$('connection');e.textContent=navigator.onLine?'필요한 자료만 내려받아 열람':'오프라인 · 저장한 자료로 탐색';}
 function allLaws(){return [...catalog.laws,...(regional?.laws||[])];}
 function usesArticleTags(){return domain==='forex'||!!catalog?.workbench;}
 function readableUnstructured(document){
  const raw=document.unstructured_text||'';
- if(!['public_institutions','customs','treasury','ftc','procurement'].includes(document.meta?.domain))return raw;
+ if(!['public_institutions','customs','treasury','ftc','procurement','labor'].includes(document.meta?.domain))return raw;
  const hasImages=/<\/?img\b[^>]*>/i.test(raw);
  const plain=raw.replace(/<\/?img\b[^>]*>/gi,'').replace(/\n[ \t]*\n(?:[ \t]*\n)+/g,'\n\n').trim();
  return (hasImages?'[이미지·도표는 공식 원문에서 확인하세요.]\n\n':'')+plain;
@@ -83,10 +86,16 @@ $('export-html').onclick=()=>downloadReview('html');$('export-csv').onclick=()=>
 function renderWorkbench(){
  const box=$('workbench'),work=catalog.workbench;box.hidden=!work;box.replaceChildren();if(!work)return;
  const head=document.createElement('div');head.className='workbench-head';
- head.append(text('h2','업무 질문으로 시작'),text('span',`조문 분석 ${work.indexed_documents} / 수집 ${work.documents}개 문서`,'muted small'));box.append(head,text('p',work.purpose,'muted small'));
+ head.append(text('h2',domain==='constitution'?'헌법에서 시작하기':'업무 질문으로 시작'),text('span',`조문 분석 ${work.indexed_documents} / 수집 ${work.documents}개 문서`,'muted small'));box.append(head,text('p',work.purpose,'muted small'));
  const cases=document.createElement('div');cases.className='work-cases';
  for(const c of work.cases){const b=text('button',c.title,'work-case');b.type='button';b.append(text('small',`${c.law} 제${c.jo}조 · 다른 문서의 연결 조문 ${c.connected_articles}개`));b.title=c.description;b.onclick=()=>navigate(domain,{sector:'all',law:c.law_id,reference:`제${c.jo}조`,query:''});cases.append(b);}box.append(cases);
  const scope=text('button',`지원 범위·빠진 자료 확인${work.unindexed.length?' · '+work.unindexed.length+'개 문서의 분석 범위 확인':''} ↗`,'work-scope quiet');scope.onclick=()=>$('coverage-open').click();box.append(scope);
+ if(work.constitution_guide){
+  const guide=document.createElement('details');guide.className='constitutional-guide';guide.append(text('summary','기본권·국가기관·경제질서의 관련 법률 안내'));
+  guide.append(text('p','편집한 길잡이입니다. 직접 인용과 구별하며 인용선·인용 건수에 포함하지 않습니다.','muted small'));
+  const choices=document.createElement('div');choices.className='guide-choices';
+  for(const r of work.constitution_guide){const b=text('button',r.title,'quiet');b.append(text('small',`헌법 제${r.constitution.jo}조`));b.onclick=()=>follow(r.constitution.law_id,r.constitution.jo,'');choices.append(b);}guide.append(choices);box.append(guide);
+ }
  if(work.public_scope)mountPublicScope(box,work.public_scope,{
   link,
   read:(law,jo)=>{const entry=[...lookup.values()].find(d=>d.name===law);if(entry)openReading(entry.id,jo);else note('이 법령의 본문은 미수집입니다.');},
@@ -95,20 +104,24 @@ function renderWorkbench(){
 }
 function allowedLaws(){return allLaws().filter(d=>state.sector==='all'||(d.sectors||[]).includes(state.sector));}
 function renderLaws(){
- const filtered=allowedLaws().filter(d=>normalize(d.name+' '+d.label).includes(normalize($('law-query').value)));
+ const filtered=allowedLaws();
  $('law').replaceChildren(option('','법령을 선택하세요'),...filtered.map(d=>option(d.id,displayLaw(d)+(d.analyzed?'':d.text_analysis?' · 문단 인용':' · 조문 미분석'))));
  if(filtered.some(d=>d.id===state.law))$('law').value=state.law;
  return filtered;
 }
 function renderArticles(){
  const candidates=(doc?.articles||[]).filter(a=>!usesArticleTags()||state.sector==='all'||(a.sectors||[]).includes(state.sector));
- const matches=matchingArticles(candidates,$('body-query').value);$('article').replaceChildren(...matches.map(a=>option(a.jo,a.label+' · '+a.title)));
+ const matches=matchingArticles(candidates,$('body-query').value);$('article').replaceChildren(...matches.map(a=>option(a.jo,a.label+(a.title?' · '+a.title:''))));
  if(wanted&&matches.some(a=>a.jo===wanted.jo))$('article').value=wanted.jo;
  else if(matches.length)$('article').selectedIndex=-1;
  if(!matches.length)$('article').append(option('','검색 결과 없음'));
 }
 function domainButtons(){
- $('domains').replaceChildren(...manifest.domains.map(d=>{const b=text('button',d.title);b.type='button';b.setAttribute('aria-current',d.id===domain?'page':'false');b.onclick=()=>navigate(d.id);return b;}));
+ const nav=$('domains');nav.replaceChildren();
+ const button=d=>{const b=text('button',d.title);b.type='button';b.setAttribute('aria-current',d.id===domain?'page':'false');b.onclick=()=>navigate(d.id);return b;};
+ const foundation=manifest.domains.find(d=>d.id==='constitution');
+ if(foundation){const top=document.createElement('div');top.className='nav-foundation';const b=button(foundation);b.append(text('small','원칙과 제도의 출발점'));top.append(b);nav.append(top,text('p','분야별 법령','nav-section-label'));}
+ const fields=document.createElement('div');fields.className='nav-fields';fields.append(...manifest.domains.filter(d=>d.id!=='constitution').map(button));nav.append(fields);
 }
 async function navigate(id,overrides={}){
  resetReview();delegation.reset();
@@ -127,15 +140,17 @@ async function navigate(id,overrides={}){
   if(state.region){const r=catalog.regions?.find(r=>r.id===state.region);if(r?.catalog)regional=await data(r.catalog);else state.region='';}
   if(token!==epoch)return;lookup=new Map(allLaws().map(d=>[d.id,d]));
   $('heading').textContent=entry.title;document.title='법의 궤도 — '+entry.title;
+  document.querySelector('.page-head .eyebrow').textContent=id==='constitution'?'CONSTITUTION / FOUNDATIONS':'EXPLORE THE CONNECTIONS';
+  document.querySelector('.page-head p').textContent=id==='constitution'?'헌법에서 출발해, 원칙을 구체화하는 법률을 읽습니다.':'조문을 불러오면, 함께 살펴볼 법이 보입니다.';
   special=null;specialScope={};if($('special').open)$('special').close();
   $('special-open').hidden=!catalog.special_cases;
   $('sector').replaceChildren(...Object.entries(catalog.sectors).map(([v,t])=>option(v,t)));if(!catalog.sectors[state.sector])state.sector='all';$('sector').value=state.sector;
   $('region-label').hidden=id!=='local_tax';$('region').replaceChildren(option('','중앙 법령·전국 역인용'),...(catalog.regions||[]).map(r=>option(r.id,r.authority+(r.catalog?'':' · 분석 자료 없음'))));$('region').value=state.region;
-  $('law-query').value='';$('body-query').value=state.query||'';$('direction').value=state.direction;$('review').checked=state.review;$('broad').checked=state.broad;
+  $('body-query').value=state.query||'';$('direction').value=state.direction;$('review').checked=state.review;$('broad').checked=state.broad;
   const choices=renderLaws();overview=await data((regional||catalog).overview);if(token!==epoch)return;
-  const defaults={tax:'법인세법',fsc:'은행법',ftc:'독점규제 및 공정거래에 관한 법률',local_tax:'지방세법',procurement:'국가를 당사자로 하는 계약에 관한 법률',housing:'국토의 계획 및 이용에 관한 법률',environment:'화학물질관리법',state_property:'국유재산법',forex:'외국환거래규정',public_institutions:'공공기관의 운영에 관한 법률',customs:'관세법',treasury:'국고금 관리법'};
+ const defaults={tax:'법인세법',fsc:'은행법',ftc:'독점규제 및 공정거래에 관한 법률',local_tax:'지방세법',procurement:'국가를 당사자로 하는 계약에 관한 법률',housing:'국토의 계획 및 이용에 관한 법률',environment:'화학물질관리법',state_property:'국유재산법',forex:'외국환거래규정',public_institutions:'공공기관의 운영에 관한 법률',customs:'관세법',treasury:'국고금 관리법',labor:'근로기준법',constitution:'대한민국헌법',medical:'의료법'};
   const chosen=lookup.get(state.law)||choices.find(d=>d.name===defaults[id])||choices[0];
-  const previousQuery=state.query;if(chosen){await openLaw(chosen.id,state.reference||(id==='ftc'&&chosen.name===defaults.ftc?'제45조':''),token);if(token===epoch){state.query=previousQuery;$('body-query').value=previousQuery;renderArticles();}}else{showMap(overview);$('article-content').replaceChildren(text('p','선택 분야의 수집 조문이 없습니다.','muted'));}
+  const previousQuery=state.query;if(chosen){await openLaw(chosen.id,state.reference||(id==='ftc'&&chosen.name===defaults.ftc?'제45조':id==='labor'&&chosen.name===defaults.labor?'제11조':id==='constitution'&&chosen.name===defaults.constitution?'제53조':id==='medical'&&chosen.name===defaults.medical?'제43조':''),token);if(token===epoch){state.query=previousQuery;$('body-query').value=previousQuery;renderArticles();}}else{showMap(overview);$('article-content').replaceChildren(text('p','선택 분야의 수집 조문이 없습니다.','muted'));}
   persist();
  }catch(err){if(token===epoch){error(err);$('map-host').replaceChildren(text('p','이 분야의 자료를 불러오지 못했습니다. 다른 분야의 자료로 대체하지 않습니다.','empty'));}}
  finally{if(token===epoch)busy(false);}
@@ -148,6 +163,7 @@ async function openLaw(id,reference='',token=++epoch){
   const loaded=await data(entry.file);if(token!==epoch)return;doc=loaded;state.law=id;state.query='';$('body-query').value='';
   if(!$('law').querySelector(`option[value="${id}"]`))$('law').prepend(option(id,entry.label+' · 분야 밖 관련 법령'));$('law').value=id;
   $('law-title').textContent=entry.name;$('law-meta').replaceChildren(text('span',`시행 ${entry.effective||'확인 필요'} · ${entry.authority||entry.kind||'수집 자료'} `),link(entry.url,'공식 원문 ↗'));
+  if(doc.annexes?.length){const annexes=document.createElement('details');annexes.className='annex-picker';annexes.append(text('summary',`별표·서식 ${doc.annexes.length}개 · 본문 분석 ${doc.annexes.filter(a=>a.analysis).length}개`));const choice=document.createElement('select');choice.setAttribute('aria-label','읽을 별표·서식');choice.append(option('','별표·서식을 선택하세요'),...doc.annexes.map(a=>option(a.ref,a.ref+' · '+a.title+(a.analysis?'':' · 본문 미분석'))));choice.onchange=()=>{if(choice.value)openReading(id,choice.value);};annexes.append(choice);$('law-meta').append(annexes);}
   renderArticles();$('download-state').textContent='조문과 연결 근거는 필요한 부분만 불러옵니다.';
   for(const message of entry.source_notes||[])$('law-meta').append(text('p',message,'muted small'));
   if(entry.pdf_url)$('law-meta').append(link(entry.pdf_url,'수집 판본 PDF ↗'));
@@ -155,7 +171,7 @@ async function openLaw(id,reference='',token=++epoch){
   let a=(usesArticleTags()&&state.sector!=='all'?doc.articles.find(a=>(a.sectors||[]).includes(state.sector)):null)||doc.articles[0];try{const t=target(reference,['fsc','forex'].includes(domain));a=doc.articles.find(a=>a.jo===t.jo)||a;}catch{}
   if(a)await openArticle(reference&&doc.articles.some(a=>{try{return a.jo===target(reference,['fsc','forex'].includes(domain)).jo;}catch{return false;}})?reference:a.label,token);
   else{
-   detail=wanted=null;state.reference='';$('reference').value='';
+   detail=wanted=null;state.reference='';$('reference').replaceChildren();
    $('article-content').replaceChildren(text('p',doc.meta.text_analysis?'문단의 명시적 인용 분석 · 지침 내부 문단 간 참조는 미분석':'본문 수집 · 조문 연결 미분석','status-badge'),text('div',readableUnstructured(doc)||'조문 단위로 분석된 본문이 없습니다. 공식 원문을 확인해 주세요.','article-body'));
    currentRows=doc.text_connections?.filter(r=>!r.external)||[];limit=40;setExportRows((doc.text_connections||[]).map(r=>({...r,export_uncollected:!!r.external})),doc.text_issues||[]);renderEvidence();
    $('evidence-count').textContent=doc.text_connections?`${currentRows.length}건`:'';
@@ -175,12 +191,17 @@ async function openArticle(reference,token=++epoch){
  try{
   const parsed=target(reference,['fsc','forex'].includes(domain)),a=doc.articles.find(a=>a.jo===parsed.jo);if(!a)throw Error('수집한 본문에 해당 조문이 없습니다. 다른 조문으로 대체하지 않았습니다.');
   const group=doc.details?.[a.jo]?doc.details:await data(a.detail);if(token!==epoch)return;if(!group[a.jo])throw Error('조문 연결 자료를 찾지 못했습니다.');
-  wanted=parsed;detail=group[a.jo];state.reference=wanted.label;$('reference').value=wanted.label;$('article').value=a.jo;limit=40;
-  const box=$('article-content');box.replaceChildren(text('h3',a.label+' · '+a.title,'article-title'));
+  wanted=parsed;detail=group[a.jo];state.reference=wanted.label;$('reference').replaceChildren(...provisionOptions(a,wanted.label).map(p=>option(p.value,p.label)));$('reference').value=wanted.label;$('article').value=a.jo;limit=40;
+  const box=$('article-content');box.replaceChildren(text('h3',a.label+(a.title?' · '+a.title:''),'article-title'));
   if(a.deleted)box.append(text('p','수집 판본에서 삭제된 조문','status-badge'));
   const meta=document.createElement('div');meta.className='article-meta';meta.append(text('span','시행 '+(a.effective||doc.meta.effective||'확인 필요'),'muted small'));
   const copy=text('button','본문 복사');copy.onclick=async()=>{try{await navigator.clipboard.writeText(doc.meta.name+' '+a.label+'\n'+a.text);copy.textContent='복사됨';}catch{note('본문을 선택해 복사해 주세요.');}};meta.append(copy);box.append(meta);const mainBody=text('div',a.text,'article-body');box.append(mainBody);if(wanted.narrow){const plan=scopeHighlights(a.text,a.jo,{scopes:[[wanted.path,wanted.path,null]]});markBody(mainBody,a.text,plan,box,false);}
   if(wanted.narrow)box.append(text('p',`본문은 ${a.label} 전체이며 연결은 ${wanted.label} 범위로 대조합니다.`,'muted small'));
+  if(domain==='constitution'&&doc.meta.name==='대한민국헌법'){
+   const related=(catalog.workbench?.constitution_guide||[]).filter(r=>r.constitution.jo===a.jo);
+   if(related.length){const section=document.createElement('section');section.className='constitutional-reading';section.append(text('h3','관련 법률 안내'),text('p','해설성 연결 · 직접 인용 건수에 포함하지 않습니다.','muted small'));
+    for(const r of related){section.append(text('h4',r.related.law+' 제'+r.related.jo+'조'),text('p',r.reason,'muted small'));const b=text('button','관련 법률 본문 보기');b.onclick=()=>openReading(r.related.law_id,r.related.jo);section.append(b);}box.append(section);}
+  }
   if(domain==='state_property'){
    const button=text('button',doc.meta.name==='국유재산특례제한법'?'별표의 특례 근거 목록 ↗':'이 조문의 특례 등재 확인 ↗','special-inline quiet');
    button.onclick=()=>openSpecial(doc.meta.name==='국유재산특례제한법'?{}:{law:doc.meta.name,jo:a.jo});box.append(button);
@@ -200,7 +221,7 @@ function evidenceCard(row,external=false){
  if(row.cross_domain)title.append(text('span',bridgeLabel(row),'badge'));else if(row.national)title.append(text('span','전국 수집 조례 · '+(row.source_law||''),'badge'));else if(outsideSector(row))title.append(text('span','분야 밖 관련 조문','badge'));
  if(row.scope_labels?.length)title.append(text('small',row.scope_labels.map(k=>catalog.workbench.public_scope.labels[k]).join(' · '),'scope-labels'));
  header.append(title);
- if(!external&&row.neighbor_id){if(row.neighbor_kind==='annex'&&row.annex_unanalyzed)header.append(link(row.target_url,'별표 공식 원문 ↗'));else{const button=text('button','본문 보기');button.onclick=()=>openReading(row.neighbor_id,row.neighbor_kind==='article'?row.neighbor_jo:'',row.region||relatedLookup().get(row.neighbor_id)?.region||'',[row]);header.append(button);}}
+ if(!external&&row.neighbor_id){if(row.neighbor_kind==='annex'&&row.annex_unanalyzed)header.append(link(row.target_url,'별표 공식 원문 ↗'));else{const button=text('button','본문 보기');button.onclick=()=>openReading(row.neighbor_id,['article','annex'].includes(row.neighbor_kind)?row.neighbor_jo:'',row.region||relatedLookup().get(row.neighbor_id)?.region||'',[row]);header.append(button);}}
  const actions=document.createElement('div');actions.className='evidence-actions';
  const pick=text('label','','check');const check=document.createElement('input');check.type='checkbox';check.checked=selectedEvidence.has(evidenceKey(row));check.setAttribute('aria-label',`검토자료에 담기: ${row.neighbor_law||row.target_law} ${row.neighbor_ref||row.target_ref||''} · ${row.source_law||''} ${row.source_ref||''}`);check.onchange=()=>{if(check.checked)selectedEvidence.add(evidenceKey(row));else selectedEvidence.delete(evidenceKey(row));updateExportControls();};pick.append(check,document.createTextNode('검토자료에 담기'));actions.append(pick);
  const sourceId=row.source_id||(row.source_law===doc?.meta.name?doc.meta.id:'');
@@ -254,14 +275,19 @@ async function follow(id,jo,region){
 function closeReading(){
  readingEpoch++;reading=null;if($('reading').open)$('reading').close();
 }
-function readingLabel(jo){return jo?`제${jo.replace('의','조의')}${jo.includes('의')?'':'조'}`:'';}
+function readingLabel(jo){return /^(별표|별지|서식)/.test(jo)?jo:jo?`제${jo.replace('의','조의')}${jo.includes('의')?'':'조'}`:'';}
 function renderReadingArticle(jo){
- if(!reading)return;const {entry,document}=reading;const a=document.articles.find(a=>a.jo===jo);
+ if(!reading)return;const {entry,document}=reading;const a=document.articles.find(a=>a.jo===jo),annex=(document.annexes||[]).find(a=>a.ref===jo);
  reading.article=a;reading.requestedJo=jo;reading.copyText=a?entry.name+' '+a.label+'\n'+a.text:(!document.articles.length?readableUnstructured(document):'');
  $('reading-title').textContent=entry.name+(jo?' '+readingLabel(jo):'');
  $('reading-meta').replaceChildren(text('span','시행 '+(a?.effective||entry.effective||'확인 필요')+' '),link(entry.url,'공식 원문 ↗'));
  const body=$('reading-body');body.replaceChildren();$('reading-copy').textContent='본문 복사';$('reading-copy').disabled=!reading.copyText;$('reading-explore').disabled=!a;
- if(a){
+ if(annex){
+  reading.copyText=annex.analysis?entry.name+' '+annex.ref+'\n'+annex.analysis.text:'';$('reading-copy').disabled=!reading.copyText;$('reading-explore').disabled=true;
+  $('reading-status').textContent=annex.analysis?'별표 본문 · 명시적 인용 분석':'별표 본문 미분석';
+  $('reading-meta').replaceChildren(text('span','시행 '+(annex.effective||entry.effective||'확인 필요')+' '),link(entry.url,'공식 원문 ↗'));
+  renderAnnex(body,annex,reading.evidence,{text,link,read:openReading});
+ }else if(a){
   $('reading-status').textContent=a.deleted?'수집 판본에서 삭제된 조문입니다.':'';
   body.append(text('h3',a.title));const content=text('div',a.text,'reading-text');body.append(content);markBody(content,a.text,connectionHighlights(a.text,jo,reading.evidence.filter(r=>r.direction==='reverse'?r.source_jo===jo:r.neighbor_kind==='article'&&r.neighbor_jo===jo)),body,true);
  }else if(jo){
@@ -284,8 +310,8 @@ async function openReading(id,jo='',region='',evidence=null){
  if(!$('reading').open)$('reading').showModal();
  try{
   const result=await loadReading({id,jo,region},context);if(token!==readingEpoch||anchor!==epoch)return;
-  reading={...result,evidence:evidence||currentRows.filter(r=>r.neighbor_id===id&&(r.neighbor_kind==='article'?r.neighbor_jo:'')===jo)};$('reading-picker').hidden=!!jo||!result.document.articles.length;
-  $('reading-article').replaceChildren(option('','읽을 조문을 선택하세요'),...result.document.articles.map(a=>option(a.jo,a.label+' · '+a.title)));
+  reading={...result,evidence:evidence||currentRows.filter(r=>r.neighbor_id===id&&(['article','annex'].includes(r.neighbor_kind)?r.neighbor_jo:'')===jo)};$('reading-picker').hidden=!!jo||!result.document.articles.length;
+  $('reading-article').replaceChildren(option('','읽을 조문을 선택하세요'),...result.document.articles.map(a=>option(a.jo,a.label+(a.title?' · '+a.title:''))));
   renderReadingArticle(jo);
  }catch(err){if(token===readingEpoch&&anchor===epoch)$('reading-status').textContent=err.message||'본문을 불러오지 못했습니다. 인터넷 연결 또는 저장 자료를 확인해 주세요.';}
 }
@@ -301,7 +327,6 @@ $('reading-copy').onclick=async()=>{
 $('reading-explore').onclick=()=>{
  if(!reading?.article)return;const {entry,article}=reading;closeReading();if($('special').open)$('special').close();follow(entry.id,article.jo,entry.region||'');
 };
-$('law-query').oninput=renderLaws;
 $('law').onchange=()=>{if($('law').value)openLaw($('law').value);};
 $('sector').onchange=()=>navigate(domain,{sector:$('sector').value,law:'',reference:'',query:''});
 $('region').onchange=()=>{const region=catalog.regions?.find(r=>r.id===$('region').value);if(region&&!region.catalog){note('이 지역은 분석된 조례·규칙 데이터가 없습니다. 관련 법령이 없다는 뜻은 아닙니다.');$('region').value=state.region;return;}navigate(domain,{region:$('region').value,law:'',reference:'',query:''});};
@@ -361,7 +386,7 @@ $('save-law').onclick=async()=>{
 };
 $('about-open').onclick=()=>$('about').showModal();
 $('coverage-open').onclick=()=>{
- const content=$('coverage-copy');content.replaceChildren(text('p',`${$('heading').textContent} · 수집 기준 ${catalog?.built_at||''}`),text('p',catalog?.workbench?'수집한 본칙의 명시적 인용을 분석합니다. 별표·서식 본문·부칙은 미분석이며, 미수집 외부 법령의 본문·역인용은 점검하지 않았습니다. 불명확한 인용은 확인 목록에 보존합니다.':catalog?.coverage||''),text('p','항·호·목 범위를 포함한 저장 인용을 대조합니다. 새 항 신설의 취지 추론·의미상 유사성·신설 조문 검토는 이 무료 열람 버전에 포함하지 않습니다.'),text('p','이 웹사이트는 공개 법령 본문과 분석 결과만 제공합니다. 법제처 API 인증값이나 개정안 업로드 기능은 포함하지 않습니다.'));
+ const content=$('coverage-copy');content.replaceChildren(text('p',`${$('heading').textContent} · 수집 기준 ${catalog?.built_at||''}`),text('p',catalog?.workbench&&domain!=='medical'?'수집한 본칙의 명시적 인용을 분석합니다. 별표·서식 본문·부칙은 미분석이며, 미수집 외부 법령의 본문·역인용은 점검하지 않았습니다. 불명확한 인용은 확인 목록에 보존합니다.':catalog?.coverage||''),text('p','항·호·목 범위를 포함한 저장 인용을 대조합니다. 새 항 신설의 취지 추론·의미상 유사성·신설 조문 검토는 이 무료 열람 버전에 포함하지 않습니다.'),text('p','이 웹사이트는 공개 법령 본문과 분석 결과만 제공합니다. 법제처 API 인증값이나 개정안 업로드 기능은 포함하지 않습니다.'));
  if(['tax','public_institutions'].includes(domain))content.append(text('p','후속 개정 점검은 수집 법률·시행령의 위임 문구와 이전 판본의 변경을 대조합니다. 과거 판본 미확보 시 신규 여부는 미대조이며, 위임 이행·개정 누락을 자동 확정하지 않습니다. 내부 개정안 비교는 로컬 앱에서 제공합니다.'));
  const work=catalog?.workbench;
  const summary=catalog?.collection_summary;
@@ -388,8 +413,8 @@ async function start(){
   manifest=await response.json();if(manifest.schema!==1)throw Error('자료 형식이 맞지 않습니다. 새 판본을 확인해 주세요.');
   configureStorage(manifest.data_packs);
   if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
-  let active='tax';try{active=localStorage.getItem(stateKey+':active')||'tax';}catch{}
-  await navigate(manifest.domains.some(d=>d.id===active)?active:'tax');
+  let active=manifest.domains.some(d=>d.id==='constitution')?'constitution':'tax';try{active=localStorage.getItem(stateKey+':active')||active;}catch{}
+  await navigate(manifest.domains.some(d=>d.id===active)?active:manifest.domains.some(d=>d.id==='constitution')?'constitution':'tax');
  }catch(err){error(err);}
 }
 start();

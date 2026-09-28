@@ -24,11 +24,22 @@ def run(domain,stage,stamp):
             request=LawTransport(key,attempts=3,timeout=30,reuse_connections=True)
         if stage=='inventory':atomic_json(staging/'inventory.json',discover_inventory(request,domain,stamp,log))
         elif stage=='bodies':
-            source=collect_sources(request,read('inventory.json'),staging/'body-cache',log)
+            options={}
+            if domain=='constitution':
+                from core.constitution_collection import collect
+                options['document_collector']=collect
+            if domain=='medical':
+                from core.medical_annexes import collect
+                options['document_collector']=collect
+            source=collect_sources(request,read('inventory.json'),staging/('body-cache-annex-v1' if domain=='medical' else 'body-cache'),log,**options)
             if key in json.dumps(source,ensure_ascii=False):raise CollectionError('credential-found-in-output')
             atomic_json(staging/'source.json',source)
         else:
-            source=prepare_source(read('source.json'));graph=build_graph(source)
+            source=prepare_source(read('source.json'))
+            if domain=='medical':
+                from core.medical_annexes import attach
+                source=attach(source)
+            graph=build_graph(source)
             bundle=validate_bundle(dict(source=source,graph=graph),domain)
             review=assessment(bundle);bundle['assessment']=review
             if key and key in json.dumps(bundle,ensure_ascii=False):raise CollectionError('credential-found-in-output')

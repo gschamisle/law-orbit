@@ -10,7 +10,7 @@ export async function loadReading({id,jo='',region=''}, {catalog,lookup,currentD
  const document=currentDoc?.meta.id===id?currentDoc:await read(entry.file);
  if(document.meta.id!==entry.id||document.meta.domain!==entry.domain)throw Error('본문 자료의 법령 정보가 일치하지 않습니다.');
  if(entry.effective&&document.meta.effective!==entry.effective)throw Error('연결 자료와 본문의 시행 판본이 다릅니다. 새 판본을 확인해 주세요.');
- return {entry,document,article:jo?document.articles.find(a=>a.jo===jo):null,requestedJo:jo};
+ return {entry,document,article:jo?document.articles.find(a=>a.jo===jo):null,annex:(document.annexes||[]).find(a=>a.ref===jo),requestedJo:jo};
 }
 
 // Offsets from the Python collector count Unicode code points, not UTF-16 units.
@@ -27,6 +27,17 @@ function outline(body,jo){
  }
  for(let i=0;i<points.length;i++){const next=points.slice(i+1).find(p=>p.level<=points[i].level);if(next)points[i].end=next.start;}
  return points;
+}
+// Use the same collected-text outline as highlighting; never invent missing units.
+export function provisionOptions(article,selected=''){
+ const options=[{value:article.label,label:'조 전체 · '+article.label}],seen=new Set([article.label]);
+ for(const point of outline(article.text,article.jo)){
+  const [jo,hang,ho,mok]=point.path;if(mok&&!ho)continue;
+  const value=`제${jo.replace('의','조의')}${jo.includes('의')?'':'조'}${hang?'제'+hang+'항':''}${ho?'제'+ho.replace('의','호의')+(ho.includes('의')?'':'호'):''}${mok?mok+'목':''}`;
+  if(!seen.has(value)){options.push({value,label:value});seen.add(value);}
+ }
+ if(selected&&!seen.has(selected))options.push({value:selected,label:selected+' · 저장된 범위, 원문 확인'});
+ return options;
 }
 function mergeRanges(ranges){const out=[];for(const r of ranges.sort((a,b)=>a[0]-b[0])){const last=out.at(-1);if(last&&r[0]<=last[1])last[1]=Math.max(last[1],r[1]);else out.push([...r]);}return out;}
 export function scopeHighlights(body,jo,parsed){
@@ -77,11 +88,14 @@ export async function collectReview({anchor,rows,unresolved=[],context,cancelled
   if(cancelled())throw Error('검토자료 준비가 취소되었습니다.');
   let body='',bodyStatus='',effective='',url='';
   if(row.export_uncollected||!row.neighbor_id)bodyStatus='미수집 또는 조문 연결 미분석 · 본문을 포함하지 않았습니다.';
-  else if(row.neighbor_kind==='annex')bodyStatus='별표 본문 미분석 · 공식 원문을 확인하세요.';
   else try{
-   const result=await loadReading({id:row.neighbor_id,jo:row.neighbor_kind==='article'?row.neighbor_jo:'',region:row.region||''},loadedContext);
+   const result=await loadReading({id:row.neighbor_id,jo:['article','annex'].includes(row.neighbor_kind)?row.neighbor_jo:'',region:row.region||''},loadedContext);
    effective=result.article?.effective||result.entry.effective||'';url=result.entry.url||'';
-   if(result.article){body=result.article.text;bodyStatus=result.article.deleted?'수집 판본의 삭제 조문':'수집 조문 전체';}
+   if(row.neighbor_kind==='annex'){
+    body=result.annex?.analysis?.text||'';bodyStatus=body?'검증한 별표 본문 · 칸·문단 순서의 텍스트, 내부 참조·산식 미판정':'별표 본문 미분석 · 공식 원문을 확인하세요.';
+    effective=result.annex?.effective||effective;url=result.annex?.urls?.[0]||url;
+   }
+   else if(result.article){body=result.article.text;bodyStatus=result.article.deleted?'수집 판본의 삭제 조문':'수집 조문 전체';}
    else if(row.neighbor_kind==='article')bodyStatus='수집 판본에 해당 조문 본문이 없습니다.';
    else if(!result.document.articles.length){body=plainBody(result.document);bodyStatus=body?'수집 문서 본문 · 문단 내부 참조·이미지·표는 미분석':'본문 미확보';}
    else bodyStatus='법령 전체 참조 · 특정 조문 본문을 포함하지 않았습니다.';

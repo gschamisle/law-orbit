@@ -29,3 +29,5 @@ jobs:
         run: |
           node --test scripts/test_delegation.mjs
           uv run python -m scripts.test_delegation_baseline
+      - name: Check public reading and page-view isolation
+        run: node --test scripts/test_reading.mjs scripts/test_annex_reading.mjs scripts/test_pageviews.mjs

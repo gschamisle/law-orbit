@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {loadReading,collectReview,quoteHighlights} from '../web/reading.mjs';
+const entry={id:'medical-rule',name:'의료법 시행규칙',domain:'medical',effective:'20260612',url:'https://www.law.go.kr/법령/의료법시행규칙'};
+const raw='법 제43조제1항',body='기준\n'+raw+'에 따른다.\n';
+const doc={meta:entry,articles:[{jo:'38',text:'본칙'}],annexes:[{ref:'별표 5',effective:'20260612',status:'explicit-citations',analysis:{text:body},urls:['https://www.law.go.kr/LSW/flDownload.do?flSeq=1']}]};
+const context={catalog:{},lookup:new Map([[entry.id,entry]]),currentDoc:doc,read:async()=>{throw Error('Unexpected request');}};
+const row={neighbor_id:entry.id,neighbor_kind:'annex',neighbor_jo:'별표 5',source_jo:'별표 5',direction:'reverse',source_layer:'annex-body',source_start:3,source_end:3+raw.length,raw};
+test('annex reader retains the exact annex and does not substitute an article',async()=>{const r=await loadReading({id:entry.id,jo:'별표 5'},context);assert.equal(r.annex.analysis.text,body);assert.equal(r.article,undefined);assert.equal(r.requestedJo,'별표 5');});
+test('reverse evidence exports the actual annex body with explicit coverage',async()=>{const p=await collectReview({anchor:{},rows:[row],context});assert.equal(p.items[0].body,body);assert.match(p.items[0].bodyStatus,/검증한 별표/);assert.equal(p.items[0].url,doc.annexes[0].urls[0]);assert.deepEqual(quoteHighlights(body,row).ranges,[[3,3+raw.length]]);});
+test('missing annex never falls back to statute body',async()=>{const p=await collectReview({anchor:{},rows:[{...row,neighbor_jo:'별표 99'}],context});assert.equal(p.items[0].body,'');assert.match(p.items[0].bodyStatus,/미분석/);});

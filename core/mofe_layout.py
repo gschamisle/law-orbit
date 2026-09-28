@@ -3,7 +3,7 @@ from copy import deepcopy
 
 def layout(data,graph):
     result=deepcopy(data)
-    result['work_domain_label']={'public_institutions':'PUBLIC INSTITUTIONS','customs':'CUSTOMS / CLEARANCE','treasury':'TREASURY / ACCOUNTING'}[graph['domain']]
+    result['work_domain_label']={'public_institutions':'PUBLIC INSTITUTIONS','customs':'CUSTOMS / CLEARANCE','treasury':'TREASURY / ACCOUNTING','medical':'MEDICAL / INSTITUTIONS','labor':'EMPLOYMENT / LABOR','constitution':'CONSTITUTION / FOUNDATIONS'}[graph['domain']]
     if data.get('mode')!='overview':return result
     catalog={d['name']:d for d in graph['catalog']}
     connected={name for e in result['all_links'] for name in (e['a'],e['b'])}

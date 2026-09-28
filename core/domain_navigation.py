@@ -5,6 +5,7 @@ or a claim that every included document belongs to the same ministry.
 """
 
 DOMAINS = {
+    'constitution': '헌법',
     'tax': '국세',
     'procurement': '조달계약',
     'customs': '관세·통관',
@@ -14,6 +15,8 @@ DOMAINS = {
     'treasury': '국고·회계',
     'fsc': '금융',
     'ftc': '공정거래',
+    'labor': '고용·노동',
+    'medical': '의료',
     'local_tax': '지방세',
     'housing': '국토건축주택',
     'environment': '환경화학안전',

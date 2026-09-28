@@ -17,14 +17,14 @@ def documents(source):
     return source['laws'] + source.get('administrative_rules', [])
 
 
-def build_graph(source, *, domain="procurement", coverage_note=None, article_adapter=None):
+def build_graph(source, *, domain="procurement", coverage_note=None, article_adapter=None, annex_bodies=False):
     from core.universe_builder import build_universe
     from core.fsc_administrative import adapter
     indexed = [d for d in documents(source) if d.get('articles')]
     if not indexed or any(d.get('category') != domain for d in indexed):
         raise ValueError(f'{domain} 전용 데이터가 아닙니다.')
     graph = build_universe({**source, 'laws':indexed}, focus_categories=(domain,),
-                           preserve_external=True, article_adapter=article_adapter or adapter)
+                           preserve_external=True, article_adapter=article_adapter or adapter, annex_bodies=annex_bodies)
     graph.update(domain=domain, tax_laws=[], coverage_note=coverage_note or (
         '국가계약 법령·재경부 계약예규와 선정한 조달청·지방계약 자료의 명시적 인용망입니다. '
         '전체 공공기관 계약규정·조례를 수집한 것은 아닙니다. 미수집 대상은 본문·역인용 미점검입니다. '
@@ -41,8 +41,10 @@ def build_graph(source, *, domain="procurement", coverage_note=None, article_ada
             edge['target_url'] = 'https://www.law.go.kr/행정규칙/'+quote(edge['target_law'],safe='')
     graph['citation_issues'] = [dict(source_law=d['name'], source_jo=a['jo'], source_url=d['source_url'], **issue)
                                for d in indexed for a in d['articles'] for issue in a.get('citation_issues',[])]
+    if annex_bodies:graph['citation_issues'] += graph.get('annex_analysis',{}).get('issues',[])
     graph['coverage'] = dict(scope=source['inventory']['scope'], supplement='not-indexed', annex_body='not-indexed',
                              chapters_sections='not-indexed', external_reverse='not-collected', semantic_similarity='not-analyzed')
+    if annex_bodies:graph['coverage']['annex_body']='selected-verified-annexes; explicit citations only'
     if domain in ('procurement', 'treasury'):
         from core.ftc_text_citations import collect_text_citations, validate_text_citations
         rows, issues = collect_text_citations(source, profile=domain)
@@ -71,6 +73,12 @@ def validate_bundle(bundle, *, domain="procurement"):
     articles.update({(d['name'],a['ref']):{'text':a['title']} for d in indexed for a in d.get('annexes',[])})
     for e in graph['edges'] + graph.get('external_references',[]):
         article = articles.get((e['source_law'],e['source_jo']))
+        if e.get('source_layer')=='annex-body':
+            from core.annex_analysis import validate_analysis
+            d=next(d for d in indexed if d['name']==e['source_law'])
+            annex=next(a for a in d['annexes'] if a['ref']==e['source_jo'])
+            validate_analysis(annex['body_analysis'])
+            article={'text':annex['body_analysis']['text']}
         if not article or article['text'][e['source_start']:e['source_end']] != e['cite_raw']:
             raise ValueError('인용 근거가 수집 원문과 일치하지 않습니다.')
     if any(e['source_law'] not in names or e['target_law'] not in names for e in graph['edges']):

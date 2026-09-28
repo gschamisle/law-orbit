@@ -3,7 +3,7 @@ from copy import deepcopy
 from core.fsc_collection import CollectionError,norm,ymd
 from core.procurement_collection import record,discover_query,collect_sources
 from core.fsc_administrative import index_rule
-from core.mofe_profiles import PROFILES,selected,tags
+from core.mofe_profiles import WORK_PROFILES as PROFILES,selected,tags
 
 LABELS={
  '공기업·준정부기관 계약사무규칙':'공기업·준정부 계약규칙',
@@ -44,7 +44,7 @@ def discover_inventory(request,domain,as_of,progress=None):
     actual={norm(d['name']) for d in unique.values() if d['state']=='current-candidate'}
     missing=[n for n in (*p['required'],*p['required_rules']) if norm(n) not in actual]
     if missing:raise CollectionError('mofe-required-documents-missing:'+','.join(missing))
-    return dict(domain=domain,as_of=ymd(as_of),scope='declared-current-MOFE-work-area; exact-statutes-and-selected-rules; not-complete-ministry-corpus',
+    return dict(domain=domain,as_of=ymd(as_of),scope='declared-current-work-area; exact-statutes-and-selected-rules; not-complete-ministry-corpus',
                 layers=layers,records=sorted(unique.values(),key=lambda d:(d['name'],d['effective'])),
                 excluded=sorted(excluded.values(),key=lambda d:d['name']),
                 unavailable_selected_rules=[n for n in p['rules'] if norm(n) not in actual])
@@ -74,6 +74,9 @@ def prepare_source(source):
             d['collection_role']=reference_role or 'core'
         for a in d['articles']:
             a['sectors']=tags(domain,'',a.get('title','')+' '+a['text'])
+            if domain=='labor':
+                from core.labor_profile import article_tags
+                a['sectors']=list(dict.fromkeys(a['sectors']+article_tags(d['name'],a)))
             if reference_role:
                 a['sectors']=list(dict.fromkeys(a['sectors']+(['scope'] if reference_role=='scope-reference' else ['privatization'])))
             if domain=='public_institutions':

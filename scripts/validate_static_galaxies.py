@@ -12,16 +12,17 @@ def validate(root, *, allow_legacy_menu=False):
     storage=Storage(root,manifest)
     legacy=['tax','procurement','fsc','local_tax','housing','environment']
     ids=[d['id'] for d in manifest['domains']]
-    optional=['state_property','forex','public_institutions','customs','treasury','ftc']
+    optional=['state_property','forex','public_institutions','customs','treasury','ftc','labor','constitution','medical']
     supported=set(legacy+optional)
     current=[domain for domain in DOMAINS if domain in ids]
     old=[domain for domain in legacy+optional if domain in ids]
     valid_order=ids==current or (allow_legacy_menu and ids==old)
     if not set(legacy).issubset(ids) or set(ids)-supported or len(ids)!=len(set(ids)) or not valid_order:
         raise ValueError('Missing or mixed galaxy menu')
-    pending=[];seen=set();total=0;documents=set();articles=0;by_id={};special_rows=[];workbenches=[];bridges=[];text_rows=[];text_bodies={}
+    pending=[];seen=set();total=0;documents=set();articles=0;by_id={};special_rows=[];workbenches=[];bridges=[];text_rows=[];text_bodies={};constitution_bodies={};annex_bodies={};annex_rows=[]
     def references(item):
         if isinstance(item,dict):
+            if item.get('source_layer')=='annex-body' and item.get('evidence_id'):annex_rows.append(item)
             if item.get('source_granularity')=='text' and item.get('evidence_id'):text_rows.append(item)
             if {'url','bytes','sha256'}<=item.keys():pending.append(item)
             for k,v in item.items():
@@ -45,6 +46,13 @@ def validate(root, *, allow_legacy_menu=False):
         elif isinstance(data,dict) and 'meta' in data:
             meta=data['meta'];documents.add(meta['id']);articles+=len(data['articles'])
             by_id[meta['id']]=(meta,{a['jo'] for a in data['articles']})
+            if meta['domain']=='constitution':constitution_bodies[meta['id']]={a['jo']:a for a in data['articles']}
+            for annex in data.get('annexes',[]):
+                from core.annex_analysis import validate_analysis
+                if annex.get('analysis'):
+                    if annex['status']!='explicit-citations':raise ValueError('Annex coverage mismatch')
+                    validate_analysis(annex['analysis']);annex_bodies[(meta['id'],annex['ref'])]=annex['analysis']
+                elif annex['status']!='not-analyzed':raise ValueError('Unverified annex body')
             if meta['domain'] in TEXT_DOMAINS and meta.get('text_analysis'):text_bodies[meta['id']]=data['unstructured_text']
             if meta['domain'] not in [d['id'] for d in manifest['domains']]:raise ValueError('Invalid document domain')
             for article in data['articles']:
@@ -60,6 +68,10 @@ def validate(root, *, allow_legacy_menu=False):
             for row in data['rows']:
                 if data['text'][row['source_start']:row['source_end']]!=row['raw']:raise ValueError('Annex row evidence mismatch')
         references(data)
+    for row in annex_rows:
+        a=annex_bodies[(row['source_id'],row['source_jo'])]
+        if a['text'][row['source_start']:row['source_end']]!=row['raw'] or a['text_sha256']!=row['source_text_sha256'] or a['file_sha256']!=row['source_file_sha256']:
+            raise ValueError('Annex citation source mismatch')
     for row in text_rows:
         meta,numbers=by_id[row['source_id']]
         if meta['domain'] not in TEXT_DOMAINS or meta['name']!=row['source_law'] or numbers or row.get('source_jo'):raise ValueError('Invalid text evidence source')
@@ -73,6 +85,18 @@ def validate(root, *, allow_legacy_menu=False):
         elif row['target_status']!='not-collected':raise ValueError('Missing text citation document')
     for work in workbenches:
         if work['domain'] not in ids or work['decision']!='limited-release':raise ValueError('Unapproved work area')
+        if work['domain']=='constitution':
+            from core.constitution_profile import CONSTITUTION,GUIDE
+            guide=work.get('constitution_guide',[])
+            if [(r['constitution']['jo'],r['title'],r['related']['law'],r['related']['jo'],r['reason']) for r in guide]!=list(GUIDE):
+                raise ValueError('Constitution reading guide mismatch')
+            for row in guide:
+                if row['kind']!='editorial-related-law' or row['is_citation'] is not False or row['constitution']['law']!=CONSTITUTION:raise ValueError('Guide confused with citation')
+                for side in ('constitution','related'):
+                    ep=row[side];meta,numbers=by_id[ep['law_id']]
+                    if meta['domain']!='constitution' or meta['name']!=ep['law'] or ep['jo'] not in numbers or ep['url']!=meta['url']:raise ValueError('Guide endpoint mismatch')
+                    a=constitution_bodies[ep['law_id']][ep['jo']]
+                    if ep['text']!=a['text'] or ep['effective']!=(a.get('effective') or meta['effective']) or ep['sha256']!=hashlib.sha256(a['text'].encode()).hexdigest():raise ValueError('Guide body or edition mismatch')
         for case in work['cases']:
             meta,numbers=by_id[case['law_id']]
             if meta['domain']!=work['domain'] or meta['name']!=case['law'] or case['jo'] not in numbers:raise ValueError('Work case source mismatch')
