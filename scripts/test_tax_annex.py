@@ -1,4 +1,4 @@
-"""Pinned tax annex completeness, source integrity and owner-boundary tests."""
+"""Always-run unit tests and optional pinned local tax-corpus checks."""
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -48,13 +48,6 @@ def citation_fixture(kind='cell'):
 
 
 class TaxAnnexTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.bundle = ROOT.parent/'FscLawGalaxy-Stage2/output/tax-universe/bundle.json'
-        cls.source = json.loads(cls.bundle.read_text(encoding='utf-8'))['source']
-        cls.enriched = attach(cls.source)
-        cls.specs = json.loads(SPECS.read_text(encoding='utf-8'))
-
     def test_records_reject_truncation(self):
         for raw in (b'\x00', struct.pack('<I',67 | 15 << 20)+b'a'):
             with self.assertRaises(ValueError): list(records(raw))
@@ -85,9 +78,46 @@ class TaxAnnexTests(unittest.TestCase):
                     'https://name:password@www.law.go.kr/LSW/flDownload.do?flSeq=1'):
             with self.assertRaises(ValueError): official_download(url)
 
+    def test_graph_merge_preserves_non_annex_and_is_idempotent(self):
+        ordinary = dict(target_kind='article',source_law='fixture',source_jo='1')
+        graph = dict(edges=[ordinary],external_references=[],relation_counts={'article':1})
+        before = deepcopy(graph)
+        source = citation_fixture()
+        merged = merge_graph(graph,source)
+        self.assertEqual(graph,before)
+        self.assertEqual(merged['edges'][0],ordinary)
+        self.assertEqual(merge_graph(merged,source),merged)
+
+    def test_immutable_write_never_overwrites(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder)/'result.json'
+            immutable_write(path,b'original')
+            with self.assertRaises(ValueError): immutable_write(path,b'changed')
+            self.assertEqual(path.read_bytes(),b'original')
+
+
+class TaxAnnexCorpusTests(unittest.TestCase):
+    bundle = ROOT.parent/'FscLawGalaxy-Stage2/output/tax-universe/bundle.json'
+    folder = DEFAULT_OUTPUT
+
+    @classmethod
+    def setUpClass(cls):
+        # Specs are tracked and required; only the ignored local corpus/artifacts
+        # are optional. Existing-but-invalid fixtures must still fail validation.
+        cls.specs = json.loads(SPECS.read_text(encoding='utf-8'))
+        required = [cls.bundle]
+        for spec in cls.specs['annexes']:
+            required.extend(cls.folder/file['name'] for file in spec['files'].values())
+            required.append(cls.folder/(spec['id']+'-analysis.json'))
+        missing = [path.name for path in required if not path.is_file()]
+        if missing:
+            raise unittest.SkipTest('Requires pinned local tax corpus and annex artifacts; missing: ' + ', '.join(missing))
+        cls.source = json.loads(cls.bundle.read_text(encoding='utf-8'))['source']
+        cls.enriched = attach(cls.source,cls.folder)
+
     def test_attach_is_nonmutating_and_three_selected_only(self):
         before = deepcopy(self.source)
-        enriched = attach(self.source)
+        enriched = attach(self.source,self.folder)
         self.assertEqual(self.source,before)
         found = [a for d in enriched['laws'] for a in d['annexes'] if a.get('body_analysis')]
         self.assertEqual(len(found),3)
@@ -98,20 +128,20 @@ class TaxAnnexTests(unittest.TestCase):
         for key in ('effective','mst','xml_sha256'):
             changed = deepcopy(self.source)
             next(d for d in changed['laws'] if d['name']=='법인세법 시행규칙')[key] = 'changed'
-            with self.assertRaises(ValueError): attach(changed)
+            with self.assertRaises(ValueError): attach(changed,self.folder)
         changed = deepcopy(self.source)
         doc = next(d for d in changed['laws'] if d['name']=='법인세법 시행규칙')
         next(a for a in doc['annexes'] if a['ref']=='별표 5')['text'] += '변경'
-        with self.assertRaises(ValueError): attach(changed)
+        with self.assertRaises(ValueError): attach(changed,self.folder)
 
     def test_missing_or_tampered_analysis_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             folder = Path(folder)
             for spec in self.specs['annexes']:
                 for file in spec['files'].values():
-                    (folder/file['name']).write_bytes((DEFAULT_OUTPUT/file['name']).read_bytes())
+                    (folder/file['name']).write_bytes((self.folder/file['name']).read_bytes())
                 name = spec['id']+'-analysis.json'
-                (folder/name).write_bytes((DEFAULT_OUTPUT/name).read_bytes())
+                (folder/name).write_bytes((self.folder/name).read_bytes())
             path = folder/'corporate-rule-5-analysis.json'
             path.write_bytes(path.read_bytes()+b' ')
             with self.assertRaises(ValueError): attach(self.source,folder)
@@ -143,23 +173,9 @@ class TaxAnnexTests(unittest.TestCase):
         self.assertEqual(len(own),1)
         self.assertEqual(own[0]['target_law'],'조세특례제한법 시행령')
 
-    def test_graph_merge_preserves_non_annex_and_is_idempotent(self):
-        ordinary = dict(target_kind='article',source_law='fixture',source_jo='1')
-        graph = dict(edges=[ordinary],external_references=[],relation_counts={'article':1})
-        before = deepcopy(graph)
-        merged = merge_graph(graph,self.enriched)
-        self.assertEqual(graph,before)
-        self.assertEqual(merged['edges'][0],ordinary)
-        self.assertEqual(merge_graph(merged,self.enriched),merged)
-
-    def test_collection_reproduces_and_never_overwrites(self):
-        report = collect(self.bundle,DEFAULT_OUTPUT)
+    def test_collection_reproduces(self):
+        report = collect(self.bundle,self.folder)
         self.assertEqual(report['selected_annexes'],3)
-        with tempfile.TemporaryDirectory() as folder:
-            path = Path(folder)/'result.json'
-            immutable_write(path,b'original')
-            with self.assertRaises(ValueError): immutable_write(path,b'changed')
-            self.assertEqual(path.read_bytes(),b'original')
 
 
 if __name__ == '__main__':
