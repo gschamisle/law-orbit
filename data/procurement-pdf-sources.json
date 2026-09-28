@@ -1,0 +1,38 @@
+[
+  {
+    "name": "지방자치단체 입찰 및 계약 집행기준",
+    "provider": "admrul",
+    "document_id": "29508",
+    "version_id": "2100000281382",
+    "uid": "admrul:29508",
+    "effective": "20260701",
+    "promulgated": "20260629",
+    "category": "procurement",
+    "source_url": "https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000281382",
+    "attachments": [
+      {
+        "첨부파일명": "[개정전문] 지방자치단체 입찰 및 계약집행기준.pdf",
+        "첨부파일링크": "http://law.go.kr/flDownload.do?flSeq=166462923"
+      }
+    ],
+    "file_sha256": "44e1e6c27d61f74731f14b4ea0bea6e8c2ad3afbbb0a9aa586a1a021537d5b5b"
+  },
+  {
+    "name": "지방자치단체 입찰시 낙찰자 결정기준",
+    "provider": "admrul",
+    "document_id": "36201",
+    "version_id": "2100000281396",
+    "uid": "admrul:36201",
+    "effective": "20260701",
+    "promulgated": "20260629",
+    "category": "procurement",
+    "source_url": "https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000281396",
+    "attachments": [
+      {
+        "첨부파일명": "[개정전문] 지방자치단체 입찰시 낙찰자 결정기준.pdf",
+        "첨부파일링크": "http://law.go.kr/flDownload.do?flSeq=166472447"
+      }
+    ],
+    "file_sha256": "e0f1ab58ac2943d488efb66ab84bc8f0bbf1b09db2679e3b08a20c78adf53fdc"
+  }
+]

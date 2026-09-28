@@ -27,7 +27,7 @@ jobs:
       - name: Check static-reader engine parity
         run: uv run python -m scripts.test_static_galaxies
       - name: Check related-article reading isolation
-        run: node --test scripts/test_reading.mjs scripts/test_annex_reading.mjs scripts/test_pageviews.mjs scripts/test_cross_domain.mjs scripts/test_store.mjs
+        run: node --test scripts/test_feedback.mjs scripts/test_reading.mjs scripts/test_annex_reading.mjs scripts/test_pageviews.mjs scripts/test_cross_domain.mjs scripts/test_store.mjs
       - name: Check lossless small-file packing
         run: uv run python -m scripts.test_static_storage
       - name: Check delegation review and version boundaries

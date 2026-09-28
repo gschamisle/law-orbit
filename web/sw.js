@@ -1,5 +1,5 @@
-const SHELL='law-orbit-shell-brand-art-v1';
-const ASSETS=['./','index.html','style.css?v=orbit-brand-art-v1','fonts.css','app.mjs?v=orbit-brand-art-v1','store.mjs','reading.mjs','annex.mjs','pageviews.mjs','cross-domain.mjs','special.mjs','public-scope.mjs','delegation.css?v=orbit-brand-art-v1','delegation.mjs','delegation-ui.mjs','query.mjs','renderer.html','app.webmanifest?v=orbit-1','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
+const SHELL='law-orbit-shell-procurement-feedback-v1';
+const ASSETS=['./','index.html','style.css?v=orbit-procurement-feedback-v1','fonts.css','app.mjs?v=orbit-procurement-feedback-v1','procurement-pdf.mjs','feedback.mjs','store.mjs','reading.mjs','annex.mjs','pageviews.mjs','cross-domain.mjs','special.mjs','public-scope.mjs','delegation.css?v=orbit-procurement-feedback-v1','delegation.mjs','delegation-ui.mjs','query.mjs','renderer.html','app.webmanifest?v=orbit-1','icon.svg','fonts/MaruBuri-Regular.woff2','fonts/MaruBuri-SemiBold.woff2','fonts/MaruBuri-Bold.woff2','fonts/Pretendard-SemiBold.woff2'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(SHELL).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('fetch',event=>{

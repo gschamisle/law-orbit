@@ -19,7 +19,7 @@ def validate(root, *, allow_legacy_menu=False):
     valid_order=ids==current or (allow_legacy_menu and ids==old)
     if not set(legacy).issubset(ids) or set(ids)-supported or len(ids)!=len(set(ids)) or not valid_order:
         raise ValueError('Missing or mixed galaxy menu')
-    pending=[];seen=set();total=0;documents=set();articles=0;by_id={};special_rows=[];workbenches=[];bridges=[];text_rows=[];text_bodies={};constitution_bodies={};annex_bodies={};annex_rows=[]
+    pending=[];seen=set();total=0;documents=set();articles=0;by_id={};special_rows=[];workbenches=[];bridges=[];text_rows=[];text_bodies={};constitution_bodies={};annex_bodies={};annex_rows=[];pdf_bodies={}
     def references(item):
         if isinstance(item,dict):
             if item.get('source_layer')=='annex-body' and item.get('evidence_id'):annex_rows.append(item)
@@ -54,6 +54,13 @@ def validate(root, *, allow_legacy_menu=False):
                     validate_analysis(annex['analysis']);annex_bodies[(meta['id'],annex['ref'])]=annex['analysis']
                 elif annex['status']!='not-analyzed':raise ValueError('Unverified annex body')
             if meta['domain'] in TEXT_DOMAINS and meta.get('text_analysis'):text_bodies[meta['id']]=data['unstructured_text']
+            if data.get('pdf_analysis'):
+                pdf=data['pdf_analysis'];body=data['unstructured_text']
+                if meta['domain']!='procurement' or meta['text_analysis']['status']!='explicit-pdf-prose':raise ValueError('Invalid PDF analysis scope')
+                if hashlib.sha256(body.encode()).hexdigest()!=pdf['text_sha256']:raise ValueError('PDF text checksum mismatch')
+                if [p['page'] for p in pdf['pages']]!=list(range(1,len(pdf['pages'])+1)):raise ValueError('Missing PDF page')
+                if any(not(0<=p['start']<=p['end']<=len(body)) for p in pdf['pages']):raise ValueError('Invalid PDF page bounds')
+                pdf_bodies[meta['id']]=pdf
             if meta['domain'] not in [d['id'] for d in manifest['domains']]:raise ValueError('Invalid document domain')
             for article in data['articles']:
                 if 'detail' not in article and article['jo'] not in data.get('details',{}):raise ValueError('Missing article connections')
@@ -76,6 +83,11 @@ def validate(root, *, allow_legacy_menu=False):
         meta,numbers=by_id[row['source_id']]
         if meta['domain'] not in TEXT_DOMAINS or meta['name']!=row['source_law'] or numbers or row.get('source_jo'):raise ValueError('Invalid text evidence source')
         if text_bodies[row['source_id']][row['source_start']:row['source_end']]!=row['raw']:raise ValueError('Text evidence mismatch')
+        if row.get('source_layer')=='procurement-pdf-prose':
+            pdf=pdf_bodies[row['source_id']];page=pdf['pages'][row['source_page']-1]
+            if pdf['file_sha256']!=row['source_file_sha256'] or pdf['text_sha256']!=row['source_text_sha256']:raise ValueError('PDF evidence checksum mismatch')
+            if not(page['analyzed_units'] and page['start']<=row['source_start']<row['source_end']<=page['end']):raise ValueError('PDF evidence outside analyzed page')
+            if row['source_url']!=pdf['pdf_url']+f"#page={page['page']}":raise ValueError('PDF evidence page link mismatch')
         if row.get('target_id'):
             target_meta,target_numbers=by_id[row['target_id']]
             if target_meta['domain']!=meta['domain'] or target_meta['name']!=row['target_law']:raise ValueError('Text citation domain mismatch')

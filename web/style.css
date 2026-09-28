@@ -35,3 +35,6 @@
 .annex-unit{padding:14px 0;border-bottom:1px solid #34554d}.annex-unit small{display:block;font-size:12px;line-height:1.7}.annex-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;margin:6px 0}.annex-sources{display:flex;gap:18px;flex-wrap:wrap}.annex-citation{padding:16px 0;border-bottom:1px solid #34554d}
 
 .pageviews{min-height:20px;margin:0 0 10px;color:#abc1b6;font-size:11px;line-height:20px}.pageviews img{display:block;max-width:100%;height:20px}
+
+/* Public reports: compact and reviewable, with no automatic submission. */
+#feedback{max-width:40rem}#feedback label{display:block;margin:1rem 0}#feedback textarea{width:100%;font:inherit;font-size:.95rem;line-height:1.6;resize:vertical;background:var(--panel,#103c37);color:var(--ink,#f5efdc);border:1px solid #42685e;border-radius:8px;padding:.8rem;box-sizing:border-box}#feedback pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.85rem;line-height:1.6;color:#acc8bd}.feedback-submit{display:inline-flex;align-items:center;padding:.7rem 1rem;background:#e6c779;color:#10322e;border-radius:7px;text-decoration:none;font-family:Pretendard,sans-serif;font-weight:600}.feedback-submit[aria-disabled=true]{opacity:.45;pointer-events:none}#feedback .export-actions{flex-wrap:wrap}

@@ -46,6 +46,7 @@ MODULES: tuple[str, ...] = (
     "scripts.test_local_tax_collection",
     "scripts.test_local_tax_graph",
     "scripts.test_procurement",
+    "scripts.test_procurement_pdf",
     "scripts.test_procurement_ui",
     "scripts.test_housing",
     "scripts.test_housing_ui",
