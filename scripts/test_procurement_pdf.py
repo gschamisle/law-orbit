@@ -7,6 +7,7 @@ from unittest.mock import patch
 import unittest
 
 from core.procurement_pdf import extract_pdf, analyze_pdf, validate_extraction, digest, LOCAL_LAW, ALLOWED
+from core.procurement_pdf_structure import internal_links
 
 
 def fixture(text):
@@ -18,6 +19,45 @@ def fixture(text):
 
 
 class ProcurementPdfTests(unittest.TestCase):
+    def test_halfwidth_quotes_keep_original_offsets(self):
+        body='｢국민기초생활 보장법｣ 제18조에 따른다.'
+        rows,issues=analyze_pdf(fixture(body),[])
+        self.assertEqual(rows[0]['target_law'],'국민기초생활 보장법')
+        self.assertEqual(body[rows[0]['source_start']:rows[0]['source_end']],rows[0]['raw'])
+        body='「'+LOCAL_LAW+' ․ 시행령 ․ 시행규칙」(각각 "법", "시행령", "시행규칙"이라 한다)\n｢건설산업기본법｣ 시행령 제35조'
+        rows,_=analyze_pdf(fixture(body),[])
+        self.assertTrue(any(r['target_law']=='건설산업기본법 시행령' and r['target_ref']=='제35조' for r in rows))
+        self.assertFalse(any(r['target_law']==LOCAL_LAW+' 시행령' and r['target_ref']=='제35조' for r in rows))
+
+    def test_adjacent_cells_do_not_supply_an_owner(self):
+        d=fixture('「국가를 당사자로 하는 계약에 관한 법률」\n제4조에 따른다.')
+        base=d['units'][0];first,second=d['text'].split('\n')
+        d['units']=[dict(base,text=first,end=len(first),layer='table-cell'),dict(base,text=second,start=len(first)+1,layer='table-cell')]
+        rows,issues=analyze_pdf(d,[])
+        self.assertFalse(any(r['target_kind']=='article' for r in rows));self.assertTrue(issues)
+
+    def test_internal_scope_ambiguity_external_owner_and_heading(self):
+        def run(body,keys):
+            d=fixture(body);d['units'][0].update(chapter_id='5',section_id='2',annex='')
+            anchors=[]
+            for i,(key,label) in enumerate(keys):
+                d['text']+='\n'+label;start=len(d['text'])-len(label)
+                anchors.append(dict(id=str(i),key=key,label=label,page=1,start=start,end=len(d['text']),kind='annex' if '별표' in key else 'chapter'))
+            d['anchors']=anchors
+            return internal_links(d)
+        rows,issues=run('<별표 1>에 따른다.',[('5|별표1||','같은 장 별표'),('6|별표1||','다른 장 별표')])
+        self.assertEqual(rows[0]['target_id'],'0')
+        rows,issues=run('<별표 1>에 따른다.',[('5|별표1||','중복1'),('5|별표1||','중복2')])
+        self.assertFalse(rows);self.assertTrue(issues)
+        rows,issues=run('시행령 제6장 및 제9장에 따른다.',[('6|||','제6장 지침'),('9|||','제9장 지침')])
+        self.assertFalse(rows);self.assertTrue(issues)
+        rows,issues=run('「외부법」 [별표 1] 제2절에 따른다.',[('5|별표1||','표'),('5||2|','제2절 지침')])
+        self.assertFalse(rows)
+        rows,issues=run('제6장부터 제9장까지에 따른다.',[('6|||','제6장 지침'),('9|||','제9장 지침')])
+        self.assertFalse(rows)
+        rows,issues=run('제4장 물품 적격심사 세부기준에 따른다.',[('4|||','제4장 일괄입찰 등의 입찰참가자격')])
+        self.assertFalse(rows);self.assertIn('제목',issues[0]['reason'])
+
     def test_explicit_alias_and_page_provenance(self):
         body='「'+LOCAL_LAW+' ․ 시행령 ․ 시행규칙」(각각 "법", "시행령", "시행규칙"이라 한다)\n시행령 제33조에 따른다.'
         result=fixture(body);target=dict(name=LOCAL_LAW+' 시행령',articles=[dict(jo='33')],effective='20260101',source_url='https://www.law.go.kr/')

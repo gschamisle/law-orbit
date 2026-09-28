@@ -38,7 +38,7 @@ def materialize_reachable(base, destination, value):
     walk(value)
 
 
-def build(base, extracted, destination):
+def build(base, extracted, destination, *, replace_existing=False):
     base, destination = base.resolve(), destination.resolve()
     stage = destination.with_name(destination.name+'-unpacked')
     if destination.exists() or stage.exists():
@@ -57,17 +57,30 @@ def build(base, extracted, destination):
     ids = {e['name']: e['id'] for e in snap['entries']}
     analyses, forward, reverse, results = {}, defaultdict(list), defaultdict(list), []
     all_rows, all_issues = [], []
+    review_cases=json.loads(Path('data/procurement-pdf-review-cases.json').read_text(encoding='utf-8'))['cases']
+    replaced=[]
     for path in sorted(extracted.glob('*-extraction.json')):
         result = json.loads(path.read_text(encoding='utf-8')); validate_extraction(result)
         record = result['record']; entry = next(e for e in catalog['laws'] if e['name'] == record['name'])
         if entry['effective'] != record['effective'] or entry['url'] != record['source_url']:
             raise ValueError('PDF and public document editions differ')
         if entry.get('pdf_analysis') or entry.get('text_analysis'):
-            raise ValueError('PDF already analyzed; do not duplicate evidence')
+            old=snap['documents'][entry['id']].get('pdf_analysis')
+            if not replace_existing or not old or old['file_sha256']!=result['file_sha256']:
+                raise ValueError('Replacing PDF evidence requires the same verified source and --replace-existing')
+            replaced.append(entry['text_analysis'])
         pdf_path = path.with_name(record['document_id']+'.pdf')
         if hashlib.sha256(pdf_path.read_bytes()).hexdigest() != result['file_sha256']:
             raise ValueError('Official PDF checksum mismatch')
         rows, issues = analyze_pdf(result, corpus)
+        links=[]
+        if result.get('schema')==2:
+            from core.procurement_pdf_structure import internal_links
+            links,internal_issues=internal_links(result);issues+=internal_issues
+            for case in review_cases:
+                if case['document']!=record['document_id'] or not case.get('review_note'):continue
+                for row in links:
+                    if row['source_page']==case['page'] and row['target_key']==case['target_key']:row['review_note']=case['review_note']
         if not rows:
             raise ValueError('No PDF citations; inspect extraction or parser')
         all_rows.extend(rows); all_issues.extend(issues)
@@ -76,13 +89,23 @@ def build(base, extracted, destination):
             forward[entry['name']].append(f)
             if edge['target_status'] == 'collected' and edge['target_kind'] == 'article':
                 reverse[(edge['target_law'], parse_target(edge['target_ref']).jo)].append(tidy(reading_row(edge,'reverse'),ids,False))
-        summary = dict(status='explicit-pdf-prose', references=len(rows), issues=len(issues),
-            pages=len(result['pages']), prose_pages=sum(p['analyzed_units']>0 for p in result['pages']),
-            table_regions=sum(p['tables'] for p in result['pages']), internal_paragraph_references='not-analyzed')
-        analyses[entry['name']] = dict(result=result, summary=summary, issues=issues)
+        summary = dict(status='explicit-pdf-structured' if result.get('schema')==2 else 'explicit-pdf-prose', references=len(rows), issues=len(issues),
+            pages=len(result['pages']), prose_pages=len({u['page'] for u in result['units'] if u.get('layer','prose')=='prose'}),
+            analyzed_pages=sum(p['analyzed_units']>0 for p in result['pages']),
+            table_regions=sum(p['tables'] for p in result['pages']),
+            table_citations=sum(r['source_layer']=='procurement-pdf-table-cell' for r in rows),
+            annex_citations=sum(r['source_layer']=='procurement-pdf-annex-prose' for r in rows),
+            internal_links=len(links),internal_paragraph_references='explicit-unique-headings' if links else 'not-analyzed')
+        analyses[entry['name']] = dict(result=result, summary=summary, issues=issues,links=links)
         results.append(dict(name=entry['name'], **summary))
     if len(results) != 2:
         raise ValueError('Expected the two approved local-procurement PDFs')
+    if any(a['result'].get('schema')==2 for a in analyses.values()):
+        from scripts.verify_procurement_pdf_review import verify
+        verify(extracted,base)
+    def merge_rows(rows,added):
+        retained=[r for r in rows if not(replace_existing and r.get('source_layer','').startswith('procurement-pdf-') and r.get('source_law') in analyses)]
+        return retained+added
     writer = Writer(stage); changed=[]
     for entry in catalog['laws']:
         packed = deepcopy(snap['documents'][entry['id']]); modified=False
@@ -90,25 +113,28 @@ def build(base, extracted, destination):
             analysis = analyses[entry['name']]; result=analysis['result']
             summary = analysis['summary']
             entry.update(text_analysis=summary, pdf_url=result['pdf_url'], status='pdf-prose-citations',
-                         source_notes=[LIMITATION])
+                         source_notes=[result['limitation']])
             packed['meta'].update({k:v for k,v in entry.items() if k!='file'})
             packed['unstructured_text']=result['text']
             packed['text_connections']=forward[entry['name']]; packed['text_issues']=analysis['issues']
             # Compact provenance per page; all offsets remain in the collected text.
             packed['pdf_analysis']={k:result[k] for k in ('file_sha256','text_sha256','pdf_url','pages','limitation','extraction')}
+            for key in ('anchors','cells'):
+                if key in result:packed['pdf_analysis'][key]=result[key]
+            packed['pdf_analysis']['internal_connections']=analysis['links']
             for page in packed['pdf_analysis']['pages']:
                 unit=next((u for u in result['units'] if u['page']==page['page']),None)
                 page['label']=unit['locator'] if unit else ''
             modified=True
         for jo, detail in packed['details'].items():
-            if reverse[(entry['name'],jo)]:
-                detail['rows'].extend(reverse[(entry['name'],jo)]);modified=True
+            merged=merge_rows(detail['rows'],reverse[(entry['name'],jo)])
+            if merged!=detail['rows']:detail['rows']=merged;modified=True
         replacements={}
         for old in entry['parts']:
             group=unpack(base,old); edited=False
             for jo, detail in group.items():
-                if reverse[(entry['name'],jo)]:
-                    detail['rows'].extend(reverse[(entry['name'],jo)]);edited=True
+                merged=merge_rows(detail['rows'],reverse[(entry['name'],jo)])
+                if merged!=detail['rows']:detail['rows']=merged;edited=True
             if edited:
                 replacements[old['url']]=writer.data(group);modified=True
         if modified:
@@ -118,8 +144,8 @@ def build(base, extracted, destination):
                 if article.get('detail'): article['detail']=replacements.get(article['detail']['url'],article['detail'])
             entry['file']=writer.data(packed);changed.append(entry['name'])
     previous=catalog.get('text_summary',dict(documents=0,citations=0,issues=0))
-    catalog['text_summary']=dict(documents=previous['documents']+2,citations=previous['citations']+len(all_rows),issues=previous['issues']+len(all_issues))
-    catalog['pdf_summary']=results;catalog['coverage']+=' '+LIMITATION
+    catalog['text_summary']=dict(documents=previous['documents']+2-len(replaced),citations=previous['citations']+len(all_rows)-sum(r['references'] for r in replaced),issues=previous['issues']+len(all_issues)-sum(r['issues'] for r in replaced))
+    catalog['pdf_summary']=results;catalog['coverage']=catalog['coverage'].replace(' '+LIMITATION,'')+' '+next(iter(analyses.values()))['result']['limitation']
     domain['catalog']=writer.data(catalog)
     manifest.pop('version',None)
     manifest['version']=hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()[:20]
@@ -143,5 +169,5 @@ def build(base, extracted, destination):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--base-site',type=Path,required=True);p.add_argument('--extracted',type=Path,required=True)
-    p.add_argument('--destination',type=Path,required=True);args=p.parse_args()
-    print(json.dumps(build(args.base_site,args.extracted,args.destination),ensure_ascii=False,indent=2))
+    p.add_argument('--destination',type=Path,required=True);p.add_argument('--replace-existing',action='store_true');args=p.parse_args()
+    print(json.dumps(build(args.base_site,args.extracted,args.destination,replace_existing=args.replace_existing),ensure_ascii=False,indent=2))

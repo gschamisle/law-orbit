@@ -56,10 +56,20 @@ def validate(root, *, allow_legacy_menu=False):
             if meta['domain'] in TEXT_DOMAINS and meta.get('text_analysis'):text_bodies[meta['id']]=data['unstructured_text']
             if data.get('pdf_analysis'):
                 pdf=data['pdf_analysis'];body=data['unstructured_text']
-                if meta['domain']!='procurement' or meta['text_analysis']['status']!='explicit-pdf-prose':raise ValueError('Invalid PDF analysis scope')
+                if meta['domain']!='procurement' or meta['text_analysis']['status'] not in ('explicit-pdf-prose','explicit-pdf-structured'):raise ValueError('Invalid PDF analysis scope')
                 if hashlib.sha256(body.encode()).hexdigest()!=pdf['text_sha256']:raise ValueError('PDF text checksum mismatch')
                 if [p['page'] for p in pdf['pages']]!=list(range(1,len(pdf['pages'])+1)):raise ValueError('Missing PDF page')
                 if any(not(0<=p['start']<=p['end']<=len(body)) for p in pdf['pages']):raise ValueError('Invalid PDF page bounds')
+                anchors={a['id']:a for a in pdf.get('anchors',[])}
+                if len(anchors)!=len(pdf.get('anchors',[])):raise ValueError('Duplicate PDF heading identifier')
+                for a in anchors.values():
+                    page=pdf['pages'][a['page']-1]
+                    if not(page['start']<=a['start']<page['end'] and a['start']<a['end']<=len(body) and body[a['start']:].startswith(a['label'])):raise ValueError('Invalid PDF heading source')
+                for row in pdf.get('internal_connections',[]):
+                    target=anchors[row['target_id']];page=pdf['pages'][row['source_page']-1]
+                    if not(page['start']<=row['source_start']<row['source_end']<=page['end']):raise ValueError('Invalid internal PDF source page')
+                    if body[row['source_start']:row['source_end']]!=row['raw']:raise ValueError('Invalid internal PDF quote')
+                    if target['key']!=row['target_key'] or target['page']!=row['target_page'] or target['label']!=row['target_label']:raise ValueError('Invalid internal PDF target')
                 pdf_bodies[meta['id']]=pdf
             if meta['domain'] not in [d['id'] for d in manifest['domains']]:raise ValueError('Invalid document domain')
             for article in data['articles']:
@@ -83,11 +93,15 @@ def validate(root, *, allow_legacy_menu=False):
         meta,numbers=by_id[row['source_id']]
         if meta['domain'] not in TEXT_DOMAINS or meta['name']!=row['source_law'] or numbers or row.get('source_jo'):raise ValueError('Invalid text evidence source')
         if text_bodies[row['source_id']][row['source_start']:row['source_end']]!=row['raw']:raise ValueError('Text evidence mismatch')
-        if row.get('source_layer')=='procurement-pdf-prose':
+        if row.get('source_layer','').startswith('procurement-pdf-'):
+            if row['source_layer'] not in ('procurement-pdf-prose','procurement-pdf-annex-prose','procurement-pdf-table-cell'):raise ValueError('Unknown PDF citation layer')
             pdf=pdf_bodies[row['source_id']];page=pdf['pages'][row['source_page']-1]
             if pdf['file_sha256']!=row['source_file_sha256'] or pdf['text_sha256']!=row['source_text_sha256']:raise ValueError('PDF evidence checksum mismatch')
             if not(page['analyzed_units'] and page['start']<=row['source_start']<row['source_end']<=page['end']):raise ValueError('PDF evidence outside analyzed page')
             if row['source_url']!=pdf['pdf_url']+f"#page={page['page']}":raise ValueError('PDF evidence page link mismatch')
+            if row['source_layer']=='procurement-pdf-table-cell':
+                matches=[c for c in pdf['cells'] if c['page']==row['source_page'] and c['table']==row['source_table'] and c['row']==row['source_row'] and c['column']==row['source_column']]
+                if len(matches)!=1 or not(matches[0]['analyzed'] and matches[0]['start']<=row['source_start']<row['source_end']<=matches[0]['end'] and matches[0]['bbox']==row['source_bbox']):raise ValueError('PDF citation crosses cell boundary')
         if row.get('target_id'):
             target_meta,target_numbers=by_id[row['target_id']]
             if target_meta['domain']!=meta['domain'] or target_meta['name']!=row['target_law']:raise ValueError('Text citation domain mismatch')

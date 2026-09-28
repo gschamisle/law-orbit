@@ -16,23 +16,32 @@
 법제처 API에 조문형 본문이 없는 다음 행정안전부 예규의 공식 첨부 PDF를 분석합니다.
 두 자료 모두 2026년 7월 1일 시행 판본입니다.
 
-| 자료 | 원본 분량 | 일반 문단 분석이 있는 쪽 | 인용 근거 | 해석 확인 |
-|---|---:|---:|---:|---:|
-| 지방자치단체 입찰 및 계약 집행기준, 예규 제372호 | 386쪽 | 297쪽 | 733건 | 114건 |
-| 지방자치단체 입찰시 낙찰자 결정기준, 예규 제373호 | 486쪽 | 172쪽 | 183건 | 36건 |
+| 자료 | 원본 분량 | 법령 인용 | 표 셀 인용 | 별표 문단 인용 | 내부 위치 연결 |
+|---|---:|---:|---:|---:|---:|
+| 지방자치단체 입찰 및 계약 집행기준, 예규 제372호 | 386쪽 | 865건 | 40건 | 11건 | 109건 |
+| 지방자치단체 입찰시 낙찰자 결정기준, 예규 제373호 | 486쪽 | 349건 | 51건 | 93건 | 229건 |
 
-인용 근거 916건 중 조문을 특정한 인용은 703건, 법령 전체·정의 참조는 213건입니다.
-조문 특정 인용 중 수집된 조문을 대상으로 한 570건은 해당 조문의 역인용에도 반영합니다.
-나머지 133건의 대상 조문은 미수집으로 표시합니다. 건수는 서로 다른 조문 수나 개정 의무의 수가 아닙니다.
+법령 인용 1,214건 중 조문을 특정한 인용은 922건, 법령 전체·정의 참조는 292건입니다.
+조문 특정 인용 중 수집된 조문을 대상으로 한 625건은 해당 조문의 역인용에도 반영합니다.
+나머지 297건의 대상 조문은 미수집으로 표시합니다. 표 셀·별표 문단은 법령 인용의 부분집합입니다.
+별도로 확인한 지침 내부 연결 338건은 법령 인용 수에 합산하지 않습니다.
+건수는 서로 다른 조문 수나 개정 의무의 수가 아닙니다.
 
 **조달계약 → 지방계약 → 해당 예규 → 본문 위치**에서 PDF 쪽을 선택합니다.
 예컨대 집행기준 PDF 4쪽(인쇄 2쪽), 제1장 제1절 3. 가.의 `시행령 제33조`에서
 지방계약법 시행령 제33조 본문을 읽을 수 있습니다. 반대로 그 시행령 조문에서는 이 예규의 인용 위치를 열 수 있습니다.
 PDF 원본 쪽 링크, 추출 본문의 정확한 인용 범위, 시행일과 원본·추출문 해시를 보존합니다.
 
+**지침 내부 연결**에서는 문서가 명시한 장·절·번호 항목·별표의 실제 쪽으로 이동하고,
+그 위치를 인용한 쪽으로 돌아갈 수 있습니다. 원문에 적힌 번호와 항목 설명이 어긋난 사례는
+확인 필요 안내를 표시합니다. 목적지가 중복되거나 불분명한 참조는 연결을 만들지 않습니다.
+
+2026-09-28 대표 사례 31개를 대조하고 회귀검사에 포함했습니다. 이 검사는 목적 표본이며
+문서 전체의 정확도·재현율 측정이 아닙니다. [대조 결과와 보정 사례](procurement-pdf-audit-20260928.md).
+
 ### 분석하지 않은 범위
 
-- 표·도표·별표·서식·부칙의 연결, 지침 내부 장·절·항목 사이의 참조.
+- 도표·이미지·서식·부칙의 연결, 여러 표 셀을 합쳐야 하는 인용, 모호한 지침 내부 참조.
 - 금액·점수·산식·평가표의 적용과 낙찰 여부 판단.
 - 페이지 경계를 넘는 문장의 결합. PDF 글자 추출과 표 탐지의 한계로 누락이 있을 수 있습니다.
 - 미수집 외부 법령 본문과 그 역인용. 명시적 인용이 없다고 관련이 없다고 판단하지 않습니다.
@@ -47,8 +56,8 @@ PDF 원본 2개는 공개 웹에 중복 탑재하지 않고 공식 링크로 제
 판본이나 첨부파일이 달라지면 자동으로 허용하지 않고 실패합니다. 새 판본은 별도 대조 후 명세를 갱신해야 합니다.
 
 ```powershell
-python -m scripts.collect_procurement_pdfs --destination output/local-procurement-pdf-new
-python -m scripts.build_procurement_pdf_site --base-site output/static-brand-preview-20260928 --extracted output/local-procurement-pdf-new --destination output/static-procurement-new
+python -m scripts.collect_procurement_pdfs --destination output/local-procurement-pdf-new --include-structures
+python -m scripts.build_procurement_pdf_site --base-site output/static-procurement-feedback-v3-20260928 --extracted output/local-procurement-pdf-new --destination output/static-procurement-new --replace-existing
 python -m scripts.test_procurement_pdf
 node --test scripts/test_feedback.mjs
 python -m scripts.validate_static_galaxies output/static-procurement-new

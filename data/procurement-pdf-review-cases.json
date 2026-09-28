@@ -1,0 +1,306 @@
+{
+  "scope": "두 20260701 시행 판본의 목적 표본 31건. 전체 정확도 추정 표본이 아님.",
+  "cases": [
+    {
+      "id": "case-1",
+      "document": "29508",
+      "page": 4,
+      "topic": "입찰공고",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제33조"
+    },
+    {
+      "id": "case-2",
+      "document": "29508",
+      "page": 12,
+      "topic": "수의계약",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제25조"
+    },
+    {
+      "id": "case-3",
+      "document": "29508",
+      "page": 165,
+      "topic": "수의계약",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제27조"
+    },
+    {
+      "id": "case-4",
+      "document": "29508",
+      "page": 165,
+      "topic": "수의계약",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제29조"
+    },
+    {
+      "id": "case-5",
+      "document": "29508",
+      "page": 165,
+      "topic": "수의계약",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제31조"
+    },
+    {
+      "id": "case-6",
+      "document": "29508",
+      "page": 165,
+      "topic": "수의계약",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행규칙",
+      "reference": "제33조"
+    },
+    {
+      "id": "case-7",
+      "document": "29508",
+      "page": 280,
+      "topic": "계약금액 조정",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제73조"
+    },
+    {
+      "id": "case-8",
+      "document": "29508",
+      "page": 280,
+      "topic": "계약금액 조정",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행규칙",
+      "reference": "제72조"
+    },
+    {
+      "id": "case-9",
+      "document": "29508",
+      "page": 281,
+      "topic": "계약금액 조정",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제73조제6항"
+    },
+    {
+      "id": "case-10",
+      "document": "36201",
+      "page": 63,
+      "topic": "낙찰자 결정",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제42조제2항"
+    },
+    {
+      "id": "case-11",
+      "document": "36201",
+      "page": 200,
+      "topic": "낙찰자 결정",
+      "kind": "law",
+      "layer": "prose",
+      "law": "국가를 당사자로 하는 계약에 관한 법률",
+      "reference": "제4조제1항"
+    },
+    {
+      "id": "case-12",
+      "document": "29508",
+      "page": 166,
+      "topic": "수의계약 유형표",
+      "kind": "law",
+      "layer": "table-cell",
+      "law": "여성기업지원에 관한 법률",
+      "reference": "제2조제1호"
+    },
+    {
+      "id": "case-13",
+      "document": "29508",
+      "page": 166,
+      "topic": "수의계약 유형표",
+      "kind": "law",
+      "layer": "table-cell",
+      "law": "장애인기업활동 촉진법",
+      "reference": "제2조제2호"
+    },
+    {
+      "id": "case-14",
+      "document": "29508",
+      "page": 166,
+      "topic": "수의계약 유형표",
+      "kind": "law",
+      "layer": "table-cell",
+      "law": "사회적기업 육성법",
+      "reference": "제2조제1호"
+    },
+    {
+      "id": "case-15",
+      "document": "29508",
+      "page": 166,
+      "topic": "수의계약 유형표",
+      "kind": "law",
+      "layer": "table-cell",
+      "law": "협동조합 기본법",
+      "reference": "제2조제3호"
+    },
+    {
+      "id": "case-16",
+      "document": "29508",
+      "page": 166,
+      "topic": "수의계약 유형표",
+      "kind": "law",
+      "layer": "table-cell",
+      "law": "국민기초생활 보장법",
+      "reference": "제18조"
+    },
+    {
+      "id": "case-17",
+      "document": "29508",
+      "page": 166,
+      "topic": "수의계약 유형표",
+      "kind": "law",
+      "layer": "table-cell",
+      "law": "도시재생 활성화 및 지원에 관한 특별법",
+      "reference": "제2조제1항제9호"
+    },
+    {
+      "id": "case-18",
+      "document": "29508",
+      "page": 166,
+      "topic": "수의계약 유형표",
+      "kind": "law",
+      "layer": "table-cell",
+      "law": "중소기업창업 지원법",
+      "reference": "제2조제11호"
+    },
+    {
+      "id": "case-19",
+      "document": "29508",
+      "page": 56,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "제5장",
+      "target_key": "5|||"
+    },
+    {
+      "id": "case-20",
+      "document": "29508",
+      "page": 166,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "제8장",
+      "target_key": "8|||"
+    },
+    {
+      "id": "case-21",
+      "document": "29508",
+      "page": 170,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "<별표 1>",
+      "target_key": "5|별표1||"
+    },
+    {
+      "id": "case-22",
+      "document": "29508",
+      "page": 280,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "제9절 “11”",
+      "target_key": "9||9|11"
+    },
+    {
+      "id": "case-23",
+      "document": "29508",
+      "page": 281,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "제9절 “6”",
+      "target_key": "9||9|6",
+      "review_note": "원문은 제9절 “6”을 인용하며 준공·완료·완납대가라고 설명하지만, 이 판본의 제9절 6. 제목은 “공사·용역·물품 기성대가의 지급”입니다. 명시된 번호로 연결했으며 내용 정합성은 별도 확인이 필요합니다."
+    },
+    {
+      "id": "case-24",
+      "document": "36201",
+      "page": 64,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "제1장",
+      "target_key": "1|||"
+    },
+    {
+      "id": "case-25",
+      "document": "36201",
+      "page": 84,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "제1장 입찰참가자격 사전심사기준 <별표1> 제1절",
+      "target_key": "1|별표1|1|"
+    },
+    {
+      "id": "case-26",
+      "document": "36201",
+      "page": 200,
+      "topic": "지침 내부 준용",
+      "kind": "internal",
+      "raw": "제2장 적격심사 기준 제5절 3.",
+      "target_key": "2||5|3"
+    },
+    {
+      "id": "case-27",
+      "document": "36201",
+      "page": 267,
+      "topic": "다른 기준·제목 불일치 방어",
+      "kind": "internal",
+      "target_key": "9|||",
+      "expected": "unresolved"
+    },
+    {
+      "id": "case-28",
+      "document": "29508",
+      "page": 343,
+      "topic": "다른 기준·제목 불일치 방어",
+      "kind": "internal",
+      "target_key": "11||7|",
+      "expected": "unresolved"
+    },
+    {
+      "id": "case-29",
+      "document": "36201",
+      "page": 461,
+      "topic": "다른 기준·제목 불일치 방어",
+      "kind": "internal",
+      "target_key": "4|||",
+      "expected": "unresolved"
+    },
+    {
+      "id": "case-30",
+      "document": "29508",
+      "page": 265,
+      "topic": "반각 괄호 법령명 오연결 수정",
+      "kind": "law",
+      "layer": "prose",
+      "law": "건설산업기본법 시행령",
+      "reference": "제35조"
+    },
+    {
+      "id": "case-31",
+      "document": "29508",
+      "page": 265,
+      "topic": "반각 괄호 법령명 오연결 방어",
+      "kind": "law",
+      "layer": "prose",
+      "law": "지방자치단체를 당사자로 하는 계약에 관한 법률 시행령",
+      "reference": "제35조",
+      "expected": "unresolved"
+    }
+  ]
+}

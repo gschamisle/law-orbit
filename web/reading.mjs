@@ -97,7 +97,7 @@ export async function collectReview({anchor,rows,unresolved=[],context,cancelled
    }
    else if(result.article){body=result.article.text;bodyStatus=result.article.deleted?'수집 판본의 삭제 조문':'수집 조문 전체';}
    else if(row.neighbor_kind==='article')bodyStatus='수집 판본에 해당 조문 본문이 없습니다.';
-   else if(!result.document.articles.length){body=plainBody(result.document);bodyStatus=body?'수집 문서 본문 · 문단 내부 참조·이미지·표는 미분석':'본문 미확보';}
+   else if(!result.document.articles.length){body=plainBody(result.document);bodyStatus=body?(result.document.pdf_analysis?.anchors?'수집 PDF 본문 · 명시적 문단·표 셀 인용 및 확인된 내부 위치 참조 분석 · 적용조건·계산은 미분석':'수집 문서 본문 · 문단 내부 참조·이미지·표는 미분석'):'본문 미확보';}
    else bodyStatus='법령 전체 참조 · 특정 조문 본문을 포함하지 않았습니다.';
   }catch(err){bodyStatus='본문 불러오기 실패: '+(err.message||'자료 확인 필요');}
   items.push({row:{...row},body,bodyStatus,effective,url});progress(items.length,rows.length);

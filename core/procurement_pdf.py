@@ -35,7 +35,10 @@ def digest(value):
     return hashlib.sha256(value.encode() if isinstance(value, str) else value).hexdigest()
 
 
-def extract_pdf(path, record):
+def extract_pdf(path, record, *, include_structures=False):
+    if include_structures:
+        from core.procurement_pdf_structure import extract_structured_pdf
+        return extract_structured_pdf(path,record)
     import pdfplumber
     if ALLOWED.get(record['document_id']) != record['name']:
         raise ValueError('Unapproved PDF source')
@@ -148,6 +151,13 @@ def validate_extraction(result):
             raise ValueError('PDF page bounds mismatch')
         if result['text'][unit['start']:unit['end']] != unit['text']:
             raise ValueError('PDF unit integrity mismatch')
+    for a in result.get('anchors',[]):
+        page=result['pages'][a['page']-1]
+        if not(page['start']<=a['start']<page['end'] and a['start']<a['end']<=len(result['text'])):raise ValueError('PDF heading bounds mismatch')
+        if not result['text'][a['start']:].startswith(a['label']):raise ValueError('PDF heading text mismatch')
+    for cell in result.get('cells',[]):
+        p=result['pages'][cell['page']-1];x0,y0,x1,y1=cell['bbox']
+        if not(p['start']<=cell['start']<cell['end']<=p['end'] and x0<x1 and y0<y1):raise ValueError('PDF cell bounds mismatch')
 
 
 def analyze_pdf(result, corpus):
@@ -169,7 +179,9 @@ def analyze_pdf(result, corpus):
         doc['citation_policy'] = 'mofe-explicit'
         chapter_docs[chapter] = doc
     for unit in result['units']:
-        part = dict(text=normalized_quotes(unit['text']), jo='')
+        if not re.search(r'조|법|「|｢',unit['text']):continue
+        row_begin=len(rows);issue_begin=len(issues)
+        part = dict(text=normalized_quotes(unit['text']).translate(str.maketrans({'｢':'「','｣':'」'})), jo='')
         parsing = deepcopy(chapter_docs[unit['chapter']])
         for citation in adapter(parsing, part, corpus):
             canonical = {norm(k):v for k,v in parsing.get('aliases',{}).items()}.get(norm(citation['target_name']),citation['target_name'])
@@ -187,7 +199,7 @@ def analyze_pdf(result, corpus):
             raw = result['text'][a:b]
             rows.append(dict(evidence_id=digest(repr((record['uid'],result['file_sha256'],a,b,owner,citation['target_ref'])))[:20],
                 source_law=record['name'], source_jo='', source_ref=locator, source_granularity='text',
-                source_layer='procurement-pdf-prose', source_page=unit['page'], source_file_sha256=result['file_sha256'],
+                source_layer='procurement-pdf-'+unit.get('layer','prose'), source_page=unit['page'], source_file_sha256=result['file_sha256'],
                 source_text_sha256=result['text_sha256'], source_start=a, source_end=b,
                 source_effective=record['effective'], source_url=result['pdf_url']+f"#page={unit['page']}",
                 target_law=owner, target_ref=citation['target_ref'], target_kind=kind,
@@ -196,9 +208,19 @@ def analyze_pdf(result, corpus):
                 target_status=('collected' if target.get('articles') else 'collected-not-indexed') if target else 'not-collected',
                 target_provision_status=citation.get('target_provision_status',''), raw=raw, cite_raw=raw,
                 context=unit['text'], context_review=citation.get('context_review',False),
-                reason='PDF 일반 문단의 명시적 인용입니다. 장·절·항목은 조문 번호로 변환하지 않았습니다.'))
+                reason=('PDF 표의 같은 셀 안에 명시된 인용입니다. 다른 셀의 조건·법령명을 합치지 않았습니다.' if unit.get('layer')=='table-cell' else
+                    'PDF 별표 문단의 명시적 인용입니다. 배점·산식·적용 요건의 충족 여부를 판정하지 않습니다.' if unit.get('layer')=='annex-prose' else
+                    'PDF 일반 문단의 명시적 인용입니다. 장·절·항목은 조문 번호로 변환하지 않았습니다.'),
+                **({('source_'+k):v for k,v in unit['cell'].items() if k in ('table','row','column','bbox')} if 'cell' in unit else {})))
         for issue in part.get('citation_issues', []):
             a, b = unit['start']+issue['start'], unit['start']+issue['end']
             issues.append(dict(source_law=record['name'], source_ref=unit['locator']+f" · PDF {unit['page']}쪽",
                 source_start=a, source_end=b, raw=result['text'][a:b], reason=issue['reason']))
+        if unit.get('layer')=='table-cell':
+            covered=rows[row_begin:]+issues[issue_begin:]
+            for match in re.finditer(r'제\s*\d+\s*조(?:\s*의\s*\d+)?',unit['text']):
+                a,b=unit['start']+match.start(),unit['start']+match.end()
+                if not any(r['source_start']<=a and b<=r['source_end'] for r in covered):
+                    issues.append(dict(source_law=record['name'],source_ref=unit['locator']+f" · PDF {unit['page']}쪽",source_start=a,source_end=b,
+                        raw=result['text'][a:b],reason='표의 같은 셀에서 인용 법령을 특정하지 못했습니다. 인접 셀의 법령명을 자동 결합하지 않았습니다.'))
     return rows, issues

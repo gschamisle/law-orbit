@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from core.procurement_pdf import extract_pdf, validate_extraction
 
 
-def collect(destination, records):
+def collect(destination, records, *, include_structures=False):
     if destination.exists():raise ValueError('Choose a new directory; existing sources are preserved')
     sources=json.loads(records.read_text(encoding='utf-8'))
     destination.mkdir(parents=True)
@@ -22,7 +22,7 @@ def collect(destination, records):
         if len(raw)>64*1024*1024 or hashlib.sha256(raw).hexdigest()!=record['file_sha256']:
             raise ValueError('PDF changed or exceeded limit; review the edition before collecting')
         path=destination/(record['document_id']+'.pdf');path.write_bytes(raw)
-        result=extract_pdf(path,record);validate_extraction(result)
+        result=extract_pdf(path,record,include_structures=include_structures);validate_extraction(result)
         path.with_name(path.stem+'-extraction.json').write_text(json.dumps(result,ensure_ascii=False),encoding='utf-8')
         print(record['name']+': source and text verified',flush=True)
 
@@ -30,4 +30,5 @@ def collect(destination, records):
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--destination',type=Path,required=True)
     p.add_argument('--records',type=Path,default=Path('data/procurement-pdf-sources.json'))
-    a=p.parse_args();collect(a.destination,a.records)
+    p.add_argument('--include-structures',action='store_true')
+    a=p.parse_args();collect(a.destination,a.records,include_structures=a.include_structures)

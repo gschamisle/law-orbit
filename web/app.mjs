@@ -310,7 +310,7 @@ function renderReadingArticle(jo){
  }else{
   $('reading-status').textContent=document.meta.text_analysis?'문단 인용 분석 · 지침 내부 문단 간 참조는 미분석':'본문 수집 · 조문 연결 미분석';
   if(document.pdf_analysis){
-   $('reading-status').textContent='PDF 문단 인용 · 표·서식·부칙은 연결 미분석';
+   $('reading-status').textContent=document.pdf_analysis.anchors?'PDF 문단·표 인용 · 내부 위치 연결':'PDF 문단 인용 · 표·서식·부칙은 연결 미분석';
    renderProcurementPdf(body,document,reading.evidence,{text,link,markBody:(element,raw,rows,stage)=>markBody(element,raw,connectionHighlights(raw,'',rows),stage,true),onPage:page=>{reading.copyText=entry.name+` · PDF ${page.page}쪽\n`+page.text;}});
   }else{
   const raw=readableUnstructured(document),content=text('div',raw||'수집된 본문이 없습니다. 공식 원문을 확인해 주세요.','reading-text');body.append(content);if(raw)markBody(content,raw,connectionHighlights(raw,'',reading.evidence),body,true);
@@ -409,7 +409,7 @@ $('coverage-open').onclick=()=>{
  if(['tax','public_institutions'].includes(domain))content.append(text('p','후속 개정 점검은 수집 법률·시행령의 위임 문구와 이전 판본의 변경을 대조합니다. 과거 판본 미확보 시 신규 여부는 미대조이며, 위임 이행·개정 누락을 자동 확정하지 않습니다. 내부 개정안 비교는 로컬 앱에서 제공합니다.'));
  const work=catalog?.workbench;
  const summary=catalog?.collection_summary;
- if(catalog?.pdf_summary){for(const pdf of catalog.pdf_summary)content.append(text('p',`${pdf.name}: PDF ${pdf.pages}쪽 중 일반 문단 분석 ${pdf.prose_pages}쪽 · 인용 ${pdf.references}건. 표·서식·부칙은 연결 미분석입니다.`));}
+ if(catalog?.pdf_summary){for(const pdf of catalog.pdf_summary)content.append(text('p',`${pdf.name}: PDF ${pdf.pages}쪽 · 법령 인용 ${pdf.references}건${pdf.status==='explicit-pdf-structured'?` (표 셀 ${pdf.table_citations}건, 별표 문단 ${pdf.annex_citations}건 포함) · 내부 위치 연결 ${pdf.internal_links}건. 표의 적용조건·산식과 서식·부칙은 미분석입니다.`:`. 표·서식·부칙은 연결 미분석입니다.`}`));}
  if(catalog?.text_summary){const t=catalog.text_summary;content.append(text('p',`문단 인용 분석 ${t.documents}개 문서 · 명시적 인용 근거 ${t.citations}건 · 해석 확인 ${t.issues}건. 내부 문단 간 참조·이미지·표 본문은 미분석입니다.`));}
  if(summary){
   content.append(text('p',`법령 ${summary.statutes}건 · 행정규칙 ${summary.administrative_rules}건 · 조문 분석 ${summary.indexed_documents}개 문서 / ${summary.articles}개 조문`),text('p',`문단 인용 분석 ${summary.text_analyzed_documents}개 문서 · 명시적 인용 ${summary.text_citations}건 · 시행예정 ${summary.scheduled}건은 현재 지도에서 제외했습니다.`),text('p',`해석 확인 목록: 조문 ${summary.unresolved}건 · 지침 문단 ${summary.text_unresolved}건. 인용 대상이나 범위를 확정하지 못한 사례는 근거 목록에서 구분합니다.`));
