@@ -93,7 +93,7 @@ def collect_candidate(domain: str, inventory: dict, key: str, staging: Path) -> 
     staging.mkdir(parents=True, exist_ok=True)
     if domain == 'tax':
         from scripts.collect_law_universe import collect
-        from core.universe_builder import build_universe
+        from core.universe_builder import build_tax_universe
         cache = staging / 'body-cache'
         cache.mkdir(exist_ok=True)
         with ThreadPoolExecutor(max_workers=3) as pool:
@@ -104,7 +104,7 @@ def collect_candidate(domain: str, inventory: dict, key: str, staging: Path) -> 
         source = {'built_at':date.fromisoformat(inventory['as_of']).isoformat(),
                   'provider':'법제처 시행일 기준 Open API (eflaw)', 'laws':sorted(laws,key=lambda l:l['name'])}
         atomic_json(staging / 'source-checkpoint.json', source)
-        return {'source':source, 'graph':build_universe(source)}
+        return {'source':source, 'graph':build_tax_universe(source)}
     from core.fsc_administrative import prepare_source
     from core.fsc_graph import build_fsc_graph, graph_report
     source = collect_sources(LawTransport(key), inventory, cache_dir=staging/'body-cache', workers=3)

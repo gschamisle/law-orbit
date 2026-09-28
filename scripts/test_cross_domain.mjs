@@ -43,7 +43,7 @@ const contract={...b,kind:'procurement-public-bridge',domain:'procurement',peer:
 const contractManifest={domains:[{id:'procurement',built_at:'20260919'},{id:'public_institutions',built_at:'20260921'}]};
 assert.equal(validateBridge(contract,'procurement',contractManifest,{...catalog,built_at:'20260919'}),contract);
 assert.match(bridgeLabel(contractRow),/공공기관/);
-assert.match(bridgeEditions(contract),/조달계약 20260919, 공공기관 20260921/);
+assert.match(bridgeEditions(contract),/조달·계약 20260919, 공공기관 20260921/);
 assert.throws(()=>validateBridge({...contract,kind:'forex-finance-bridge'},'procurement',contractManifest,{...catalog,built_at:'20260919'}));
 assert.equal(combineConnections(detail,[],contract,'fx','1',false).rows.length,0);
 const isolated=await loadReading({id:'fi',jo:'2'},{catalog,lookup:bridgeLookup(ownLookup,contract),currentDoc,read:async()=>({meta:contractEntry,articles:[{jo:'2',text:'공공기관 수집 본문'}]})});

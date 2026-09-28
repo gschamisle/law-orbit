@@ -15,7 +15,7 @@ from core.universe_builder import block_at, QUALIFIER
 PAIR = ('forex', 'fsc')
 PAIRS = (PAIR, ('procurement', 'public_institutions'))
 BRIDGE_KINDS = {PAIR: 'forex-finance-bridge', PAIRS[1]: 'procurement-public-bridge'}
-PAIR_LABELS = {PAIR: '외환·금융', PAIRS[1]: '조달계약·공공기관'}
+PAIR_LABELS = {PAIR: '외환·금융', PAIRS[1]: '조달·계약·공공기관'}
 
 
 def norm(value):

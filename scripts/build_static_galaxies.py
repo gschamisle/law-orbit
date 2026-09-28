@@ -211,7 +211,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             body=body_text(d['raw_body_blocks'])
         entry['parts']=parts
         extra={}
-        if domain=='medical':
+        if domain in ('medical','tax'):
             from core.annex_analysis import validate_analysis
             extra['annexes']=[]
             for annex in d.get('annexes',[]):
@@ -219,6 +219,9 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
                 item={k:annex.get(k) for k in ('ref','title','effective','urls')}
                 item['status']='explicit-citations' if analysis else 'not-analyzed'
                 item['connections']=[]
+                item['issues']=[{k:i[k] for k in ('raw','reason','source_ref') if k in i}
+                                for i in graph.get('annex_analysis',{}).get('issues',[])
+                                if i['source_law']==d['name'] and i['source_jo']==annex['ref']]
                 if analysis:
                     validate_analysis(analysis);item['analysis']=analysis
                     for e in graph['edges']+graph['external_references']:
@@ -279,7 +282,8 @@ def build(source,dest,previous_site=None):
             path=source/f'output/{domain}-universe/bundle.json'
             bundle=read(path)
             if domain=='tax':
-                graph=bundle;src=bundle['source'];sectors={'all':'전체 국세'}
+                from core.universe_builder import build_tax_universe
+                src=bundle['source'];graph=build_tax_universe(src,annex_bodies=any(a.get('body_analysis') for d in src['laws'] for a in d.get('annexes',[])));sectors={'all':'전체 연결'}
             else:
                 if domain=='fsc':
                     from core.fsc_universe import validate_bundle

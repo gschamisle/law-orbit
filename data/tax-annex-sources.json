@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "as_of": "2026-09-28",
+  "collected_on": "2026-09-29",
+  "source_bundle_sha256": "8875c6dd90f6bf2182bd33ab99e40f0c252f66aa2b6927c25f96ca200ff3e016",
+  "annexes": [
+    {
+      "id": "corporate-rule-5",
+      "law": "법인세법 시행규칙",
+      "ref": "별표 5",
+      "title": "건축물 등의 기준내용연수 및 내용연수범위(제15조제3항 관련)",
+      "edition": {
+        "law_id": "007229",
+        "mst": "287787",
+        "effective": "20260701",
+        "xml_sha256": "4e90552eef495259d2e603b416b603de47dc59a619ce2dc008d020ee391292ee"
+      },
+      "source_url": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=287787&efYd=20260701",
+      "api_text_sha256": "6c236beb561c925c6260f35b50c98bb44b703364e37677eb9256e38596015b06",
+      "files": {
+        "hwp": {
+          "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=168515331",
+          "name": "corporate-rule-5.hwp",
+          "sha256": "5f547332ef56b8c9a79d56a5944f16ae89ff04d09c01784bee3251676c604eb6",
+          "bytes": 64000,
+          "signature": "d0cf11e0a1b11ae1"
+        },
+        "pdf": {
+          "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=168515333",
+          "name": "corporate-rule-5.pdf",
+          "sha256": "8ab16e2594241e9046046ea368d2679778e671cce26767fc4dc02a9c8dfa2715",
+          "bytes": 132894,
+          "signature": "255044462d312e34"
+        }
+      },
+      "analysis_sha256": "34dd64694c5ce2cfe669ec9cbe2c61fa78798a8bbd08422d083eeb28b2563835"
+    },
+    {
+      "id": "corporate-rule-6",
+      "law": "법인세법 시행규칙",
+      "ref": "별표 6",
+      "title": "업종별 자산의 기준내용연수 및 내용연수범위(제15조제3항 관련)",
+      "edition": {
+        "law_id": "007229",
+        "mst": "287787",
+        "effective": "20260701",
+        "xml_sha256": "4e90552eef495259d2e603b416b603de47dc59a619ce2dc008d020ee391292ee"
+      },
+      "source_url": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=287787&efYd=20260701",
+      "api_text_sha256": "14932addeeebdc41e0d217b58dca10d179b61c948180c25670351ede63e8f4d8",
+      "files": {
+        "hwp": {
+          "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=168517139",
+          "name": "corporate-rule-6.hwp",
+          "sha256": "be1156ff733b8fec2160d3c7898b011fbd3c201fb30d7511f72b42a89d93520e",
+          "bytes": 67072,
+          "signature": "d0cf11e0a1b11ae1"
+        },
+        "pdf": {
+          "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=168517141",
+          "name": "corporate-rule-6.pdf",
+          "sha256": "a9a3d0772a30d84cd2fb00b1033994ba52fed0b60e799d6e9efd8e32d29a8b9a",
+          "bytes": 192596,
+          "signature": "255044462d312e34"
+        }
+      },
+      "analysis_sha256": "5968b7eba750377b5ffd29c4804bc6a0405d4b47d1015e018043e8379eb995ac"
+    },
+    {
+      "id": "special-decree-6",
+      "law": "조세특례제한법 시행령",
+      "ref": "별표 6",
+      "title": "연구ㆍ인력개발비 세액공제를 적용받는 비용(제9조제1항 관련)",
+      "edition": {
+        "law_id": "004920",
+        "mst": "288915",
+        "effective": "20260918",
+        "xml_sha256": "3a05aeec3ab138d0e23ccc75df3b31aada69c9e6e3b570a0bd31c37cd99d227b"
+      },
+      "source_url": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=288915&efYd=20260918",
+      "api_text_sha256": "aea3c4ed362cd378d080b4129ee505f053df51a50177227af654e18a96bade10",
+      "files": {
+        "hwp": {
+          "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=168106327",
+          "name": "special-decree-6.hwp",
+          "sha256": "6c3da9d5b1b89d9b6bfca084b65a0daf3cce2c268d2b8973515e362d5a48d099",
+          "bytes": 66048,
+          "signature": "d0cf11e0a1b11ae1"
+        },
+        "pdf": {
+          "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=168106329",
+          "name": "special-decree-6.pdf",
+          "sha256": "3874170481a3b0a840cf0bcd778d98ea84aae05310e2c74d4350ef5f0b3ad767",
+          "bytes": 163365,
+          "signature": "255044462d312e34"
+        }
+      },
+      "analysis_sha256": "6c714014b05e5c2405d9f6384f2834eabbde9c7daa22eee67f558eda0a38db8b",
+      "verified_self_references": [
+        {
+          "unit_text_sha256": "53998db7d152d39aa57a61ea94341850fa82cdc1014472e11f9111435ba33ed0",
+          "cite_raw": "제25조의3제3항제2호가목",
+          "target_ref": "제25조의3제3항제2호가목",
+          "review": "공식 PDF 1쪽 1.가.4)의 연구ㆍ시험용 시설 정의. 같은 시행령 제25조의3제3항제2호가목에서 해당 시설 열거를 확인. 다른 문단의 법령명을 가져오지 않음."
+        }
+      ]
+    }
+  ]
+}

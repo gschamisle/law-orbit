@@ -90,7 +90,10 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
             edge['target_title'] = matched['title'] if matched else ''
             edge['annex_urls'] = matched.get('urls',[]) if matched else []
         edge['evidence_id'] = hashlib.sha256(repr(ident).encode('utf-8')).hexdigest()[:20]
-        if preserve_external and not dest:
+        # Named standards already have their own evidence kind; they are not
+        # missing law bodies. Opting into missing-law preservation must not
+        # remove those existing edges from the tax graph.
+        if preserve_external and not dest and kind != 'standard':
             edge.update(target_status='not-collected', target_analysis='not-indexed', external_reverse='not-collected')
             external_references.append(edge)
         else:
@@ -233,8 +236,53 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
     return result
 
 
+def build_tax_universe(source, *, annex_bodies=False):
+    """Keep missing-law evidence beside the bounded tax graph, without collection.
+
+    Only the stored tax-source text is parsed. Missing destinations stay out of
+    the collected catalog and reverse index; their article scopes and original
+    wording are preserved for the public viewer's uncollected-reference panel.
+    The generic builder retains its legacy opt-in default for existing callers.
+    """
+    result = build_universe(source, preserve_external=True)
+    external, issues, seen_issues = [], [], set()
+    for row in result['external_references']:
+        # A quoted name crossing table cells can contain another column's text
+        # and even its article numbers. Keep the source evidence for review,
+        # without guessing a repaired law name or generating an official link.
+        reason = ''
+        if re.search(r'[\u2500-\u257f「」]', row['target_law']):
+            reason = '표 구분선 또는 중첩 인용부호가 법령명에 포함되어 대상을 확정하지 않았습니다. 출처 원문에서 법령명과 조문 번호를 확인하세요.'
+        elif re.fullmatch(r'(?:동법(?:시행령|시행규칙)?|동시행령|동시행규칙|(?:조|항|호|목|단서)(?:및|또는|와|과)?(?:동)?법)', norm(row['target_law'])):
+            reason = '상대 참조 또는 조문 구분 문구에서 대상 법령명을 확정하지 못했습니다. 출처 원문에서 앞선 법령명과 인용 범위를 확인하세요.'
+        if not reason:
+            external.append(row)
+            continue
+        ident = (row['source_law'], row['source_jo'], row['source_start'], row['source_end'], row['cite_raw'])
+        if ident in seen_issues:
+            continue
+        seen_issues.add(ident)
+        issue = {key:row[key] for key in ('source_law', 'source_jo', 'source_title', 'source_ref',
+                                         'source_granularity', 'source_start', 'source_end',
+                                         'source_effective', 'source_url', 'context')}
+        issue.update(raw=row['cite_raw'], kind='unresolved-law-name', status='review',
+                     reason=reason,
+                     evidence_id=hashlib.sha256(repr(('tax-unresolved-law-name', ident)).encode('utf-8')).hexdigest()[:20])
+        issues.append(issue)
+    result['external_references'] = external
+    if issues:
+        result['citation_issues'] = issues
+    result['coverage_note'] += (' 미수집 법령의 명시적 인용은 출처 조문별 확인 목록에 보존합니다.'
+                               ' 해당 법령의 본문·역인용을 수집하거나 검증한 것은 아닙니다.'
+                               ' 표 구분선 등이 섞인 법령명과 대상이 불명확한 상대 참조는 원문 확인 항목으로 남깁니다.')
+    if annex_bodies:
+        from core.tax_annex import merge_graph
+        result = merge_graph(result, source)
+    return result
+
+
 def main():
-    data = build_universe(json.loads(SOURCES.read_text(encoding='utf-8')))
+    data = build_tax_universe(json.loads(SOURCES.read_text(encoding='utf-8')))
     temp = GRAPH.with_suffix('.json.tmp')
     temp.write_text(json.dumps(data,ensure_ascii=False),encoding='utf-8')
     temp.replace(GRAPH)

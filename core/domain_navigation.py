@@ -7,7 +7,7 @@ or a claim that every included document belongs to the same ministry.
 DOMAINS = {
     'constitution': '헌법',
     'tax': '국세',
-    'procurement': '조달계약',
+    'procurement': '조달·계약',
     'customs': '관세·통관',
     'forex': '외환',
     'state_property': '국유재산',
@@ -18,8 +18,8 @@ DOMAINS = {
     'labor': '고용·노동',
     'medical': '의료',
     'local_tax': '지방세',
-    'housing': '국토건축주택',
-    'environment': '환경화학안전',
+    'housing': '국토·건축·주택',
+    'environment': '환경·화학·안전',
 }
 
 

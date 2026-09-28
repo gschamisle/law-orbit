@@ -1,6 +1,6 @@
 // Optional evidence overlay. Catalogs, selections and original shards stay separate.
 export const bridgePeers={forex:'fsc',fsc:'forex',procurement:'public_institutions',public_institutions:'procurement'};
-export const bridgeNames={forex:'외환',fsc:'금융',procurement:'조달계약',public_institutions:'공공기관'};
+export const bridgeNames={forex:'외환',fsc:'금융',procurement:'조달·계약',public_institutions:'공공기관'};
 export function bridgeEditions(bridge){return Object.entries(bridge.editions).map(([id,date])=>`${bridgeNames[id]} ${date}`).join(', ');}
 export function validateBridge(value,domain,manifest,catalog){
  const peer=bridgePeers[domain],kind=['forex','fsc'].includes(domain)?'forex-finance-bridge':'procurement-public-bridge';

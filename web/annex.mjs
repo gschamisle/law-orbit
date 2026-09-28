@@ -5,8 +5,10 @@ export function renderAnnex(body,annex,rows,{text,link,read}){
  for(const [i,url] of (annex.urls||[]).entries())sources.append(link(url,`별표 원본 ${i+1} ↗`));
  body.append(sources);
  const a=annex.analysis;if(!a){body.append(text('p','이 별표 본문은 미분석입니다. 공식 원본에서 내용을 확인하세요.','muted'));return;}
- body.append(text('p','원문을 칸·문단 순서로 읽습니다. 병합 칸의 기관별 귀속·표 내부 참조·정원과 면적 산식은 미판정입니다. 적용 조건과 표 배치는 공식 원본을 함께 확인하세요.','muted small'));
+ body.append(text('p',a.reading_note||'원문을 칸·문단 순서로 읽습니다. 병합 칸의 기관별 귀속·표 내부 참조·정원과 면적 산식은 미판정입니다. 적용 조건과 표 배치는 공식 원본을 함께 확인하세요.','muted small'));
+ if(a.citation_status==='zero-explicit-citations')body.append(text('p','별표 본문 분석 완료 · 명시적 법령 인용 0건. 표의 내용과 적용 조건은 공식 원본을 함께 확인하세요.','muted small'));
  for(const issue of a.issues||[])body.append(text('p',issue,'muted small'));
+ if(annex.issues?.length){const issues=document.createElement('details');issues.append(text('summary',`별표 인용 해석 확인 ${annex.issues.length}건`));for(const issue of annex.issues)issues.append(text('p',`${issue.source_ref||''} · ${issue.raw} — ${issue.reason}`,'muted small'));body.append(issues);}
  const quotes=rows.filter(r=>r.source_layer==='annex-body'&&r.source_jo===annex.ref&&r.direction==='reverse');
  const ranges=quotes.flatMap(r=>quoteHighlights(a.text,r).ranges),marks=[];
  for(const unit of a.units){

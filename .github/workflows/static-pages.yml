@@ -34,6 +34,10 @@ jobs:
         run: node --test scripts/test_delegation.mjs scripts/test_public_scope.mjs
       - name: Download and validate pinned public data and browser shell
         run: uv run python -m scripts.fetch_static_release --destination _site
+      - name: Verify collected statutes and actual historical comparisons
+        env:
+          LAW_ORBIT_TEST_SITE: _site
+        run: node --test scripts/test_delegation_collected.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
