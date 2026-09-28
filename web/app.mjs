@@ -131,7 +131,9 @@ async function navigate(id,overrides={}){
  $('article-content').replaceChildren(text('p','법령 자료를 불러오고 있습니다.','muted'));$('evidence').replaceChildren();$('outside').replaceChildren();$('evidence-count').textContent='';domainButtons();
  try{
   const entry=manifest.domains.find(d=>d.id===id);if(!entry)throw Error('지원하지 않는 분야입니다.');
-  const loaded=await data(entry.catalog);if(token!==epoch)return;catalog=loaded;
+  const loaded=await data(entry.catalog);if(token!==epoch)return;
+  // Display a shared scope label without changing the collected catalog or its coverage.
+  catalog={...loaded,sectors:{...loaded.sectors,all:'전체 연결'}};
   if(manifest.cross_domain?.[id]){
    try{const linked=await data(manifest.cross_domain[id]);if(token!==epoch)return;cross=validateBridge(linked,id,manifest,catalog);$('cross').disabled=false;}
    catch(err){if(token!==epoch)return;crossError='분야 간 연결 자료를 불러오지 못했습니다. '+err.message;}
@@ -145,6 +147,8 @@ async function navigate(id,overrides={}){
   special=null;specialScope={};if($('special').open)$('special').close();
   $('special-open').hidden=!catalog.special_cases;
   $('sector').replaceChildren(...Object.entries(catalog.sectors).map(([v,t])=>option(v,t)));if(!catalog.sectors[state.sector])state.sector='all';$('sector').value=state.sector;
+  $('sector-label').hidden=Object.keys(catalog.sectors).length<2;
+  $('overview').textContent=state.sector==='all'?'전체 지도 보기':'분야 지도 보기';
   $('region-label').hidden=id!=='local_tax';$('region').replaceChildren(option('','중앙 법령·전국 역인용'),...(catalog.regions||[]).map(r=>option(r.id,r.authority+(r.catalog?'':' · 분석 자료 없음'))));$('region').value=state.region;
   $('body-query').value=state.query||'';$('direction').value=state.direction;$('review').checked=state.review;$('broad').checked=state.broad;
   const choices=renderLaws();overview=await data((regional||catalog).overview);if(token!==epoch)return;

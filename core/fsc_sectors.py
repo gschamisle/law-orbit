@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from core.fsc_collection import norm
 
-SECTORS = {'all':'전체 금융', 'insurance':'보험', 'banking':'은행', 'securities':'증권·자산운용',
+SECTORS = {'all':'전체 연결', 'insurance':'보험', 'banking':'은행', 'securities':'증권·자산운용',
            'credit':'여신·서민금융', 'digital':'전자금융·가상자산', 'common':'공통'}
 # Transparent title rules are deliberately conservative; unmatched material is
 # common, never silently assigned to every sector from a passing body mention.
