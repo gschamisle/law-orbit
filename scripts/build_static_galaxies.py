@@ -25,6 +25,7 @@ ROOT=Path(__file__).resolve().parents[1]
 WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical')
 PALETTE=['#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed','#cedc80','#ffa58e','#91a1ff']
 LIMIT=24*1024*1024
+from core.annex_metadata import annex_index, annotate_annex
 FIELDS=('source_law','source_jo','source_title','source_ref','source_granularity','source_effective','source_url','target_law','target_ref','target_ref_recorded','target_url','target_effective','target_kind','target_status','target_provision_status','context','raw','cite_raw','reason','status','precision','direction','direction_label','neighbor_law','neighbor_jo','neighbor_ref','neighbor_kind','neighbor_title','kind','external','broad','source_start','source_end','evidence_id','annex_urls','source_layer','source_page','source_file_sha256','source_text_sha256','source_table','source_row','source_column','source_bbox')
 
 
@@ -95,6 +96,7 @@ class EdgeIndex:
 
 def tidy(row,ids,hyphen):
     out={k:row[k] for k in FIELDS if k in row}
+    if 'annex_analyzed' in row:out['annex_analyzed']=bool(row['annex_analyzed'])
     for key in ('source_layer','source_unit','source_text_sha256','source_file_sha256'):
         if key in row:out[key]=row[key]
     for key in ('source_url','target_url'):
@@ -148,15 +150,18 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
     ids={d['name']:ident(domain,region,d['name']) for d in docs}
     ids.update(central_ids or {})
     index=EdgeIndex(graph,docs);result=[]
+    annexes=annex_index(docs)
+    def public_row(row,hyphen=None):
+        return tidy(annotate_annex(row,annexes),ids,index.hyphen if hyphen is None else hyphen)
     external=defaultdict(list);issues=defaultdict(list)
     text_forward=defaultdict(list);text_reverse=defaultdict(list)
     if graph.get('text_citations'):
         from core.ftc_text_citations import reading_row
         for edge in graph.get('text_citations',[]):
-            text_forward[edge['source_law']].append(tidy(reading_row(edge,'forward'),ids,False))
+            text_forward[edge['source_law']].append(public_row(reading_row(edge,'forward'),False))
             if edge['target_status']=='collected' and edge['target_kind']=='article':
                 jo=_target(edge['target_ref']).jo
-                text_reverse[(edge['target_law'],jo)].append(tidy(reading_row(edge,'reverse'),ids,False))
+                text_reverse[(edge['target_law'],jo)].append(public_row(reading_row(edge,'reverse'),False))
     for e in graph.get('external_references',[]):external[(e['source_law'],str(e['source_jo']))].append(e)
     for e in graph.get('citation_issues',[])+graph.get('context_evidence',[]):issues[(e['source_law'],str(e['source_jo']))].append(e)
     if national is not None:
@@ -166,7 +171,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             if not law or not any(graph['edges'][i]['source_law'] in region_names for i in indexes):continue
             for row in index.focus(law,Provision(jo).label)['rows']:
                 if row['direction']=='reverse' and row['source_law'] in region_names:
-                    national[(law,jo)].append({**tidy(row,ids,index.hyphen),'national':True,'region':region})
+                    national[(law,jo)].append({**public_row(row),'national':True,'region':region})
     for d in docs:
         if write_names is not None and d['name'] not in write_names:continue
         entry=metadata(d,domain,region);entry['id']=ids[d['name']]
@@ -189,12 +194,12 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             if domain=='forex' or domain in WORK_DOMAINS:article['sectors']=a.get('sectors',[])
             try:
                 analyzed=index.focus(d['name'],label,broad=not articles)
-                if not articles:broad=[tidy(r,ids,index.hyphen) for r in analyzed.get('broad_rows',[])]
-                detail=dict(rows=[tidy(r,ids,index.hyphen) for r in analyzed['rows']],same_article_count=analyzed['same_article_count'],unplaced=analyzed['unplaced'])
+                if not articles:broad=[public_row(r) for r in analyzed.get('broad_rows',[])]
+                detail=dict(rows=[public_row(r) for r in analyzed['rows']],same_article_count=analyzed['same_article_count'],unplaced=analyzed['unplaced'])
             except ValueError:
                 detail=dict(rows=[],analysis_error='이 조문 번호 형식의 연결은 미분석입니다.')
             detail['rows']+=text_reverse[(d['name'],jo)]
-            detail['external']=[tidy(e,ids,index.hyphen) for e in external[(d['name'],jo)]]
+            detail['external']=[public_row(e) for e in external[(d['name'],jo)]]
             if 'analyzed_articles' in d and jo not in d['analyzed_articles']:
                 detail['analysis_error']='이 조문은 국유재산 특례의 선택 분석 범위 밖입니다. 본문은 열람할 수 있으며, 표시된 역인용은 수집·분석한 출처 범위입니다.'
             detail['issues']=[{k:e[k] for k in ('raw','reason','kind','status') if k in e} for e in issues[(d['name'],jo)]]
@@ -211,7 +216,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
             body=body_text(d['raw_body_blocks'])
         entry['parts']=parts
         extra={}
-        if domain in ('medical','tax'):
+        if domain in ('medical','tax') or d.get('annexes'):
             from core.annex_analysis import validate_analysis
             extra['annexes']=[]
             for annex in d.get('annexes',[]):
@@ -230,10 +235,10 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
                         try:jo=_target(e['target_ref']).jo if kind=='article' else e['target_ref']
                         except ValueError:continue
                         row={**e,'raw':e['cite_raw'],'direction':'forward','neighbor_kind':kind,'neighbor_jo':jo,'neighbor_law':e['target_law'],'neighbor_ref':e['target_ref'],'external':e['target_law'] not in ids}
-                        item['connections'].append(tidy(row,ids,index.hyphen))
+                        item['connections'].append(public_row(row))
                 extra['annexes'].append(item)
         if domain in ('ftc','treasury','procurement') and d.get('text_analysis'):
-            extra=dict(text_connections=text_forward[d['name']],text_issues=[i for i in graph.get('text_citation_issues',[]) if i['source_law']==d['name']])
+            extra.update(text_connections=text_forward[d['name']],text_issues=[i for i in graph.get('text_citation_issues',[]) if i['source_law']==d['name']])
         entry['file']=writer.data(dict(meta=entry,articles=articles,details=inline,broad=broad,unstructured_text=body,**extra))
         result.append(entry)
     return result,ids

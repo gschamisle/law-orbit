@@ -257,4 +257,6 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
     # Relative wording is reported explicitly, rather than guessed across sentences.
     for m in re.finditer(r'같은\s*(?:조|항|호)(?:\s*제\s*\d+\s*(?:항|호))?',text):
         issues.append(dict(raw=m[0],start=m.start(),end=m.end(),reason='상대 조문 참조 · 문맥 검토 필요'))
+    from core.annex_references import annex_references
+    outputs.extend(annex_references(law, article, corpus))
     return outputs

@@ -13,6 +13,8 @@ MODULES: tuple[str, ...] = (
     "scripts.test_citation_parser",
     "scripts.test_byeolpyo",
     "scripts.test_annex_analysis",
+    "scripts.test_annex_references",
+    "scripts.test_annex_reference_site",
     "scripts.test_relative_law_resolution",
     "scripts.test_junyo_tagging",
     "scripts.test_article_relations",

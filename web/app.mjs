@@ -2,6 +2,7 @@ import {renderProcurementPdf} from './procurement-pdf.mjs';
 import {installFeedback} from './feedback.mjs';
 import {mountPublicScope} from './public-scope.mjs';
 import {renderAnnex} from './annex.mjs';
+import {annexReference,appendAnnexSources} from './annex-links.mjs';
 import {mountPageviews} from './pageviews.mjs';
 import {createDelegationReview} from './delegation-ui.mjs';
 import {loadReading,scopeHighlights,connectionHighlights,evidenceKey,collectReview,reviewHTML,reviewCSV,provisionOptions} from './reading.mjs';
@@ -230,13 +231,16 @@ function showMap(value){
 function sectorMap(){if(state.sector==='all')return overview;const names=new Set(allowedLaws().map(d=>d.name));return {...overview,...(domain==='state_property'?{overview_note:'선택 분야의 법령·지침입니다. 배치는 탐색을 위한 것으로 법적 위계를 뜻하지 않습니다.'}:{}),galaxy_title:$('heading').textContent+' ('+catalog.sectors[state.sector]+')',nodes:overview.nodes.filter(n=>names.has(n.id)),dust:overview.dust.filter(n=>names.has(n.law_id)&&(!usesArticleTags()||(n.sectors||[]).includes(state.sector))),links:overview.links.filter(l=>names.has(l.a)&&names.has(l.b)),all_links:overview.all_links.filter(l=>names.has(l.a)&&names.has(l.b))};}
 function outsideSector(row){const d=lookup.get(row.neighbor_id);if(usesArticleTags()&&state.sector!=='all'&&row.neighbor_kind==='article')return !(d?.article_sectors?.[row.neighbor_jo]||[]).includes(state.sector);return state.sector!=='all'&&(!d||(d.sectors||[]).indexOf(state.sector)<0);}
 function evidenceCard(row,external=false){
+ const annex=annexReference(row,{currentDoc:doc,external});
  const card=document.createElement('article');card.className='evidence-card';const header=document.createElement('header'),title=document.createElement('div');
  title.append(text('span',external?'지도 밖 인용':row.direction==='reverse'?'← 역인용':'직접 인용 →','flow '+(row.direction==='reverse'?'reverse':'')));
  title.append(text('h3',external?(row.target_law+' '+(row.target_ref||'')):(row.neighbor_law+' '+(row.neighbor_ref||row.neighbor_jo||''))));
+ if(row.source_granularity==='annex'&&row.source_layer!=='annex-body')title.append(text('small','별표 제목의 관련 조문','muted'));
  if(row.cross_domain)title.append(text('span',bridgeLabel(row),'badge'));else if(row.national)title.append(text('span','전국 수집 조례 · '+(row.source_law||''),'badge'));else if(outsideSector(row))title.append(text('span','분야 밖 관련 조문','badge'));
  if(row.scope_labels?.length)title.append(text('small',row.scope_labels.map(k=>catalog.workbench.public_scope.labels[k]).join(' · '),'scope-labels'));
  header.append(title);
- if(!external&&row.neighbor_id){if(row.neighbor_kind==='annex'&&row.annex_unanalyzed)header.append(link(row.target_url,'별표 공식 원문 ↗'));else{const button=text('button','본문 보기');button.onclick=()=>openReading(row.neighbor_id,['article','annex'].includes(row.neighbor_kind)?row.neighbor_jo:'',row.region||relatedLookup().get(row.neighbor_id)?.region||'',[row]);header.append(button);}}
+ if(annex){const originals=text('div','','annex-sources');appendAnnexSources(originals,annex,{text,link});header.append(originals);if(!external&&annex.id&&annex.analyzed){const button=text('button','검증된 별표 본문 보기');button.onclick=()=>openReading(annex.id,annex.ref,row.region||relatedLookup().get(annex.id)?.region||'',[row]);header.append(button);}}
+ else if(!external&&row.neighbor_id){const button=text('button','본문 보기');button.onclick=()=>openReading(row.neighbor_id,row.neighbor_kind==='article'?row.neighbor_jo:'',row.region||relatedLookup().get(row.neighbor_id)?.region||'',[row]);header.append(button);}
  const actions=document.createElement('div');actions.className='evidence-actions';
  const pick=text('label','','check');const check=document.createElement('input');check.type='checkbox';check.checked=selectedEvidence.has(evidenceKey(row));check.setAttribute('aria-label',`검토자료에 담기: ${row.neighbor_law||row.target_law} ${row.neighbor_ref||row.target_ref||''} · ${row.source_law||''} ${row.source_ref||''}`);check.onchange=()=>{if(check.checked)selectedEvidence.add(evidenceKey(row));else selectedEvidence.delete(evidenceKey(row));updateExportControls();};pick.append(check,document.createTextNode('검토자료에 담기'));actions.append(pick);
  const sourceId=row.source_id||(row.source_law===doc?.meta.name?doc.meta.id:'');
@@ -247,9 +251,9 @@ function evidenceCard(row,external=false){
  if(row.target_provision_status==='missing-from-collected-body')card.append(text('p','대상 법령은 수집했지만 해당 조문은 수집 판본에 없습니다.'));
  if(row.target_provision_status==='deleted')card.append(text('p','대상은 수집 판본의 삭제 조문입니다.'));
  if(row.cross_domain)card.append(text('p',`출처 시행 ${row.source_effective||'확인 필요'} · 대상 시행 ${row.target_effective||'확인 필요'}`,'muted small'));
- if(row.annex_unanalyzed)card.append(text('p','별표 인용 위치를 확인했습니다. 별표 본문·표 내부 인용은 미분석입니다.','muted small'));
+ if(annex&&!annex.analyzed)card.append(text('p',annex.status==='not-analyzed'?'별표 본문·표 내부 인용은 미분석입니다. 공식 원본에서 내용을 확인하세요.':'별표 본문 분석 여부는 이 연결 자료에서 확인되지 않습니다. 공식 원본을 확인하세요.','muted small'));
  if(row.context){const context=document.createElement('details');context.append(text('summary','인용 주변 원문'),text('p',row.context));card.append(context);}
- const sources=document.createElement('div');sources.className='sources';if(row.source_url)sources.append(link(row.source_url,'출처 원문 ↗'));if(row.target_url)sources.append(link(row.target_url,'대상 원문 ↗'));card.append(sources);
+ const sources=document.createElement('div');sources.className='sources';if(row.source_url)sources.append(link(row.source_url,annex&&row.direction==='reverse'||row.source_granularity==='annex'?'출처 별표 소유 법령 원문 ↗':'출처 원문 ↗'));if(row.target_url)sources.append(link(row.target_url,annex&&row.direction!=='reverse'||row.target_kind==='annex'?'대상 별표 소유 법령 원문 ↗':'대상 원문 ↗'));card.append(sources);
  return card;
 }
 function renderEvidence(){
@@ -301,10 +305,16 @@ function renderReadingArticle(jo){
   reading.copyText=annex.analysis?entry.name+' '+annex.ref+'\n'+annex.analysis.text:'';$('reading-copy').disabled=!reading.copyText;$('reading-explore').disabled=true;
   $('reading-status').textContent=annex.analysis?'별표 본문 · 명시적 인용 분석':'별표 본문 미분석';
   $('reading-meta').replaceChildren(text('span','시행 '+(annex.effective||entry.effective||'확인 필요')+' '),link(entry.url,'공식 원문 ↗'));
-  renderAnnex(body,annex,reading.evidence,{text,link,read:openReading});
+  renderAnnex(body,annex,reading.evidence,{text,link,read:openReading,ownerUrl:entry.url,currentDoc:document});
  }else if(a){
   $('reading-status').textContent=a.deleted?'수집 판본에서 삭제된 조문입니다.':'';
   body.append(text('h3',a.title));const content=text('div',a.text,'reading-text');body.append(content);markBody(content,a.text,connectionHighlights(a.text,jo,reading.evidence.filter(r=>r.direction==='reverse'?r.source_jo===jo:r.neighbor_kind==='article'&&r.neighbor_jo===jo)),body,true);
+ }else if(/^(별표|별지|서식)/.test(jo)){
+  reading.copyText='';$('reading-copy').disabled=true;$('reading-explore').disabled=true;
+  const row=reading.evidence.find(r=>r.neighbor_id===entry.id&&r.neighbor_jo===jo);
+  const original=annexReference(row||{neighbor_kind:'annex',neighbor_id:entry.id,neighbor_law:entry.name,neighbor_jo:jo,target_url:entry.url},{currentDoc:document});
+  $('reading-status').textContent='별표 본문 미확보 · 공식 원본을 확인하세요.';
+  renderAnnex(body,{ref:jo,title:jo,urls:original?.originals||[]},[],{text,link,read:openReading,ownerUrl:entry.url});
  }else if(jo){
   $('reading-status').textContent='수집한 판본에 해당 조문 본문이 없습니다. 공식 원문을 확인해 주세요.';
  }else if(document.articles.length){
