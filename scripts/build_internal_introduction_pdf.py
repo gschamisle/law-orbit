@@ -25,6 +25,7 @@ ROOT=Path(__file__).resolve().parents[1]
 W,H=A4;M=48;CW=W-2*M
 BG='#092d30';INK='#f4eedc';MINT='#a3d7c6';MUTED='#aac5ba';GOLD='#e6c983';LINE='#345955'
 APP='https://gschamisle.github.io/law-orbit/'
+DEVELOPER_CREDIT='개발 · 재정경제부 이금석'
 FIELDS=[
  ('국세','국세 법령, 인용 관계, 위임사항·후속 개정 후보'),
  ('조달·계약','국가·지방계약, 계약예규·조달청 집행기준'),
@@ -76,7 +77,7 @@ def build(source,dest):
         p=temp/f'original-art-{i+1}.png';original.pages[i].images[0].image.save(p);assets[i]=p
     qr=qrcode.make(APP);qr.save(temp/'app-qr.png')
     c=canvas.Canvas(str(dest),pagesize=A4,pageCompression=1)
-    c.setTitle('법의 궤도 - 내부 공지용 소개');c.setAuthor('법의 궤도');c.setSubject('헌법과 14개 업무 분야의 법령 연결 탐색 · 2026-09-28')
+    c.setTitle('법의 궤도 - 내부 공지용 소개');c.setAuthor(DEVELOPER_CREDIT);c.setSubject('헌법과 14개 업무 분야의 법령 연결 탐색 · 2026-09-28')
     def p(text,y,size=11,color=INK,bold=False,x=M,width=CW,leading=None):
         style=ParagraphStyle('body',fontName='MaruBold' if bold else 'MaruRegular',fontSize=size,leading=leading or size*1.72,textColor=HexColor(color),wordWrap='CJK')
         para=Paragraph(text,style);_,h=para.wrap(width,H)
@@ -182,6 +183,8 @@ def build(source,dest):
     p('분야 · 법령명 · 조문 번호 · 이상한 부분의 화면을 함께 알려 주세요.<br/>빠진 인용, 잘못 연결된 조문, 원문 불일치와 실제로 유용했던 사례를 기다립니다.',668,10.2,MUTED)
     url('앱 | gschamisle.github.io/law-orbit/',APP,723)
     url('웹 소개 | gschamisle.github.io/law-orbit/introduction.html',APP+'introduction.html',744)
+    c.setFillColor(HexColor(MUTED));c.setFont('Pretendard',8.5)
+    c.drawRightString(W-M,64,DEVELOPER_CREDIT)
     c.showPage();c.save()
     return dest
 
