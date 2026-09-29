@@ -15,7 +15,7 @@ from scripts.static_storage import Storage
 from scripts.validate_static_galaxies import validate
 
 DOMAIN = 'medical'
-TITLE = '보건의료'
+TITLE = '보건·의료'
 
 
 def article_projection(document, effective):

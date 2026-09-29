@@ -6,7 +6,7 @@
 
 > 한 조문에서 시작하는 법령 연결 지도.
 
-**2026-09-29 보건의료 확장:** 별도 최상단의 **헌법**과 **14개 업무 분야**를 제공합니다. 헌법은 실제 인용과 편집한 관련 법률 안내를 구분하며, 고용·노동은 1,494개 조문, 보건의료는 의료기관·인력 / 지역·공공보건 / 건강보험·의료급여의 **26개 문서·1,417개 조문**과 선정 별표 4개의 본문 인용을 탐색합니다. 법령·조문·항호목은 목록에서 선택하고, 본문 검색으로 목록을 좁힙니다. [헌법](docs/constitution-universe.md) · [고용·노동](docs/labor-universe.md) · [보건의료](docs/medical-universe.md).
+**2026-09-29 보건·의료 확장:** 별도 최상단의 **헌법**과 **14개 업무 분야**를 제공합니다. 헌법은 실제 인용과 편집한 관련 법률 안내를 구분하며, 고용·노동은 1,494개 조문, 보건·의료는 의료기관·인력 / 지역·공공보건 / 건강보험·의료급여의 **26개 문서·1,417개 조문**과 선정 별표 4개의 본문 인용을 탐색합니다. 법령·조문·항호목은 목록에서 선택하고, 본문 검색으로 목록을 좁힙니다. [헌법](docs/constitution-universe.md) · [고용·노동](docs/labor-universe.md) · [보건·의료](docs/medical-universe.md).
 
 연결 본문의 인용 위치 강조와 HTML·CSV 검토자료 내려받기를 제공합니다. 공개 앱 사이드바의 **누적 조회**는 고유 방문자 수가 아닌 참고 조회수이며 도입 전 기록은 복원하지 않습니다. [집계 방식과 한계](docs/pageviews.md).
 
@@ -16,7 +16,7 @@
 
 [공유용 앱 소개문](docs/app-introduction.md) · [공개 범위와 개발 현황](docs/mofe-universes.md) · [공공기관 정의·민영화·지정 변경 검토](docs/public-institution-scope.md)
 
-**국세 · 조달·계약 · 관세·통관 · 외환 · 국유재산 · 공공기관 · 국고·회계 · 금융 · 공정거래 · 고용·노동 · 보건의료 · 지방세 · 국토·건축·주택 · 환경·화학·안전**의 법령과 조문을 3D 법령 지도로 탐색하는 도구입니다. 수집 목록에서 법령·조문·항호목을 고르면, 직접 인용·역인용 경로와 원문 근거를 확인할 수 있습니다.
+**국세 · 조달·계약 · 관세·통관 · 외환 · 국유재산 · 공공기관 · 국고·회계 · 금융 · 공정거래 · 고용·노동 · 보건·의료 · 지방세 · 국토·건축·주택 · 환경·화학·안전**의 법령과 조문을 3D 법령 지도로 탐색하는 도구입니다. 수집 목록에서 법령·조문·항호목을 고르면, 직접 인용·역인용 경로와 원문 근거를 확인할 수 있습니다.
 
 별도 **헌법** 메뉴와 국세부터 환경·화학·안전까지 **14개 업무 분야를 공개 베타로 제공합니다.** 분야별 미수집·미분석 범위는 자료 안내에서 확인할 수 있습니다. [국유재산 수집·특례](docs/state-property-universe.md) · [외환 수집·분석](docs/forex-universe.md) · [재경부 3개 업무 분야의 효용·한계](docs/mofe-universes.md).
 
@@ -52,7 +52,7 @@
 | 8 | **금융** | 금융위 법령, 보험·은행·증권 등 업권별 감독규정과 시행세칙 | [업권별 탐색](docs/fsc-expansion/sectors.md) · [구현·수집 범위](docs/fsc-expansion/implementation.md) |
 | 9 | **공정거래** | 경쟁·기업결합, 기업집단, 하도급, 가맹·유통·대리점, 소비자·약관, 조사·사건절차 | [수집·분석 안내](docs/ftc-universe.md) |
 | 10 | **고용·노동** | 근로기준·기간제·파견·임금·퇴직·일가정 양립·노사관계의 선정 법령과 규정 | [수집·검증 안내](docs/labor-universe.md) |
-| 11 | **보건의료** | 의료기관·인력, 지역·공공보건, 건강보험·의료급여의 선정 법령과 검증 별표 본문 인용 | [수집·검증 안내](docs/medical-universe.md) |
+| 11 | **보건·의료** | 의료기관·인력, 지역·공공보건, 건강보험·의료급여의 선정 법령과 검증 별표 본문 인용 | [수집·검증 안내](docs/medical-universe.md) |
 | 12 | **지방세** | 중앙 지방세 법령, 선택 지역의 조례·규칙, 전국 역인용 후보 | [수집 범위와 한계](docs/local-tax-universe.md) |
 | 13 | **국토·건축·주택** | 도시계획·건축·주택·정비 관련 법령과 핵심 행정규칙, 인허가 의제·조례 위임 문구 | [수집·분석 안내](docs/housing-universe.md) |
 | 14 | **환경·화학·안전** | 환경관리·화학물질·화학사고·안전 관련 법령과 핵심 행정규칙 | [수집·분석 안내](docs/environment-universe.md) |
@@ -129,7 +129,7 @@ LAW_API_KEY=법제처_인증값
 | 금융 | `output/fsc-universe/` | [수집·검증 안내](docs/fsc-expansion/implementation.md) |
 | 공정거래 | `output/ftc-universe/` | [수집·분석·실행 안내](docs/ftc-universe.md) |
 | 고용·노동 | `output/labor-universe/` | [수집·검증·실행 안내](docs/labor-universe.md) |
-| 보건의료 | `output/medical-universe/` | [수집·검증·실행 안내](docs/medical-universe.md) |
+| 보건·의료 | `output/medical-universe/` | [수집·검증·실행 안내](docs/medical-universe.md) |
 | 헌법 | `output/constitution-universe/` | [수집·검증·실행 안내](docs/constitution-universe.md) |
 | 지방세 | `output/local-tax-universe/` | [실행 방법](docs/local-tax-universe.md) |
 | 국토·건축·주택 | `output/housing-universe/` | [실행 방법](docs/housing-universe.md) |

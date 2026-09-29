@@ -48,7 +48,7 @@ def article_tags(name,article):
     return result
 
 
-PROFILE=dict(title='보건의료',authorities=('보건복지부',),
+PROFILE=dict(title='보건·의료',authorities=('보건복지부',),
     statutes=STATUTES,required=STATUTES,
     law_queries=BASES+PUBLIC_BASES+INSURANCE_BASES+(SUPPORT,BENEFITS),
     rule_queries=(ACTS,),rules=(ACTS,),required_rules=(ACTS,),
