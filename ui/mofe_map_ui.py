@@ -6,5 +6,7 @@ from ui.sector_map_ui import render as render_sector
 def render(domain):
     p=PROFILES[domain]
     render_sector(dict(domain=domain,prefix='mofe_'+domain,title=p['title'],
-        default_laws={s:p['default'] for s in p['sectors']},default_refs={'all':'제11조' if domain=='labor' else '제53조' if domain=='constitution' else '제43조' if domain=='medical' else '제1조'},
+        default_laws=p.get('default_laws',{s:p['default'] for s in p['sectors']}),
+        default_refs=p.get('default_refs',{'all':'제11조' if domain=='labor' else '제53조' if domain=='constitution' else '제1조'}),
+        sector_aliases=p.get('sector_aliases',{}),
         outside_note='선택 업무 밖의 수집 조문입니다. 인용 원문과 적용 조건을 함께 확인하세요.'),path(domain))

@@ -115,7 +115,9 @@ def selected(domain,name,authority,provider):
         from core.public_institution_scope import role
         if role(name,provider):return True  # Explicit cross-ministry reference list; body authority still verified against API inventory.
     allowed=set(p['authorities']) if 'authorities' in p else ({'재정경제부','관세청'} if domain=='customs' else {'재정경제부'})
-    if domain=='medical' and norm(name) in {norm('의료법'+s) for s in ('',' 시행령',' 시행규칙')}:
+    if domain=='medical' and norm(name) in {
+            norm(base+suffix) for base in ('의료법','보건의료기본법','지역보건법','국민건강증진법')
+            for suffix in ('',' 시행령',' 시행규칙')}:
         allowed={'보건복지부','질병관리청'}
         if '보건복지부' not in actual:return False
     if domain=='labor':

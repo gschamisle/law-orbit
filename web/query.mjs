@@ -2,6 +2,12 @@
 // Law resolution and citation parsing remain in the shared Python engine.
 export const labels={exact:'직접 인용',range:'범위 포함',covering:'상위 조문 인용',contained:'하위 조문 인용',review:'문맥 확인'};
 export function normalize(value){return String(value||'').replace(/\s/g,'').toLocaleLowerCase();}
+export function resolveSector(catalog,value){
+ const owns=key=>Object.hasOwn(catalog.sectors||{},key);
+ if(owns(value))return value;
+ const alias=catalog.sector_aliases?.[value];
+ return owns(alias)?alias:'all';
+}
 export function target(input,hyphen=false){
  let text=normalize(input);if(/^\d+(?:-\d+)*(?:의\d+)?$/.test(text))text=text.replace(/^(\d+(?:-\d+)*)(?:의(\d+))?$/,(_,a,b)=>`제${a}조${b?'의'+b:''}`);
  const match=text.match(/^제(\d+(?:-\d+)*)조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호(?:의(\d+))?)?(?:([가-하])목)?$/);

@@ -16,7 +16,7 @@ DOMAINS = {
     'fsc': '금융',
     'ftc': '공정거래',
     'labor': '고용·노동',
-    'medical': '의료',
+    'medical': '보건의료',
     'local_tax': '지방세',
     'housing': '국토·건축·주택',
     'environment': '환경·화학·안전',

@@ -67,6 +67,9 @@ def prepare_source(source):
         # Display abbreviations are not legal citation aliases.
         d['citation_names']=list(dict.fromkeys([n for n in (d['name'],d.get('short_name')) if n]))
         d['sectors']=tags(domain,d['name'],'')
+        if domain=='medical':
+            from core.medical_profile import document_tags
+            d['sectors']=document_tags(d['name'])
         reference_role=''
         if domain=='public_institutions':
             from core.public_institution_scope import role, PUBLIC, PRIVATE
@@ -77,6 +80,9 @@ def prepare_source(source):
             if domain=='labor':
                 from core.labor_profile import article_tags
                 a['sectors']=list(dict.fromkeys(a['sectors']+article_tags(d['name'],a)))
+            if domain=='medical':
+                from core.medical_profile import article_tags
+                a['sectors']=article_tags(d['name'],a)
             if reference_role:
                 a['sectors']=list(dict.fromkeys(a['sectors']+(['scope'] if reference_role=='scope-reference' else ['privatization'])))
             if domain=='public_institutions':

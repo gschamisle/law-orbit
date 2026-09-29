@@ -303,7 +303,11 @@ def build(source,dest,previous_site=None):
             if domain in ('treasury','procurement'):
                 catalog['text_summary']=dict(documents=sum(bool(d.get('text_analysis')) for d in docs),citations=len(graph.get('text_citations',[])),issues=len(graph.get('text_citation_issues',[])))
             if domain=='state_property':catalog['special_cases']=writer.data(export_special_cases(src['special_cases'],ids))
-            if domain in WORK_DOMAINS:catalog['workbench']=workbench(bundle,ids)
+            if domain in WORK_DOMAINS:
+                catalog['workbench']=workbench(bundle,ids)
+                from core.mofe_profiles import WORK_PROFILES
+                if WORK_PROFILES[domain].get('sector_aliases'):
+                    catalog['sector_aliases']=WORK_PROFILES[domain]['sector_aliases']
             count=len(entries)
         from scripts.delegation_baseline import attach_catalog
         attach_catalog(writer,domain,catalog,previous_site)

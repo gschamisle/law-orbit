@@ -92,8 +92,13 @@ def render(profile, bundle_path):
                     st.session_state[state_prefix+'_sector']='all'
             for limitation in work['limitations']:st.caption(limitation)
     title,info=st.columns([5,1],vertical_alignment='center')
+    sector_key=state_prefix+'_sector'
+    previous_sector=st.session_state.get(sector_key)
+    replacement=profile.get('sector_aliases',{}).get(previous_sector)
+    if previous_sector not in SECTORS and replacement in SECTORS:
+        st.session_state[sector_key]=replacement
     with title:
-        sector=st.radio('탐색 분야',list(SECTORS),format_func=SECTORS.get,horizontal=True,key=state_prefix+'_sector',label_visibility='collapsed')
+        sector=st.radio('탐색 분야',list(SECTORS),format_func=SECTORS.get,horizontal=True,key=sector_key,label_visibility='collapsed')
     with info:
         with st.popover('자료 안내',width='stretch'):
             summary=report(bundle)

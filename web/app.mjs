@@ -8,7 +8,7 @@ import {loadReading,scopeHighlights,connectionHighlights,evidenceKey,collectRevi
 import {validateBridge,combineConnections,bridgeLookup,bridgeLabel,bridgePeers,bridgeNames,bridgeEditions} from './cross-domain.mjs';
 import {selectCases,deadlineLabels,statusLabels,dateLabel} from './special.mjs';
 import {data,cached,saveAll,clearSaved,configureStorage} from './store.mjs';
-import {target,refine,matchingArticles,safeLink,focusMap,normalize} from './query.mjs';
+import {target,refine,matchingArticles,safeLink,focusMap,normalize,resolveSector} from './query.mjs';
 const $=id=>document.getElementById(id),stateKey='law-galaxy-state:'+new URL('.',location.href).pathname;
 mountPageviews($('pageviews'));
 let manifest,catalog,regional,lookup=new Map(),domain='',state={},doc=null,detail=null,wanted=null,overview=null,epoch=0,currentRows=[],limit=40,saveController=null;
@@ -148,15 +148,17 @@ async function navigate(id,overrides={}){
   document.querySelector('.page-head p').textContent=id==='constitution'?'헌법에서 출발해, 원칙을 구체화하는 법률을 읽습니다.':'조문을 불러오면, 함께 살펴볼 법이 보입니다.';
   special=null;specialScope={};if($('special').open)$('special').close();
   $('special-open').hidden=!catalog.special_cases;
-  $('sector').replaceChildren(...Object.entries(catalog.sectors).map(([v,t])=>option(v,t)));if(!catalog.sectors[state.sector])state.sector='all';$('sector').value=state.sector;
+  $('sector').replaceChildren(...Object.entries(catalog.sectors).map(([v,t])=>option(v,t)));state.sector=resolveSector(catalog,state.sector);$('sector').value=state.sector;
   $('sector-label').hidden=Object.keys(catalog.sectors).length<2;
   $('overview').textContent=state.sector==='all'?'전체 지도 보기':'분야 지도 보기';
   $('region-label').hidden=id!=='local_tax';$('region').replaceChildren(option('','중앙 법령·전국 역인용'),...(catalog.regions||[]).map(r=>option(r.id,r.authority+(r.catalog?'':' · 분석 자료 없음'))));$('region').value=state.region;
   $('body-query').value=state.query||'';$('direction').value=state.direction;$('review').checked=state.review;$('broad').checked=state.broad;
   const choices=renderLaws();overview=await data((regional||catalog).overview);if(token!==epoch)return;
  const defaults={tax:'법인세법',fsc:'은행법',ftc:'독점규제 및 공정거래에 관한 법률',local_tax:'지방세법',procurement:'국가를 당사자로 하는 계약에 관한 법률',housing:'국토의 계획 및 이용에 관한 법률',environment:'화학물질관리법',state_property:'국유재산법',forex:'외국환거래규정',public_institutions:'공공기관의 운영에 관한 법률',customs:'관세법',treasury:'국고금 관리법',labor:'근로기준법',constitution:'대한민국헌법',medical:'의료법'};
-  const chosen=lookup.get(state.law)||choices.find(d=>d.name===defaults[id])||choices[0];
-  const previousQuery=state.query;if(chosen){await openLaw(chosen.id,state.reference||(id==='ftc'&&chosen.name===defaults.ftc?'제45조':id==='labor'&&chosen.name===defaults.labor?'제11조':id==='constitution'&&chosen.name===defaults.constitution?'제53조':id==='medical'&&chosen.name===defaults.medical?'제43조':''),token);if(token===epoch){state.query=previousQuery;$('body-query').value=previousQuery;renderArticles();}}else{showMap(overview);$('article-content').replaceChildren(text('p','선택 분야의 수집 조문이 없습니다.','muted'));}
+  const medicalDefault={public:['지역보건법','제11조'],insurance:['국민건강보험법','제42조']}[state.sector]||['의료법','제43조'];
+  const preferred=id==='medical'?medicalDefault[0]:defaults[id];
+  const chosen=lookup.get(state.law)||choices.find(d=>d.name===preferred)||choices[0];
+  const previousQuery=state.query;if(chosen){await openLaw(chosen.id,state.reference||(id==='ftc'&&chosen.name===defaults.ftc?'제45조':id==='labor'&&chosen.name===defaults.labor?'제11조':id==='constitution'&&chosen.name===defaults.constitution?'제53조':id==='medical'&&chosen.name===medicalDefault[0]?medicalDefault[1]:''),token);if(token===epoch){state.query=previousQuery;$('body-query').value=previousQuery;renderArticles();}}else{showMap(overview);$('article-content').replaceChildren(text('p','선택 분야의 수집 조문이 없습니다.','muted'));}
   persist();
  }catch(err){if(token===epoch){error(err);$('map-host').replaceChildren(text('p','이 분야의 자료를 불러오지 못했습니다. 다른 분야의 자료로 대체하지 않습니다.','empty'));}}
  finally{if(token===epoch)busy(false);}

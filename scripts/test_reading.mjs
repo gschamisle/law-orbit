@@ -1,5 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {resolveSector} from '../web/query.mjs';
+test('saved medical categories migrate to a real category without affecting other domains',()=>{
+ const catalog={sectors:{all:'전체 연결',institutions:'의료기관·인력',public:'지역·공공보건',insurance:'건강보험·의료급여'},sector_aliases:{opening:'institutions',staff:'institutions',support:'institutions',broken:'missing'}};
+ for(const legacy of ['opening','staff','support'])assert.equal(resolveSector(catalog,legacy),'institutions');
+ assert.equal(resolveSector(catalog,'public'),'public');
+ for(const unknown of ['broken','missing','toString',undefined])assert.equal(resolveSector(catalog,unknown),'all');
+ assert.equal(resolveSector({sectors:{all:'전체 연결',banking:'은행'}},'banking'),'banking');
+});
 import {loadReading,scopeHighlights,quoteHighlights,connectionHighlights,evidenceKey,collectReview,reviewHTML,reviewCSV,provisionOptions} from '../web/reading.mjs';
 test('dropdown preserves real paragraph/item paths and does not use inline citations as headings',()=>{
  const a={jo:'16',label:'제16조',text:'제16조(의제)\n① 본문에서 제99조제2항을 인용한다.\n1. 첫 항의 호\n가. 목\n② 두번째 항\n1. 다른 호\n'};
