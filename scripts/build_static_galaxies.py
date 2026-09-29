@@ -252,7 +252,7 @@ def shell(dest):
     for p in (ROOT/'ui/assets/fonts').iterdir():
         if p.suffix in ('.woff2','.txt'):shutil.copy2(p,fonts/p.name)
     html=(ROOT/'ui/assets/law_galaxy.html').read_text(encoding='utf-8').replace('__H__','730')
-    html=html.replace('__SOUND__',(ROOT/'ui/assets/law_galaxy_sound.js').read_text(encoding='utf-8')).replace('__GESTURES__',(ROOT/'ui/assets/law_galaxy_gestures.js').read_text(encoding='utf-8'))
+    html=html.replace('__GESTURES__',(ROOT/'ui/assets/law_galaxy_gestures.js').read_text(encoding='utf-8'))
     html=html.replace("(()=>{'use strict';", "window.addEventListener('message',function init(event){if(event.source!==parent||event.origin!==location.origin||event.data?.type!=='galaxy-data')return;window.removeEventListener('message',init);const WEB_DATA=event.data.data;(()=>{'use strict';",1)
     html=html.replace('__DATA__','WEB_DATA')
     html=html.replace("function select(n){selected", "function select(n){if(n?.web_law)parent.postMessage({type:'galaxy-select',law:n.web_law,jo:n.web_jo||'',region:n.web_region||'',mode:D.mode},location.origin);selected",1)

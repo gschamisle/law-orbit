@@ -196,9 +196,8 @@ def render_html(data: dict, height: int = 720) -> str:
     """Offline canvas renderer; JSON is escaped for an HTML script context."""
     template = (ROOT / "ui/assets/law_galaxy.html").read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
-    sound = (ROOT / "ui/assets/law_galaxy_sound.js").read_text(encoding="utf-8")
     gestures = (ROOT / "ui/assets/law_galaxy_gestures.js").read_text(encoding="utf-8")
-    return _font_styles() + template.replace("__H__", str(max(620, int(height)))).replace("__DATA__", payload).replace("__SOUND__", sound).replace("__GESTURES__", gestures)
+    return _font_styles() + template.replace("__H__", str(max(620, int(height)))).replace("__DATA__", payload).replace("__GESTURES__", gestures)
 
 
 def render_page(data: dict, height: int = 800) -> str:

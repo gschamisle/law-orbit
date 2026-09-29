@@ -143,7 +143,8 @@ test('coarse touch starts in scroll mode and an explicit button toggles interact
  assert.equal(s.canvas.tabIndex,-1);assert.match(s.canvas.attrs['aria-label'],/밀어 스크롤/);
  assert.equal(s.hint.textContent,'화면을 밀어 스크롤 · 지도를 움직이려면 지도 조작');
  s.button.fire('click');assert.equal(s.root.dataset.touchMode,'interact');assert.equal(s.gestures.enabled,true);
- assert.equal(s.button.textContent,'스크롤로 돌아가기');assert.equal(s.button.attrs['aria-pressed'],'true');
+ assert.equal(s.button.textContent,'조작 종료');assert.equal(s.button.attrs['aria-pressed'],'true');
+ assert.equal(s.button.attrs['aria-label'],'지도 조작 종료, 페이지 스크롤로 돌아가기');
  assert.equal(s.canvas.tabIndex,0);assert.equal(s.hint.textContent,'지도 조작 중 · 한 손가락 회전, 두 손가락 확대');
  s.button.fire('click');assert.equal(s.root.dataset.touchMode,'scroll');assert.equal(s.gestures.enabled,false);
 });

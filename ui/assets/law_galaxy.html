@@ -20,22 +20,18 @@
 .g-panel select{font-size:14px;color:var(--g-text);border:1px solid var(--g-border);border-radius:10px;padding:10px 12px;min-height:42px}
 .g-item,.g-evidence{font-size:14px;color:var(--g-text);line-height:1.75}
 .g-badge{font-size:13px;border-radius:999px;padding:4px 10px;color:#d9e9dd;background:#244d43;border-color:#547d6e}
-.g-controls{max-width:344px;gap:8px;justify-content:flex-end;flex-wrap:wrap;z-index:5;align-items:flex-start}
+.g-controls{max-width:344px;gap:8px;justify-content:flex-end;flex-wrap:nowrap;z-index:5;align-items:flex-start}
 .g-controls button{min-height:40px;background:#123b32eF;border:1px solid var(--g-border);border-radius:10px;color:var(--g-text);padding:9px 13px;font-size:14px;line-height:20px;white-space:nowrap;font-weight:700;transition:background .16s,border-color .16s}
 .g-controls button:hover{background:#204a3f;border-color:#789480;color:#fff5df}
 .g-controls button[aria-pressed="true"]{background:#244d43;border-color:#7ca38e}
-.g-controls button:focus-visible,.g-volume input:focus-visible{outline:2px solid #b1dac2;outline-offset:3px}
-.g-sound-group{display:flex;flex-direction:column;align-items:stretch;position:relative}
-.g-volume{position:absolute;right:0;top:48px;background:#103b32;border:1px solid var(--g-border);border-radius:10px;padding:10px 12px;width:190px;box-shadow:0 8px 24px #001d1a80;color:var(--g-muted);font-size:13px;line-height:20px}
-.g-volume[hidden]{display:none}
-.g-volume input{width:100%;accent-color:#accfb8;height:18px;margin:6px 0 0}
-.g-volume output{float:right;font-variant-numeric:tabular-nums}
+.g-controls button:focus-visible{outline:2px solid #b1dac2;outline-offset:3px}
+.g-controls button[hidden]{display:none!important}
 #g-tooltip{font-size:13px;background:#103b32f5;border-color:#547d6e;color:var(--g-text)}
 @media(min-width:721px){.g-hero{max-width:calc(100% - 400px)}.g-hero h2{font-size:30px}}
 @media(max-width:720px){
   .g-hero{position:relative;left:auto;top:auto;margin:20px 20px 0;max-width:calc(100% - 40px)}.g-hero h2{font-size:26px}.g-hero p{max-width:100%}
   .g-controls{position:relative;left:auto;right:auto;top:auto;margin:14px 20px 0;max-width:none;flex-direction:row;justify-content:flex-start}
-  .g-controls button{padding:8px 11px;min-height:38px}
+  .g-controls button{padding:8px 10px;min-height:44px;font-size:13px}
   .g-panel{width:min(288px,calc(100% - 40px));right:20px;top:auto;max-height:230px;bottom:76px}
   .g-panel h3{font-size:20px}.g-legend{font-size:13px}
 }
@@ -44,12 +40,8 @@
 #galaxy-wrap{font-weight:400}
 #galaxy-wrap h2,#galaxy-wrap h3,#galaxy-wrap strong{font-weight:700}
 #galaxy-wrap button,#galaxy-wrap button *{font-family:'Pretendard',sans-serif!important;font-weight:600}
-/* Anchor the volume panel to the controls so wrapping cannot push it offscreen. */
-.g-sound-group{position:static}
-.g-volume{top:calc(100% + 8px)}
-@media(max-width:720px){.g-volume{left:0;right:auto}}
 /* Keep the map clear until the user requests its details. */
-.g-panel[hidden],.g-volume-trigger[hidden]{display:none!important}
+.g-panel[hidden]{display:none!important}
 .g-panel{z-index:4;max-height:calc(100% - 230px)}
 .g-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
 .g-panel-heading strong{font-size:16px}
@@ -59,8 +51,6 @@
 .g-info-toggle[aria-expanded="true"]{background:#244d43;border-color:#7ca38e}
 .g-info-toggle:focus-visible,.g-panel-heading button:focus-visible{outline:2px solid #b1dac2;outline-offset:3px}
 .g-panel-heading button{padding:5px 10px;font-size:13px}
-.g-sound-group{flex-direction:row;gap:6px}
-.g-controls .g-volume-trigger{padding-left:10px;padding-right:10px;color:var(--g-muted)}
 .g-footer{right:190px}
 .g-footer>div:last-child{display:none}
 .g-legend{max-width:100%}
@@ -70,26 +60,21 @@
  .g-footer{right:20px;bottom:74px}
 }
 /* Touch screens scroll the page until the reader explicitly enters map controls. */
-.g-touch-tools{display:none;position:absolute;left:32px;top:150px;z-index:6;max-width:calc(100% - 64px);flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none}
-#galaxy-wrap[data-touch-mode="scroll"] .g-touch-tools,#galaxy-wrap[data-touch-mode="interact"] .g-touch-tools{display:flex}
 #galaxy-wrap[data-touch-mode="scroll"] #galaxy{touch-action:auto;pointer-events:none;cursor:default!important}
-#g-touch-toggle{pointer-events:auto;min-height:44px;padding:9px 14px;border:1px solid #789480;border-radius:10px;background:#123b32f5;color:var(--g-text);font-size:14px;line-height:22px;cursor:pointer;white-space:nowrap}
 #g-touch-toggle[aria-pressed="true"]{background:#e9cb82;color:#102e2a;border-color:#e9cb82}
-#g-touch-toggle:focus-visible{outline:2px solid #b1dac2;outline-offset:3px}
-#g-touch-hint{margin:0;color:var(--g-muted);font-size:12px;line-height:1.6;word-break:keep-all;text-shadow:0 1px 4px #03181e}
+/* Keep the description available to screen readers without covering the map. */
+#g-touch-hint{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 @media(pointer:coarse){#galaxy{touch-action:auto;pointer-events:none}#galaxy-wrap[data-touch-mode="interact"] #galaxy{touch-action:none;pointer-events:auto}}
-@media(max-width:720px){.g-touch-tools{position:relative;left:auto;top:auto;margin:12px 20px 0;max-width:calc(100% - 40px)}}
 </style>
 <canvas id="galaxy" tabindex="0" aria-label="한 손가락 또는 드래그로 회전, 두 손가락 벌리기 또는 스크롤로 확대·축소. 방향키로 회전, 더하기와 빼기로 확대. 법령 선택 목록으로도 탐색할 수 있습니다."></canvas>
 <header class="g-hero"><div class="g-eyebrow"><span class="g-live"></span><span id="g-domain">TAX LAW / RELATION ATLAS</span></div><h2 id="g-title">국세</h2><p id="g-subtitle">조문에서 법령으로, 법령에서 다음 영향으로.</p></header>
-<div class="g-controls"><button id="g-reset" type="button">전체 보기</button><button id="g-motion" type="button" aria-pressed="false">움직임 멈춤</button><button id="g-full" type="button">전체 화면</button><div class="g-sound-group"><button id="g-sound" type="button" aria-pressed="false" title="낮은 바탕음과 별을 지날 때의 작은 반짝임 소리">소리 켜기</button><button id="g-volume-toggle" type="button" class="g-volume-trigger" aria-label="소리 크기 조절" aria-expanded="false" aria-controls="g-volume-popover" hidden>음량</button><label id="g-volume-popover" class="g-volume" hidden>소리 크기 <output id="g-volume-value">12%</output><input id="g-volume" aria-label="배경음 크기" type="range" min="0" max="30" step="1" value="12"></label></div></div>
-<div class="g-touch-tools"><button id="g-touch-toggle" type="button" aria-pressed="false" aria-controls="galaxy" aria-describedby="g-touch-hint" hidden>지도 조작</button><p id="g-touch-hint" role="status" aria-live="polite"></p></div>
+<div class="g-controls"><button id="g-reset" type="button">전체 보기</button><button id="g-full" type="button">전체 화면</button><button id="g-touch-toggle" type="button" aria-pressed="false" aria-controls="galaxy" aria-describedby="g-touch-hint" hidden>지도 조작</button></div>
+<p id="g-touch-hint" role="status" aria-live="polite"></p>
 <button id="g-info-toggle" type="button" class="g-info-toggle" aria-expanded="false" aria-controls="g-info-panel">법령·조문 정보</button>
 <aside id="g-info-panel" class="g-panel" aria-label="법령·조문 정보" hidden><div class="g-panel-heading"><strong>법령·조문 정보</strong><button id="g-info-close" type="button" aria-label="법령·조문 정보 닫기">닫기</button></div><small id="g-mode">EXPLORE THE CONNECTIONS</small><label for="g-select" style="display:block;font-size:10px;color:#94a9be;margin-top:14px">탐색할 법령·조문</label><select id="g-select"><option value="">전체 연결 보기</option></select><div id="g-details"></div></aside>
 <footer class="g-footer"><div><div class="g-legend" id="g-legend"></div><p id="g-footnote"></p></div><div><span class="g-key">DRAG</span><span class="g-key">SCROLL</span><p>드래그로 회전 · 두 손가락·휠로 확대</p></div></footer><div id="g-tooltip" role="status"></div>
 </section>
 <script>
-__SOUND__
 __GESTURES__
 </script>
 <script>
@@ -102,7 +87,7 @@ const kinds={article:'조문 인용',law:'법령·정의·산식',annex:'별표�
 const disc=['national-property-disc','forex-disc'].includes(D.layout)&&!impact;
 const viewFit=disc?Math.max(1,Math.min(2.6,440/Math.max(100,...D.nodes.map(n=>Math.hypot(n.x,n.y))))):1;
 let W=900,H=740,rx=disc?D.camera.rx:-.16,ry=disc?D.camera.ry:.28,spin=0,zoom=1,targetZoom=1,selected=null,hover=null,drag=null,hit=[],frameId=0,last=0,clock=0;
-const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;let motion=!reduced,auto=!impact&&!reduced;let pan={x:0,y:0,z:0},destination={x:0,y:0,z:0};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,motion=!reduced;let auto=!impact&&!reduced;let pan={x:0,y:0,z:0},destination={x:0,y:0,z:0};
 const stars=Array.from({length:230},(_,i)=>({x:((i*719+37)%997)/997,y:((i*421+53)%991)/991,r:.35+(i%5)*.17,a:.15+(i%7)*.07}));
 const rgba=(hex,a)=>{const c=hex.replace('#','');return `rgba(${parseInt(c.slice(0,2),16)},${parseInt(c.slice(2,4),16)},${parseInt(c.slice(4,6),16)},${a})`};
 const label=n=>n.label+(n.subtitle?' '+n.subtitle:'');
@@ -114,11 +99,10 @@ const housing=D.domain==='housing';
 const environment=D.domain==='environment';
 const stateProperty=D.domain==='state_property';
 const forex=D.domain==='forex';
-const sound=createGalaxySound({root,button:$('g-sound'),slider:$('g-volume'),readout:$('g-volume-value'),volumeButton:$('g-volume-toggle')});
 const infoPanel=$('g-info-panel'),infoToggle=$('g-info-toggle');
 function setInfoOpen(open,restoreFocus=false){
  infoPanel.hidden=!open;infoToggle.setAttribute('aria-expanded',String(open));
- if(open){sound.hideVolume();$('g-tooltip').style.display='none';}
+ if(open){$('g-tooltip').style.display='none';}
  else if(restoreFocus||infoPanel.contains(document.activeElement))infoToggle.focus();
 }
 infoToggle.onclick=()=>setInfoOpen(infoPanel.hidden);
@@ -142,7 +126,7 @@ $('g-mode').textContent=boundary?'CITATION SCOPE / REVIEW':spotlight?'CITATIONS 
 if(D.work_domain_label&&!impact)$('g-mode').textContent=D.work_domain_label+' / ATLAS';
 $('g-footnote').textContent=`${D.built_at||'저장 그래프'} 기준 · ${boundary?'점선은 범위·문맥 검토 후보입니다':impact?'직접 연결 · 화살표는 인용 방향':'법령군별 색상 · 화면상 거리는 법적 영향의 크기가 아닙니다'}`;
 if(forex&&!impact)$('g-footnote').textContent=`${D.built_at} 기준 · 작은 점은 조문 · 색상은 업무 태그 · 인용선은 개정 의무가 아닙니다`;
-if(spotlight)$('g-reset').textContent='연결 전체 보기';
+if(spotlight)$('g-reset').setAttribute('aria-label','연결 전체 보기');
 const legends=spotlight?[['#66e5ed','인용하는 곳 →'],['#ffc77a','← 인용해 오는 곳'],['#e8a1cc','문맥·출처 확인 (점선)']]:boundary?[['#ffc77a','범위 재검토 (점선)'],['#88b8ff','문언상 포함'],['#e8a1cc','문맥 확인 (점선)']]:impact?[['#66efce','직접'],['#ffc77a','범위'],['#88b8ff','상위'],['#c6a3ff','하위'],['#e8a1cc','문맥 확인']]:ftc?[['#80b4ff','법령·지침별 색상'],['#68dfc4','문단 인용은 실제 원문 위치로 표시']]:environment?[['#80b4ff','법령·고시 묶음별 색상']]:housing?[['#80b4ff','法과 공간 · 법령 묶음별 색상']]:procurement?[['#80b4ff','법령·예규 묶음별 색상']]:fsc?[['#7fb4ff','금융 법령·규정'],['#68e0cb','법률 · 감독규정 · 시행세칙']]:[['#5b8cff','소득세'],['#3ddc84','법인세'],['#ff6b8a','조세특례'],['#c084fc','상속·증여'],['#2dd4bf','국제조세']];
 $('g-legend').innerHTML=(D.work_domain_label&&!impact?[['#80b4ff','법령·규정 묶음별 색상']]:forex&&!impact?[['#a8baff','기본체계'],['#68dfc4','지급·송금'],['#c09cff','자본거래'],['#f3be78','업무·시장'],['#ef96bb','보고·검사']]:stateProperty&&!spotlight?[['#80b4ff','법령·지침 묶음별 색상'],['#68dbc2','특례 등재는 별도 목록에서 확인']]:localTax&&!spotlight?[['#68dbc2','지방세법'],['#efb975','감면·특례'],['#8bbef5','기본·징수'],['#d5c78d','선택 지역 조례·규칙']]:legends).map(([c,t])=>`<span><i class="g-dot" style="background:${c}"></i>${t}</span>`).join('');
 D.nodes.filter(n=>!n.context_only).forEach(n=>{const o=document.createElement('option');o.value=n.id;o.textContent=label(n);$('g-select').append(o)});
@@ -159,9 +143,7 @@ function select(n){selected=n||null;$('g-select').value=n?.id||'';auto=false;des
 $('g-select').onchange=e=>select(byId.get(e.target.value));
 function reset(){rx=disc?D.camera.rx:-.16;ry=disc?D.camera.ry:.28;spin=0;zoom=targetZoom=1;selected=null;$('g-select').value='';destination={x:0,y:0,z:0};auto=!impact&&motion;panel()}
 $('g-reset').onclick=reset;
-function motionButton(){$('g-motion').textContent=motion?'움직임 멈춤':'움직임 재생';$('g-motion').setAttribute('aria-pressed',String(!motion))}
-$('g-motion').onclick=()=>{motion=!motion;auto=motion&&!selected&&!impact;motionButton()};motionButton();
-$('g-full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await root.requestFullscreen()}catch{$('g-full').textContent='독립 HTML에서 사용'}};
+$('g-full').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await root.requestFullscreen()}catch{const button=$('g-full');button.textContent='지원 안 됨';button.title='이 브라우저에서는 전체 화면을 사용할 수 없습니다.';button.setAttribute('aria-label','전체 화면을 사용할 수 없음');const hint=$('g-touch-hint');hint.hidden=false;hint.textContent='이 브라우저에서는 전체 화면을 사용할 수 없습니다. 현재 지도에서 조작할 수 있습니다.'}};
 function resize(){W=root.clientWidth;H=root.clientHeight;const d=Math.min(devicePixelRatio||1,2);cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)}
 new ResizeObserver(resize).observe(root);resize();
 function project(p){let x=p.x-pan.x,y=p.y-pan.y,z=p.z-pan.z;if(disc){const xx=x*Math.cos(spin)-y*Math.sin(spin);y=x*Math.sin(spin)+y*Math.cos(spin);x=xx}const cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);const xx=x*cy-z*sy;z=x*sy+z*cy;const yy=y*cx-z*sx;z=y*sx+z*cx;const inset=W>720&&!infoPanel.hidden?280:0;const scale=Math.min((W-inset-24)/1000,(H-200)/1100)*zoom*viewFit;const f=1100/(1100+z);return{x:(W-inset)/2+xx*f*scale,y:H*.57+yy*f*scale,z,d:f*scale}}
@@ -199,7 +181,7 @@ const gestures=createGalaxyGestures({canvas:cv,getZoom:()=>targetZoom,
  onActive:active=>{drag=active?{}:null;if(active)auto=false;cv.style.cursor=active?'grabbing':'grab'},
  onTap:(x,y)=>{const n=pick(x,y);select(n?.id===selected?.id?null:n)},
  onLeave:()=>{$('g-tooltip').style.display='none';hover=null},
- onHover:(x,y)=>{hover=pick(x,y);sound.hover(hover?.id,x/W);if(!hover)sound.trail(x/W,y/H);const tip=$('g-tooltip');tip.style.display=hover?'block':'none';if(hover){tip.textContent=label(hover);tip.style.left=Math.min(W-275,x+16)+'px';tip.style.top=Math.max(4,y-35)+'px'}cv.style.cursor=hover?'pointer':'grab'}
+ onHover:(x,y)=>{hover=pick(x,y);const tip=$('g-tooltip');tip.style.display=hover?'block':'none';if(hover){tip.textContent=label(hover);tip.style.left=Math.min(W-275,x+16)+'px';tip.style.top=Math.max(4,y-35)+'px'}cv.style.cursor=hover?'pointer':'grab'}
 });
 const touchMode=createGalaxyTouchMode({root,canvas:cv,button:$('g-touch-toggle'),hint:$('g-touch-hint'),gestures});
 cv.onkeydown=e=>{if(root.dataset.touchMode==='scroll')return;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Escape'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')ry-=.08;if(e.key==='ArrowRight')ry+=.08;if(e.key==='ArrowUp')rx-=.08;if(e.key==='ArrowDown')rx+=.08;if(e.key==='+'||e.key==='=')targetZoom=Math.min(2.8,targetZoom*1.1);if(e.key==='-')targetZoom=Math.max(.4,targetZoom/1.1);if(e.key==='Escape')reset()};

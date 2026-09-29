@@ -61,13 +61,15 @@ function createGalaxyTouchMode({root,canvas,button,hint,gestures,env=globalThis,
   function render(){
     const touch=media.matches,active=touch&&interactive;
     root.dataset.touchMode=touch?(active?'interact':'scroll'):'desktop';
-    button.hidden=!touch;button.textContent=active?'스크롤로 돌아가기':'지도 조작';
+    button.hidden=!touch;button.textContent=active?'조작 종료':'지도 조작';
+    button.setAttribute('aria-label',active?'지도 조작 종료, 페이지 스크롤로 돌아가기':'지도 조작');
+    button.title=active?'페이지 스크롤로 돌아가기':'지도 회전·확대·조문 선택';
     button.setAttribute('aria-pressed',String(active));
     hint.hidden=!touch;
     hint.textContent=active?'지도 조작 중 · 한 손가락 회전, 두 손가락 확대':'화면을 밀어 스크롤 · 지도를 움직이려면 지도 조작';
     canvas.tabIndex=touch&&!active?-1:0;
     canvas.setAttribute('aria-label',touch?(active?
-      '지도 조작 중. 한 손가락으로 회전, 두 손가락으로 확대·축소. 스크롤로 돌아가기 버튼으로 종료합니다.':
+      '지도 조작 중. 한 손가락으로 회전, 두 손가락으로 확대·축소. 조작 종료 버튼으로 페이지 스크롤로 돌아갑니다.':
       '법령 연결 지도. 화면을 밀어 스크롤합니다. 지도를 움직이려면 지도 조작 버튼을 누르세요.'):
       '드래그로 회전, 스크롤로 확대·축소. 방향키로 회전, 더하기와 빼기로 확대. 법령 선택 목록으로도 탐색할 수 있습니다.');
     gestures.setEnabled(!touch||active);
