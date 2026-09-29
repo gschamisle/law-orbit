@@ -69,10 +69,21 @@
  .g-panel{width:min(360px,calc(100% - 40px));max-height:calc(100% - 310px);bottom:72px}
  .g-footer{right:20px;bottom:74px}
 }
+/* Touch screens scroll the page until the reader explicitly enters map controls. */
+.g-touch-tools{display:none;position:absolute;left:32px;top:150px;z-index:6;max-width:calc(100% - 64px);flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none}
+#galaxy-wrap[data-touch-mode="scroll"] .g-touch-tools,#galaxy-wrap[data-touch-mode="interact"] .g-touch-tools{display:flex}
+#galaxy-wrap[data-touch-mode="scroll"] #galaxy{touch-action:auto;pointer-events:none;cursor:default!important}
+#g-touch-toggle{pointer-events:auto;min-height:44px;padding:9px 14px;border:1px solid #789480;border-radius:10px;background:#123b32f5;color:var(--g-text);font-size:14px;line-height:22px;cursor:pointer;white-space:nowrap}
+#g-touch-toggle[aria-pressed="true"]{background:#e9cb82;color:#102e2a;border-color:#e9cb82}
+#g-touch-toggle:focus-visible{outline:2px solid #b1dac2;outline-offset:3px}
+#g-touch-hint{margin:0;color:var(--g-muted);font-size:12px;line-height:1.6;word-break:keep-all;text-shadow:0 1px 4px #03181e}
+@media(pointer:coarse){#galaxy{touch-action:auto;pointer-events:none}#galaxy-wrap[data-touch-mode="interact"] #galaxy{touch-action:none;pointer-events:auto}}
+@media(max-width:720px){.g-touch-tools{position:relative;left:auto;top:auto;margin:12px 20px 0;max-width:calc(100% - 40px)}}
 </style>
 <canvas id="galaxy" tabindex="0" aria-label="한 손가락 또는 드래그로 회전, 두 손가락 벌리기 또는 스크롤로 확대·축소. 방향키로 회전, 더하기와 빼기로 확대. 법령 선택 목록으로도 탐색할 수 있습니다."></canvas>
 <header class="g-hero"><div class="g-eyebrow"><span class="g-live"></span><span id="g-domain">TAX LAW / RELATION ATLAS</span></div><h2 id="g-title">국세</h2><p id="g-subtitle">조문에서 법령으로, 법령에서 다음 영향으로.</p></header>
 <div class="g-controls"><button id="g-reset" type="button">전체 보기</button><button id="g-motion" type="button" aria-pressed="false">움직임 멈춤</button><button id="g-full" type="button">전체 화면</button><div class="g-sound-group"><button id="g-sound" type="button" aria-pressed="false" title="낮은 바탕음과 별을 지날 때의 작은 반짝임 소리">소리 켜기</button><button id="g-volume-toggle" type="button" class="g-volume-trigger" aria-label="소리 크기 조절" aria-expanded="false" aria-controls="g-volume-popover" hidden>음량</button><label id="g-volume-popover" class="g-volume" hidden>소리 크기 <output id="g-volume-value">12%</output><input id="g-volume" aria-label="배경음 크기" type="range" min="0" max="30" step="1" value="12"></label></div></div>
+<div class="g-touch-tools"><button id="g-touch-toggle" type="button" aria-pressed="false" aria-controls="galaxy" aria-describedby="g-touch-hint" hidden>지도 조작</button><p id="g-touch-hint" role="status" aria-live="polite"></p></div>
 <button id="g-info-toggle" type="button" class="g-info-toggle" aria-expanded="false" aria-controls="g-info-panel">법령·조문 정보</button>
 <aside id="g-info-panel" class="g-panel" aria-label="법령·조문 정보" hidden><div class="g-panel-heading"><strong>법령·조문 정보</strong><button id="g-info-close" type="button" aria-label="법령·조문 정보 닫기">닫기</button></div><small id="g-mode">EXPLORE THE CONNECTIONS</small><label for="g-select" style="display:block;font-size:10px;color:#94a9be;margin-top:14px">탐색할 법령·조문</label><select id="g-select"><option value="">전체 연결 보기</option></select><div id="g-details"></div></aside>
 <footer class="g-footer"><div><div class="g-legend" id="g-legend"></div><p id="g-footnote"></p></div><div><span class="g-key">DRAG</span><span class="g-key">SCROLL</span><p>드래그로 회전 · 두 손가락·휠로 확대</p></div></footer><div id="g-tooltip" role="status"></div>
@@ -190,7 +201,8 @@ const gestures=createGalaxyGestures({canvas:cv,getZoom:()=>targetZoom,
  onLeave:()=>{$('g-tooltip').style.display='none';hover=null},
  onHover:(x,y)=>{hover=pick(x,y);sound.hover(hover?.id,x/W);if(!hover)sound.trail(x/W,y/H);const tip=$('g-tooltip');tip.style.display=hover?'block':'none';if(hover){tip.textContent=label(hover);tip.style.left=Math.min(W-275,x+16)+'px';tip.style.top=Math.max(4,y-35)+'px'}cv.style.cursor=hover?'pointer':'grab'}
 });
-cv.onkeydown=e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Escape'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')ry-=.08;if(e.key==='ArrowRight')ry+=.08;if(e.key==='ArrowUp')rx-=.08;if(e.key==='ArrowDown')rx+=.08;if(e.key==='+'||e.key==='=')targetZoom=Math.min(2.8,targetZoom*1.1);if(e.key==='-')targetZoom=Math.max(.4,targetZoom/1.1);if(e.key==='Escape')reset()};
+const touchMode=createGalaxyTouchMode({root,canvas:cv,button:$('g-touch-toggle'),hint:$('g-touch-hint'),gestures});
+cv.onkeydown=e=>{if(root.dataset.touchMode==='scroll')return;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Escape'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')ry-=.08;if(e.key==='ArrowRight')ry+=.08;if(e.key==='ArrowUp')rx-=.08;if(e.key==='ArrowDown')rx+=.08;if(e.key==='+'||e.key==='=')targetZoom=Math.min(2.8,targetZoom*1.1);if(e.key==='-')targetZoom=Math.max(.4,targetZoom/1.1);if(e.key==='Escape')reset()};
 document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(frameId);if(!document.hidden){last=performance.now();frameId=requestAnimationFrame(draw)}});
 Promise.all([document.fonts.load('400 13px "MaruBuri"'),document.fonts.load('600 13px "MaruBuri"'),document.fonts.load('700 13px "MaruBuri"'),document.fonts.load('600 14px "Pretendard"')]).then(()=>{root.dataset.fonts='loaded'}).catch(()=>{root.dataset.fonts='failed'});
 panel();frameId=requestAnimationFrame(draw);
