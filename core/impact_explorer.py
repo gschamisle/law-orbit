@@ -30,7 +30,8 @@ def analyze(law: str, reference: str, graph: dict | None = None) -> dict:
         if norm(edge.get("target_law", "")) != norm(law):
             continue
         raw = str(edge.get("cite_raw", ""))
-        parsed = parse_scope(raw)
+        resolved = str(edge.get("resolved_cite_raw") or raw)
+        parsed = parse_scope(resolved)
         # Scan raw article ranges too: the legacy graph omits intermediate branch articles.
         candidate = any(scope_relation(s, Provision(target.jo)) for s in parsed.scopes)
         try:
@@ -40,7 +41,7 @@ def analyze(law: str, reference: str, graph: dict | None = None) -> dict:
             recorded = None
         if not candidate:
             continue
-        status, reason = classify(raw, target)
+        status, reason = classify(resolved, target)
         if not parsed.scopes or (recorded and not any(
             scope_relation(s, Provision(recorded.jo)) for s in parsed.scopes
         )):

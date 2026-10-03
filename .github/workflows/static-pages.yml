@@ -47,6 +47,8 @@ jobs:
         env:
           LAW_ORBIT_TEST_SITE: _site
         run: node --test scripts/test_delegation_collected.mjs
+      - name: Compare tax evidence with independently annotated official samples
+        run: uv run --frozen python -B -X utf8 -m scripts.verify_tax_citation_samples --site _site --report output/tax-citation-audit-report.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

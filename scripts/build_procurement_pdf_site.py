@@ -36,6 +36,7 @@ def materialize_reachable(base, destination, value):
         elif isinstance(item,list):
             for child in item:walk(child)
     walk(value)
+    return seen
 
 
 def build(base, extracted, destination, *, replace_existing=False):

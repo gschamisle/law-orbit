@@ -81,7 +81,7 @@ class EdgeIndex:
             candidates=set()
             try:candidates.add(_target(e.get('target_ref',''),allow_hyphen=self.hyphen).jo)
             except ValueError:pass
-            for scope in parsed(e.get('cite_raw',''),self.hyphen).scopes:
+            for scope in parsed(e.get('resolved_cite_raw') or e.get('cite_raw',''),self.hyphen).scopes:
                 if scope.axis==0:
                     candidates.update(jo for jo in known[target] if scope_relation(scope,Provision(jo),allow_hyphen=self.hyphen))
                 elif scope.start.jo:candidates.add(scope.start.jo)
@@ -96,6 +96,7 @@ class EdgeIndex:
 
 def tidy(row,ids,hyphen):
     out={k:row[k] for k in FIELDS if k in row}
+    if row.get('resolved_cite_raw'):out['resolved_cite_raw']=row['resolved_cite_raw']
     if 'annex_analyzed' in row:out['annex_analyzed']=bool(row['annex_analyzed'])
     for key in ('source_layer','source_unit','source_text_sha256','source_file_sha256'):
         if key in row:out[key]=row[key]
@@ -105,10 +106,10 @@ def tidy(row,ids,hyphen):
     out['source_id']=ids.get(row.get('source_law',''),'')
     out['target_id']=ids.get(row.get('target_law',''),'')
     out['neighbor_id']=ids.get(row.get('neighbor_law',''),'')
-    out['raw_scope']=scopes(row.get('raw',row.get('cite_raw','')),hyphen)
+    out['raw_scope']=scopes(row.get('resolved_cite_raw') or row.get('raw',row.get('cite_raw','')),hyphen)
     out['source_scope']=scopes(row.get('source_ref',''),hyphen)
     if row.get('direction')=='reverse':
-        scope=parsed(row.get('raw',''),hyphen)
+        scope=parsed(row.get('resolved_cite_raw') or row.get('raw',''),hyphen)
         try:recorded=_target(row.get('target_ref_recorded',''),allow_hyphen=hyphen)
         except ValueError:recorded=None
         out['record_review']=not scope.scopes or bool(recorded and not any(scope_relation(s,Provision(recorded.jo),allow_hyphen=hyphen) for s in scope.scopes))

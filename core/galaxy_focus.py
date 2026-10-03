@@ -117,7 +117,7 @@ def analyze_focus(law: str, reference: str, graph: dict | None = None) -> dict:
             continue
         if dest and _norm(target_law) == _norm(law) and dest.jo == target.jo:
             continue
-        status, reason = classify(raw, dest) if dest else ('review', {
+        status, reason = classify(str(edge.get('resolved_cite_raw') or raw), dest) if dest else ('review', {
             'law':'법령 전체 참조입니다.', 'annex':'별표·서식 참조입니다. 표·서식 본문과 적용 조건을 원문에서 확인하세요.',
             'standard':'분류·회계기준 참조입니다. 기준 전문의 개정 영향은 별도 검토가 필요합니다.'}.get(kind,''))
         if kind == 'law':

@@ -12,6 +12,8 @@ from core.citation_scope import Provision, parse_scope, scope_relation
 from core.law_universe import GRAPH, SOURCES, norm
 
 BRACKET = re.compile(r'「([^」]+)」')
+RELATIVE_LAW_ONLY = re.compile(r'같은\s*법(?=\s|[.,;()]|에|의|을|과|으로|상|$)'
+                               r'(?!\s*(?:제\s*\d+\s*조|시행령|시행규칙|별표|별지))')
 ANNEX = re.compile(r'(별표|별지)\s*(?:제\s*)?(\d+)(?:\s*의\s*(\d+))?\s*(?:호\s*서식|호|서식)?')
 STANDARDS = ('한국표준산업분류', '한국채택국제회계기준', '기업회계기준')
 ENUM_TAIL = re.compile(r'\s*(?:부터|에서|내지|[~～∼]|및|또는|와|과|ㆍ|·|,)\s*'
@@ -129,7 +131,15 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                     expanded_spans.append((start,end))
                 raw = text[start:end]
                 dest = catalog.get(norm(target_name))
-                parsed = parse_scope(raw)
+                resolved_raw = raw
+                if re.match(r'^같은\s*조', raw) and cite.jo:
+                    # Keep the source quote intact; structure its resolved article separately.
+                    # The legacy parser inherits the anchor's relative token, so
+                    # cite.relative no longer necessarily says '같은조'.
+                    resolved_raw = re.sub(r'^같은\s*조\s*',
+                        Provision(cite.jo + ('의'+cite.jo_sub if cite.jo_sub else '')).label,
+                        raw, count=1)
+                parsed = parse_scope(resolved_raw)
                 article_ranges = [s for s in parsed.scopes if s.axis == 0]
                 if article_ranges and dest:
                     refs = [Provision(a['jo']).label for a in dest['articles']
@@ -139,8 +149,9 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                     refs = [s.start.label for s in parsed.scopes if s.start.jo] or [
                         Provision(cite.jo + ('의'+cite.jo_sub if cite.jo_sub else ''), cite.hang, cite.ho, cite.mok).label]
                 for reference in refs:
+                    extra = {'resolved_cite_raw': resolved_raw} if resolved_raw != raw else {}
                     add(law,article,target_name,reference,raw,start,end,
-                        relation='junyo' if cite.is_junyo or re.match(r'\s*(?:을|를)?\s*준용',text[end:]) else 'direct', via_range=bool(article_ranges))
+                        relation='junyo' if cite.is_junyo or re.match(r'\s*(?:을|를)?\s*준용',text[end:]) else 'direct', via_range=bool(article_ranges), **extra)
             brackets = list(BRACKET.finditer(text))
             for m in brackets:
                 name = m[1]
@@ -157,6 +168,21 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                 # Law-level wording does not prove a link to any particular article.
                 raw = m[0]
                 add(law,article,name,'법령·정의 참조',raw,m.start(),m.end(),kind='law',relation='law_reference')
+            for m in RELATIVE_LAW_ONLY.finditer(text):
+                if any(c.span[0] <= m.start() < c.span[1] for c in citations if c.jo):
+                    continue
+                if any(b.start() <= m.start() < b.end() for b in brackets):
+                    continue
+                # Resolve only a named anchor in this same paragraph. A distant
+                # mention or the source law itself is not sufficient evidence.
+                paragraph = text.rfind('\n',0,m.start()) + 1
+                anchors = [(b.start(),b[1]) for b in BRACKET.finditer(text,paragraph,m.start())]
+                anchors += [(c.span[0],c.law_name) for c in citations
+                            if paragraph <= c.span[0] < m.start() and c.law_name and not c.relative]
+                if anchors:
+                    name = max(anchors,key=lambda a:a[0])[1]
+                    if name.endswith(('법','법률','시행령','시행규칙','규칙')):
+                        add(law,article,name,'법령·정의 참조',m[0],m.start(),m.end(),kind='law',relation='law_reference')
             for m in ANNEX.finditer(text):
                 start = max(text.rfind('\n',0,m.start()),text.rfind('。',0,m.start()))+1
                 before = text[start:m.start()]

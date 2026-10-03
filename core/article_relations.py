@@ -47,6 +47,8 @@ def _forward_rows(article_text: str, source_law: str) -> tuple[list[dict], list[
             ref += f"제{c.hang}항"
         if c.ho:
             ref += f"제{c.ho}호"
+        if c.mok:
+            ref += ("제" if c.mok.isdigit() else "") + f"{c.mok}목"
         key = (law, ref, c.is_junyo)
         if key in seen:
             continue
@@ -137,7 +139,8 @@ def _target_label(jo: str, hang: str = "", ho: str = "", mok: str = "") -> str:
     if str(ho).strip():
         parts.append(f"제{str(ho).strip()}호")
     if str(mok).strip():
-        parts.append(f"{str(mok).strip()}목")
+        value = str(mok).strip()
+        parts.append(("제" if value.isdigit() else "") + f"{value}목")
     return "".join(parts)
 
 

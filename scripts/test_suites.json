@@ -40,6 +40,8 @@
       "scripts/test_tax_annex.py",
       "scripts/test_tax_delegation_history.py",
       "scripts/test_tax_review_site.py",
+      "scripts/test_tax_citation_audit.py",
+      "scripts/test_tax_relative_audit.py",
       "scripts/test_law_library.py",
       "scripts/test_app_navigation.py",
       "scripts/test_galaxy_updates.py",
