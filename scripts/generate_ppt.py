@@ -2,8 +2,8 @@
 시나브로 팀 - "이번 세제개편안, 이렇게 하려는거 맞아?" 발표용 PPT 생성 스크립트
 
 실행 방법:
-  pip install python-pptx
-  python generate_ppt.py
+  uv sync --extra presentations
+  uv run --extra presentations python -m scripts.generate_ppt
 
 출력: 시나브로_이번_세제개편안_이렇게_하려는거_맞아.pptx
       (물음표는 Windows 파일명에 못 써서 뺐다)
@@ -14,7 +14,7 @@ from pptx.util import Inches, Pt, Cm, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
-import os
+from pathlib import Path
 
 # ──────────────────────────────────────────────
 # 색상 팔레트
@@ -681,7 +681,9 @@ def main():
     add_expected_effects_slide(prs)
     add_closing_slide(prs)
 
-    output_path = os.path.join(os.path.dirname(__file__), "시나브로_이번_세제개편안_이렇게_하려는거_맞아.pptx")
+    output_dir = Path(__file__).resolve().parents[1] / "output/presentations"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "시나브로_이번_세제개편안_이렇게_하려는거_맞아.pptx"
     prs.save(output_path)
     print(f"✅ PPT 생성 완료: {output_path}")
     print(f"   총 {len(prs.slides)}장 슬라이드")

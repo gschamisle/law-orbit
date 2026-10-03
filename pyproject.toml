@@ -1,7 +1,7 @@
 [project]
-name = "mofe-2nd"
+name = "law-orbit"
 version = "0.1.0"
-description = "Six-domain law citation galaxies and national-tax amendment review"
+description = "Law Orbit: statutory citation maps and local amendment review"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -13,8 +13,10 @@ dependencies = [
     "pdfplumber>=0.11,<0.12",
     "python-dotenv>=1.2.2",
     "python-hwpx>=2.9.1",
-    "python-pptx>=1.0.2",
     "pywin32>=312; sys_platform == 'win32'",
     "requests>=2.34.2",
     "streamlit>=1.57.0",
 ]
+
+[project.optional-dependencies]
+presentations = ["python-pptx>=1.0.2"]

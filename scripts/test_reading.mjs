@@ -104,8 +104,8 @@ test('version mismatch remains a visible export failure and cancellation returns
 });
 test('HTML preserves literal law text, safe sources and provenance without executing source markup',async()=>{
  const packet=await collectReview({anchor:{...anchor,body:'<script>alert(1)</script>'},rows:[{...row,raw:'<img src=x onerror=alert(1)>',source_url:'javascript:alert(1)',target_effective:'<svg/onload=1>'}],unresolved:[{raw:'<b>원문</b>',reason:'확인'}],context});
- const html=reviewHTML(packet,{'400':'YWJj','700':'YWJj'});
- assert.ok(html.includes('&lt;script&gt;'));assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));assert.ok(!html.includes('<svg'));assert.ok(!html.includes('href="javascript:'));assert.ok(html.includes('fixture-v1'));assert.ok(html.includes('data:font/woff2;base64,YWJj'));assert.ok(html.includes('미수집·미해석 확인 목록 1건'));assert.ok(html.includes('읽을 조문'));
+ const html=reviewHTML(packet,{'400':'YWJj','700':'YWJj',license:'SIL OPEN FONT LICENSE fixture <license>'});
+ assert.ok(html.includes('&lt;script&gt;'));assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));assert.ok(!html.includes('<svg'));assert.ok(!html.includes('href="javascript:'));assert.ok(html.includes('fixture-v1'));assert.ok(html.includes('SIL OPEN FONT LICENSE fixture &lt;license&gt;'));assert.ok(!reviewHTML(packet,{'400':'YWJj'}).includes('data:font/woff2'));assert.ok(html.includes('data:font/woff2;base64,YWJj'));assert.ok(html.includes('미수집·미해석 확인 목록 1건'));assert.ok(html.includes('읽을 조문'));
 });
 test('CSV escapes formulas, multiline quotes and has a UTF-8 BOM for spreadsheet readers',async()=>{
  const p=await collectReview({anchor,rows:[{...row,raw:'=HYPERLINK("x")',context:'두 줄\n"원문"'}],context});const csv=reviewCSV(p);

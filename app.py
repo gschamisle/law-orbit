@@ -1,4 +1,4 @@
-"""이 조문 건드리면 다 죽는 거야 — 법령 연결 탐색과 개정안 검토."""
+"""법의 궤도 — 법령 연결 탐색과 개정안 검토."""
 import streamlit as st
 from config import LAW_API_KEY, OPENAI_API_KEY, ENABLE_HWPX_OUTPUT, ENABLE_DRAFT_TAB, ENABLE_WIP_TABS
 from ui import (fsc_map_ui, law_map_ui, local_tax_map_ui, procurement_map_ui, housing_map_ui, environment_map_ui, state_property_map_ui, forex_map_ui, amendment_review_ui, article_relations_ui,
@@ -7,7 +7,7 @@ from ui.styles import inject_global_css
 from ui import mofe_map_ui, ftc_map_ui
 from ui import delegation_review_ui
 
-APP_TITLE = '이 조문 건드리면 다 죽는 거야'
+APP_TITLE = '법의 궤도'
 st.set_page_config(page_title=APP_TITLE, page_icon='✦', layout='wide', initial_sidebar_state='expanded')
 inject_global_css()
 
@@ -25,7 +25,7 @@ with st.sidebar:
     st.markdown('''<div class="atlas-brand">
       <div class="atlas-orbit" aria-hidden="true"><i></i><b>✦</b></div>
       <div class="atlas-kicker">A LAW RELATION ATLAS</div>
-      <div class="atlas-brand-name">이 조문 건드리면<br><em>다 죽는 거야</em></div>
+      <div class="atlas-brand-name">법의 <em>궤도</em></div>
       <p>작은 개정의 커다란 파장.</p>
     </div>''', unsafe_allow_html=True)
     page = st.radio('작업 메뉴', list(labels), format_func=labels.get, key='app_section', label_visibility='collapsed')

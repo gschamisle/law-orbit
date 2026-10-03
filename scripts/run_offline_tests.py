@@ -1,106 +1,68 @@
-"""API 키 없이 실행 가능한 오프라인 테스트 일괄 실행."""
+"""Run only explicitly reviewed offline tests; never discover tests for execution."""
 from __future__ import annotations
 
+import argparse
+from pathlib import Path
+import shutil
 import subprocess
 import sys
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-
-MODULES: tuple[str, ...] = (
-    "scripts.smoke_parallel_hints",
-    "scripts.test_article_comparison_format",
-    "scripts.test_citation_parser",
-    "scripts.test_byeolpyo",
-    "scripts.test_annex_analysis",
-    "scripts.test_annex_references",
-    "scripts.test_annex_reference_site",
-    "scripts.test_relative_law_resolution",
-    "scripts.test_junyo_tagging",
-    "scripts.test_article_relations",
-    "scripts.test_new_article_scanner",
-    "scripts.test_draft_bill_parser",
-    "scripts.test_renumber_scan",
-    "scripts.test_parallel_omission",
-    "scripts.test_bridge_pairs",
-    "scripts.test_ego_graph",
-    "scripts.test_detail_plan",
-    "scripts.test_document_text",
-    "scripts.test_llm_fallback",
-    "scripts.test_outline_intent",
-    "scripts.test_related_article_129",
-    "scripts.test_related_article_27",
-    "scripts.test_review_queue",
-    "scripts.test_citation_graph",
-    "scripts.test_citation_scope",
-    "scripts.test_boundary_review",
-    "scripts.test_impact_ui",
-    "scripts.test_galaxy_focus",
-    "scripts.test_law_domains",
-    "scripts.test_fsc_collection",
-    "scripts.test_fsc_graph",
-    "scripts.test_fsc_isolation",
-    "scripts.test_fsc_sectors",
-    "scripts.test_law_universe",
-    "scripts.test_tax_external",
-    "scripts.test_tax_annex",
-    "scripts.test_tax_delegation_history",
-    "scripts.test_tax_review_site",
-    "scripts.test_law_library",
-    "scripts.test_app_navigation",
-    "scripts.test_galaxy_updates",
-    "scripts.test_local_tax_collection",
-    "scripts.test_local_tax_graph",
-    "scripts.test_procurement",
-    "scripts.test_procurement_pdf",
-    "scripts.test_procurement_ui",
-    "scripts.test_housing",
-    "scripts.test_housing_ui",
-    "scripts.test_environment",
-    "scripts.test_environment_ui",
-    "scripts.test_state_property",
-    "scripts.test_forex",
-    "scripts.test_ftc",
-    "scripts.test_mofe_reuse",
-    "scripts.test_forex_finance_links",
-    "scripts.test_ftc_ui",
-    "scripts.test_mofe_domains",
-    "scripts.test_labor",
-    "scripts.test_constitution",
-    "scripts.test_medical",
-    "scripts.test_healthcare_site",
-    "scripts.test_healthcare_collection",
-    "scripts.test_labor_ui",
-    "scripts.test_public_institution_scope",
-    "scripts.test_public_designations",
-    "scripts.test_public_scope_collected",
-    "scripts.test_mofe_ui",
-    "scripts.test_related_relation_types",
-    "scripts.test_parallel_matrix",
-)
+from scripts.check_test_inventory import ROOT, checked_registry
 
 
-def main() -> int:
-    failed: list[str] = []
-    print("Offline test suite (no API keys)\n")
+def offline_paths(registry: dict, runtime: str) -> list[str]:
+    suffixes = {'.py'} if runtime == 'python' else {'.mjs', '.cjs'}
+    return [name for name in registry['suites']['offline'] if Path(name).suffix in suffixes]
 
-    for mod in MODULES:
-        print(f"--- {mod} ---")
-        result = subprocess.run(
-            [sys.executable, "-m", mod],
-            cwd=ROOT,
-        )
-        if result.returncode != 0:
-            failed.append(mod)
-        print()
 
-    if failed:
-        print(f"FAILED ({len(failed)}/{len(MODULES)}):", ", ".join(failed), file=sys.stderr)
+def command(name: str, node: str | None = None) -> list[str]:
+    if name.endswith('.py'):
+        return [sys.executable, '-B', '-X', 'utf8', '-m', name[:-3].replace('/', '.')]
+    if not node:
+        raise ValueError('Node.js is required for the registered offline browser tests')
+    return [node, '--test', name]
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--runtime', choices=('python', 'node'), default='python')
+    parser.add_argument('--list', action='store_true', help='Print the reviewed run list without running it')
+    parser.add_argument('--only', action='append', default=[], metavar='scripts/test_name.py',
+                        help='Run only a named entry from the selected offline list; repeat as needed')
+    args = parser.parse_args(argv)
+    try:
+        registry = checked_registry()
+        paths = offline_paths(registry, args.runtime)
+        unknown = set(args.only) - set(paths)
+        if unknown:
+            raise ValueError('Not a registered offline test for this runtime: ' + ', '.join(sorted(unknown)))
+        if args.only:
+            paths = [name for name in paths if name in args.only]
+        if args.list:
+            print('\n'.join(paths))
+            return 0
+        node = shutil.which('node') if args.runtime == 'node' else None
+        commands = [(name, command(name, node)) for name in paths]
+    except (OSError, ValueError) as error:
+        print(f'Offline test selection failed:\n{error}', file=sys.stderr)
         return 1
 
-    print(f"ALL PASSED ({len(MODULES)} modules)")
+    suites = registry['suites']
+    print(f'Offline {args.runtime} suite: {len(commands)} explicitly registered commands.', flush=True)
+    print(f'Not scheduled: collected={len(suites["collected"])}, api_local={len(suites["api_local"])}.', flush=True)
+    print('Optional corpus cases report explicit skips in their own test results.\n', flush=True)
+    failed = []
+    for name, invocation in commands:
+        print(f'--- {name} ---', flush=True)
+        result = subprocess.run(invocation, cwd=ROOT)
+        if result.returncode:
+            failed.append(name)
+    if failed:
+        print(f'FAILED ({len(failed)}/{len(commands)}): ' + ', '.join(failed), file=sys.stderr)
+        return 1
+    print(f'OFFLINE COMMANDS COMPLETED ({len(commands)}); see individual results for skipped cases.')
     return 0
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__ == '__main__':
+    raise SystemExit(main())

@@ -245,20 +245,22 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
 
 
 def shell(dest):
+    from core.web_security import secure_html
     for p in (ROOT/'web').iterdir():
         if p.is_file():shutil.copy2(p,dest/p.name)
-    shutil.copy2(ROOT/'docs/law-orbit-introduction.html',dest/'introduction.html')
+    introduction=(ROOT/'docs/law-orbit-introduction.html').read_text(encoding='utf-8')
+    (dest/'introduction.html').write_text(secure_html(introduction),encoding='utf-8')
     fonts=dest/'fonts';fonts.mkdir(exist_ok=True)
     for p in (ROOT/'ui/assets/fonts').iterdir():
         if p.suffix in ('.woff2','.txt'):shutil.copy2(p,fonts/p.name)
     html=(ROOT/'ui/assets/law_galaxy.html').read_text(encoding='utf-8').replace('__H__','730')
     html=html.replace('__GESTURES__',(ROOT/'ui/assets/law_galaxy_gestures.js').read_text(encoding='utf-8'))
-    html=html.replace("(()=>{'use strict';", "window.addEventListener('message',function init(event){if(event.source!==parent||event.origin!==location.origin||event.data?.type!=='galaxy-data')return;window.removeEventListener('message',init);const WEB_DATA=event.data.data;(()=>{'use strict';",1)
+    html=html.replace('/* PUBLIC_MAP_INIT_START */', "window.addEventListener('message',function init(event){if(event.source!==parent||event.origin!==location.origin||event.data?.type!=='galaxy-data')return;window.removeEventListener('message',init);const WEB_DATA=event.data.data;",1)
     html=html.replace('__DATA__','WEB_DATA')
-    html=html.replace("function select(n){selected", "function select(n){if(n?.web_law)parent.postMessage({type:'galaxy-select',law:n.web_law,jo:n.web_jo||'',region:n.web_region||'',mode:D.mode},location.origin);selected",1)
-    html=html.replace('})();\n</script>', '})();});\n</script>')
+    html=html.replace('/* PUBLIC_MAP_SELECT */', "if(n?.web_law)parent.postMessage({type:'galaxy-select',law:n.web_law,jo:n.web_jo||'',region:n.web_region||'',mode:D.mode},location.origin);",1)
+    html=html.replace('/* PUBLIC_MAP_INIT_END */', '});',1)
     prefix="<!doctype html><html lang='ko'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>법의 궤도 — 연결 지도</title><link rel='stylesheet' href='fonts.css'><style>body{margin:0;background:#051e22}#galaxy-wrap{border:0!important;border-radius:0!important;height:100vh!important;min-height:0!important}</style>"
-    (dest/'renderer.html').write_text(prefix+html+'</html>',encoding='utf-8')
+    (dest/'renderer.html').write_text(secure_html(prefix+html+'</html>'),encoding='utf-8')
 
 
 def build(source,dest,previous_site=None):

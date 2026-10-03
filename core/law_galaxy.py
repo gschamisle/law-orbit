@@ -202,8 +202,9 @@ def render_html(data: dict, height: int = 720) -> str:
 
 def render_page(data: dict, height: int = 800) -> str:
     from html import escape
+    from core.web_security import secure_html
     title = escape(data.get("galaxy_title", "국세").replace(" 은하", ""))
-    return (
+    return secure_html(
         "<!doctype html><html lang='ko'><head><meta charset='utf-8'>"
         "<meta name='viewport' content='width=device-width,initial-scale=1'>"
         f"<title>법의 궤도 — {title}</title>"
