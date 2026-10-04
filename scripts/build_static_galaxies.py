@@ -26,7 +26,7 @@ WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution',
 PALETTE=['#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed','#cedc80','#ffa58e','#91a1ff']
 LIMIT=24*1024*1024
 from core.annex_metadata import annex_index, annotate_annex
-FIELDS=('source_law','source_jo','source_title','source_ref','source_granularity','source_effective','source_url','target_law','target_ref','target_ref_recorded','target_url','target_effective','target_kind','target_status','target_provision_status','context','raw','cite_raw','reason','status','precision','direction','direction_label','neighbor_law','neighbor_jo','neighbor_ref','neighbor_kind','neighbor_title','kind','external','broad','source_start','source_end','evidence_id','annex_urls','source_layer','source_page','source_file_sha256','source_text_sha256','source_table','source_row','source_column','source_bbox')
+FIELDS=('source_law','source_jo','source_title','source_ref','source_granularity','source_effective','source_reference_notes','historical_edition_qualifier','verification','verified_source_sha256','source_url','target_law','target_name_original','target_name_note','target_ref','target_ref_recorded','target_url','target_effective','target_kind','target_status','target_provision_status','context','raw','cite_raw','reason','status','precision','direction','direction_label','neighbor_law','neighbor_jo','neighbor_ref','neighbor_kind','neighbor_title','kind','external','broad','source_start','source_end','evidence_id','annex_urls','annex_container_ref','annex_container_page','annex_container_sha256','source_layer','source_page','source_file_sha256','source_text_sha256','source_table','source_row','source_column','source_bbox')
 
 
 def read(path):return json.loads(path.read_text(encoding='utf-8'))
@@ -192,6 +192,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
         for a in d.get('articles',[]):
             jo=str(a['jo']);label=Provision(jo).label
             article=dict(jo=jo,label=label,title=a.get('title',''),text=a.get('text',''),deleted=bool(a.get('deleted')),effective=a.get('effective',d.get('effective','')))
+            if a.get('reference_notes'):article['reference_notes']=a['reference_notes']
             if domain=='forex' or domain in WORK_DOMAINS:article['sectors']=a.get('sectors',[])
             try:
                 analyzed=index.focus(d['name'],label,broad=not articles)

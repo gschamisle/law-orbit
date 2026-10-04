@@ -42,6 +42,11 @@
       "scripts/test_tax_review_site.py",
       "scripts/test_tax_citation_audit.py",
       "scripts/test_tax_relative_audit.py",
+      "scripts/test_tax_audit_verifier.py",
+      "scripts/test_tax_reverse_verifier.py",
+      "scripts/test_tax_source_repairs.py",
+      "scripts/test_tax_citation_context.py",
+      "scripts/test_tax_annex_catalog.py",
       "scripts/test_law_library.py",
       "scripts/test_app_navigation.py",
       "scripts/test_galaxy_updates.py",
@@ -106,6 +111,10 @@
     "api_local": "Manual local use only. These tests can send private input to an external AI service and must never enter an automatic test suite."
   },
   "dependencies": {
+    "scripts/test_tax_audit_verifier.py": "Synthetic mutation fixtures and mocked CLI; no collected corpus, network or AI.",
+    "scripts/test_tax_reverse_verifier.py": "Synthetic reverse-source and click-destination mutation fixtures; no collected corpus, network or AI.",
+    "scripts/test_tax_source_repairs.py": "Synthetic XML/text repair, edition/hash and offset fixtures; no collection or live API.",
+    "scripts/test_tax_citation_context.py": "Synthetic annex context and tracked exact public-source table fixture; no collection or live API.",
     "scripts/test_law_abbrev.py": "Tracked data/law-snapshot-manifest.json and law graph (core.law_universe.load_graph); no API.",
     "scripts/test_static_galaxies.py": "Node.js is required; optional source-corpus comparison reports unittest skip when missing.",
     "scripts/test_galaxy_sound.cjs": "Isolated legacy sound-module regression only; it does not imply that sound is loaded by the public or local renderer.",
@@ -116,6 +125,7 @@
     "scripts/test_public_scope_collected.py": "output/public-scope/privatization/bundle.json.",
     "scripts/test_delegation_collected.mjs": "LAW_ORBIT_TEST_SITE must identify a validated public site; deployment CI supplies _site.",
     "scripts/test_tax_delegation_history.mjs": "output/tax-delegation-history-20260929/manifest.json and all referenced reviewed snapshots.",
-    "scripts/test_llm_review_golden.py": "Local untracked expectations and draft plus ANTHROPIC_API_KEY; live external AI, manual authorization only."
+    "scripts/test_llm_review_golden.py": "Local untracked expectations and draft plus ANTHROPIC_API_KEY; live external AI, manual authorization only.",
+    "scripts/test_tax_annex_catalog.py": "Synthetic canonical annex lookup and exact official-file container guards; no network or legal-data collection."
   }
 }

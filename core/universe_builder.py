@@ -19,7 +19,7 @@ STANDARDS = ('한국표준산업분류', '한국채택국제회계기준', '기�
 ENUM_TAIL = re.compile(r'\s*(?:부터|에서|내지|[~～∼]|및|또는|와|과|ㆍ|·|,)\s*'
                        r'(?:제\s*\d+\s*(?:조|항|호)(?:\s*의\s*\d+)?|[가-하]\s*목)'
                        r'(?:\s*제\s*\d+\s*(?:항|호)(?:\s*의\s*\d+)?)*(?:\s*[가-하]\s*목)?(?:\s*까지)?')
-QUALIFIER = re.compile(r'제외|한정|한하|단서|외의\s*부분|불구|으로\s*본다|로\s*본다|으로\s*한다|로\s*한다|같은\s*(?:법|영|조|항|호)')
+QUALIFIER = re.compile(r'제외|한정|한하|단서|외의\s*부분|불구|으로\s*본다|로\s*본다|으로\s*한다|로\s*한다|같은\s*(?:법|영|조|항|호)|동항|개정되기\s*전')
 
 
 def public_url(name, reference=''):
@@ -46,7 +46,7 @@ def resolved_name(cite, text, citations, own_law):
     return name
 
 
-def build_universe(source, *, focus_categories=("tax",), preserve_external=False, article_adapter=None, source_names=None, annex_bodies=False):
+def build_universe(source, *, focus_categories=("tax",), preserve_external=False, article_adapter=None, source_names=None, annex_bodies=False, tax_reference_context=False):
     """Preserve the tax default; other domains are explicit opt-ins."""
     if (not isinstance(focus_categories, (tuple, list)) or not focus_categories
             or any(not isinstance(c, str) or not c for c in focus_categories)):
@@ -57,8 +57,17 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
     metadata = [{k:v for k,v in l.items() if k not in ('articles','annexes','raw_body_blocks')} for l in corpus]
     edges, seen, outside = [], set(), Counter()
     external_references = []
+    context_issues = []
     samples = {}
     def add(law, article, target_name, target_ref, raw, start, end, kind='article', relation='direct', **extra):
+        if tax_reference_context and kind == 'law' and target_name == '주식회사의 외부감사에 관한 법률':
+            # Act15022 explicitly changed this title; law-level identity only.
+            # Do not map historical article numbers or overwrite source quotes.
+            renamed = catalog.get(norm('주식회사 등의 외부감사에 관한 법률'))
+            if renamed:
+                extra.update(target_name_original=target_name,
+                    target_name_note='구명칭을 현 법령명으로 연결 · 조문 번호·과거 판본의 동일성은 추정하지 않음')
+                target_name = renamed['name']
         dest = catalog.get(norm(target_name))
         if kind != 'standard' and not dest:
             if target_name and target_name != law['name'] and law['category'] in focus_categories:
@@ -87,6 +96,9 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                 'source_url':public_url(law['name'],Provision(article['jo']).label) if not article['jo'].startswith('별') else public_url(law['name']),
                 'target_url':public_url(target_name,target_ref if kind == 'article' else '') if kind != 'standard' else '',
                 'target_effective':dest['effective'] if dest else '', **extra}
+        commencement_notes = [note for note in article.get('reference_notes', []) if '[시행일:' in note]
+        if commencement_notes:
+            edge['source_reference_notes'] = commencement_notes
         if kind == 'annex' and dest:
             matched = next((a for a in dest.get('annexes',[]) if norm(a['ref']) == norm(target_ref)),None)
             edge['target_title'] = matched['title'] if matched else ''
@@ -112,9 +124,32 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                     add(law, article, **citation)
                 continue
             citations = parse_citations(text)
+            overrides = []
+            if tax_reference_context:
+                from core.tax_citation_context import tax_article_overrides, tax_law_level_references
+                overrides = tax_article_overrides(law, article)
+                for citation in tax_law_level_references(law, article):
+                    add(law, article, **citation)
+            skip_spans = [span for item in overrides for span in item['skip_spans']]
+            def overridden(start, end):
+                return any(start < b and a < end for a, b in skip_spans)
+            for item in overrides:
+                parsed_override = parse_scope(item['resolved_raw'])
+                dest_override = catalog.get(norm(item['target_name']))
+                ranges_override = [scope for scope in parsed_override.scopes if scope.axis == 0]
+                refs_override = ([Provision(a['jo']).label for a in dest_override['articles']
+                                  if any(scope_relation(scope, Provision(a['jo'])) for scope in ranges_override)]
+                                 if ranges_override and dest_override else
+                                 [scope.start.label for scope in parsed_override.scopes if scope.start.jo])
+                for reference in refs_override:
+                    extra_override = {k: item[k] for k in ('verification', 'verified_source_sha256') if k in item}
+                    if item['verification'].startswith('manually-reviewed'):
+                        extra_override['context_review'] = True
+                    add(law, article, item['target_name'], reference, item['raw'], item['start'], item['end'],
+                        resolved_cite_raw=item['resolved_raw'], via_range=bool(ranges_override), **extra_override)
             expanded_spans = []
             for cite in citations:
-                if not cite.jo:
+                if not cite.jo or overridden(*cite.span):
                     continue
                 if any(a <= cite.span[0] and cite.span[1] <= b for a,b in expanded_spans):
                     continue
@@ -139,6 +174,21 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                     resolved_raw = re.sub(r'^같은\s*조\s*',
                         Provision(cite.jo + ('의'+cite.jo_sub if cite.jo_sub else '')).label,
                         raw, count=1)
+                elif re.match(r'^(?:같은\s*항|동\s*항)', raw) and cite.jo and cite.hang:
+                    resolved_raw = re.sub(r'^(?:같은\s*항|동\s*항)\s*',
+                        Provision(cite.jo + ('의'+cite.jo_sub if cite.jo_sub else ''), cite.hang).label,
+                        raw, count=1)
+                edition_qualifier = getattr(cite, 'edition_qualifier', '')
+                if edition_qualifier:
+                    # Publication numbers inside the old-edition qualifier
+                    # are not article/item references. The original remains
+                    # intact in cite_raw and the source body.
+                    resolved_raw = resolved_raw.replace(edition_qualifier, '')
+                if cite.hang:
+                    # Official corp rule49 prints '영 제95조1항'. Preserve
+                    # that source; restore only the omitted paragraph marker
+                    # for the separately serialized scope.
+                    resolved_raw = re.sub(r'(?<=조)(\d+)항', r'제\1항', resolved_raw)
                 parsed = parse_scope(resolved_raw)
                 article_ranges = [s for s in parsed.scopes if s.axis == 0]
                 if article_ranges and dest:
@@ -150,10 +200,15 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                         Provision(cite.jo + ('의'+cite.jo_sub if cite.jo_sub else ''), cite.hang, cite.ho, cite.mok).label]
                 for reference in refs:
                     extra = {'resolved_cite_raw': resolved_raw} if resolved_raw != raw else {}
+                    if edition_qualifier:
+                        extra.update(historical_edition_qualifier=edition_qualifier,
+                                     target_provision_status='historical-edition-not-verified',context_review=True)
                     add(law,article,target_name,reference,raw,start,end,
                         relation='junyo' if cite.is_junyo or re.match(r'\s*(?:을|를)?\s*준용',text[end:]) else 'direct', via_range=bool(article_ranges), **extra)
             brackets = list(BRACKET.finditer(text))
             for m in brackets:
+                if overridden(*m.span()):
+                    continue
                 name = m[1]
                 if norm(name) not in catalog and not preserve_external:
                     if law['category'] in focus_categories and name.endswith(('법','법률','시행령','시행규칙','규칙')):
@@ -169,6 +224,8 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                 raw = m[0]
                 add(law,article,name,'법령·정의 참조',raw,m.start(),m.end(),kind='law',relation='law_reference')
             for m in RELATIVE_LAW_ONLY.finditer(text):
+                if overridden(*m.span()):
+                    continue
                 if any(c.span[0] <= m.start() < c.span[1] for c in citations if c.jo):
                     continue
                 if any(b.start() <= m.start() < b.end() for b in brackets):
@@ -183,28 +240,38 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                     name = max(anchors,key=lambda a:a[0])[1]
                     if name.endswith(('법','법률','시행령','시행규칙','규칙')):
                         add(law,article,name,'법령·정의 참조',m[0],m.start(),m.end(),kind='law',relation='law_reference')
-            for m in ANNEX.finditer(text):
-                start = max(text.rfind('\n',0,m.start()),text.rfind('。',0,m.start()))+1
-                before = text[start:m.start()]
-                matches = list(BRACKET.finditer(before))
-                # A remote law mention in the same paragraph is not an annex owner.
-                direct = matches[-1] if matches and not before[matches[-1].end():].strip() else None
-                name = direct[1] if direct else law['name']
-                prefix = re.search(r'(같은\s*법|같은\s*영|같은\s*규칙|법|영|규칙)\s*$',before)
-                if prefix:
-                    token = ''.join(prefix[1].split())
-                    if token.startswith('같은'):
-                        prior = [b for b in brackets if b.end() <= m.start()]
-                        if not prior:
-                            continue  # An unresolved 'same law' must not be assigned to this law.
-                        name = prior[-1][1]
-                        if token in ('같은영','같은규칙'):
-                            name = resolve_deictic_law('영' if token == '같은영' else '규칙',name)
-                    else:
-                        name = resolve_deictic_law(token,law['name'])
-                no = str(int(m[2])) + ('의'+str(int(m[3])) if m[3] else '')
-                label = '별표 '+no if m[1]=='별표' else '별지 제'+no+'호서식'
-                add(law,article,name,label,m[0],m.start(),m.end(),kind='annex',relation='annex_reference')
+            if tax_reference_context:
+                from core.tax_citation_context import tax_annex_references
+                annex_issues = []
+                for citation in tax_annex_references(law, article, issues=annex_issues):
+                    add(law, article, **citation)
+                for issue in annex_issues:
+                    context_issues.append(dict(source_law=law['name'], source_jo=article['jo'],
+                        source_ref=block_at(article, issue['start'])['ref'],
+                        raw=issue['raw'], reason=issue['reason'], kind='unresolved-annex-reference', status='review'))
+            else:
+                for m in ANNEX.finditer(text):
+                    start = max(text.rfind('\n',0,m.start()),text.rfind('。',0,m.start()))+1
+                    before = text[start:m.start()]
+                    matches = list(BRACKET.finditer(before))
+                    # A remote law mention in the same paragraph is not an annex owner.
+                    direct = matches[-1] if matches and not before[matches[-1].end():].strip() else None
+                    name = direct[1] if direct else law['name']
+                    prefix = re.search(r'(같은\s*법|같은\s*영|같은\s*규칙|법|영|규칙)\s*$',before)
+                    if prefix:
+                        token = ''.join(prefix[1].split())
+                        if token.startswith('같은'):
+                            prior = [b for b in brackets if b.end() <= m.start()]
+                            if not prior:
+                                continue  # An unresolved 'same law' must not be assigned to this law.
+                            name = prior[-1][1]
+                            if token in ('같은영','같은규칙'):
+                                name = resolve_deictic_law('영' if token == '같은영' else '규칙',name)
+                        else:
+                            name = resolve_deictic_law(token,law['name'])
+                    no = str(int(m[2])) + ('의'+str(int(m[3])) if m[3] else '')
+                    label = '별표 '+no if m[1]=='별표' else '별지 제'+no+'호서식'
+                    add(law,article,name,label,m[0],m.start(),m.end(),kind='annex',relation='annex_reference')
             if law['category'] in focus_categories:
                 for standard in STANDARDS:
                     for m in re.finditer(re.escape(standard),text):
@@ -251,6 +318,8 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
             'relation_counts':dict(Counter(e['target_kind'] for e in edges)),
             'outside_scope':[{'law':n,'mentions':c,'example':samples.get(n,'')} for n,c in outside.most_common()],
             'coverage_note':'수집한 세법령 내부 및 세법령↔선정 외부 법령의 연결입니다. 법령·정의 참조는 특정 조문 연결을 확정하지 않습니다. 별표 파일 본문·부칙·고시 및 회계기준 전문은 전수 해석하지 않았습니다.'}
+    if context_issues:
+        result['citation_issues'] = context_issues
     if preserve_external:
         result['external_references'] = sorted(external_references, key=lambda e:(e['source_law'], e['source_jo'], e['source_start']))
     if annex_result is not None:
@@ -270,7 +339,7 @@ def build_tax_universe(source, *, annex_bodies=False):
     wording are preserved for the public viewer's uncollected-reference panel.
     The generic builder retains its legacy opt-in default for existing callers.
     """
-    result = build_universe(source, preserve_external=True)
+    result = build_universe(source, preserve_external=True, tax_reference_context=True)
     external, issues, seen_issues = [], [], set()
     for row in result['external_references']:
         # A quoted name crossing table cells can contain another column's text
@@ -297,7 +366,7 @@ def build_tax_universe(source, *, annex_bodies=False):
         issues.append(issue)
     result['external_references'] = external
     if issues:
-        result['citation_issues'] = issues
+        result.setdefault('citation_issues', []).extend(issues)
     result['coverage_note'] += (' 미수집 법령의 명시적 인용은 출처 조문별 확인 목록에 보존합니다.'
                                ' 해당 법령의 본문·역인용을 수집하거나 검증한 것은 아닙니다.'
                                ' 표 구분선 등이 섞인 법령명과 대상이 불명확한 상대 참조는 원문 확인 항목으로 남깁니다.')

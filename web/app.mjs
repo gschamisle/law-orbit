@@ -895,6 +895,8 @@ async function openArticle(reference, token = ++epoch) {
     };
     meta.append(copy);
     box.append(meta);
+    for (const referenceNote of a.reference_notes || [])
+      box.append(text('p', referenceNote, 'muted small'));
     const mainBody = text('div', a.text, 'article-body');
     box.append(mainBody);
     if (wanted.narrow) {
@@ -1028,6 +1030,8 @@ function evidenceCard(row, external = false) {
     const originals = text('div', '', 'annex-sources');
     appendAnnexSources(originals, annex, { text, link });
     header.append(originals);
+    if (row.annex_container_ref)
+      header.append(text('small', `원문 인용 ${row.target_ref} · ${row.annex_container_ref}의 같은 원본 PDF ${row.annex_container_page}쪽`, 'muted'));
     if (!external && annex.id && annex.analyzed) {
       const button = text('button', '검증된 별표 본문 보기');
       button.onclick = () =>
@@ -1102,6 +1106,12 @@ function evidenceCard(row, external = false) {
     card.append(text('p', '대상 법령은 수집했지만 해당 조문은 수집 판본에 없습니다.'));
   if (row.target_provision_status === 'deleted')
     card.append(text('p', '대상은 수집 판본의 삭제 조문입니다.'));
+  if (row.target_name_original)
+    card.append(text('p', `${row.target_name_note} · 원문: ${row.target_name_original}`, 'muted small'));
+  if (row.historical_edition_qualifier)
+    card.append(text('p', '구법 판본 인용 · ' + row.historical_edition_qualifier + ' — 열리는 본문은 수집 판본이며, 인용된 과거 판본과의 일치는 미점검입니다.', 'muted small'));
+  for (const referenceNote of row.source_reference_notes || [])
+    card.append(text('p', '출처 조문 참고자료 · ' + referenceNote, 'muted small'));
   if (row.cross_domain)
     card.append(
       text(
@@ -1322,6 +1332,18 @@ function renderReadingArticle(jo) {
   } else if (a) {
     $('reading-status').textContent = a.deleted ? '수집 판본에서 삭제된 조문입니다.' : '';
     body.append(text('h3', a.title));
+    const historicalNotes = new Set(reading.evidence
+      .filter((r) => r.direction !== 'reverse' && r.neighbor_id === entry.id && r.neighbor_jo === jo)
+      .map((r) => r.historical_edition_qualifier).filter(Boolean));
+    for (const qualifier of historicalNotes)
+      body.append(text('p', `구법 판본 인용 · ${qualifier} — 아래는 수집 판본의 본문입니다. 인용된 과거 판본과의 일치는 미점검입니다.`, 'muted small'));
+    const citedSourceNotes = new Set(reading.evidence
+      .filter((r) => r.direction !== 'reverse')
+      .flatMap((r) => r.source_reference_notes || []));
+    for (const referenceNote of citedSourceNotes)
+      body.append(text('p', '인용 출처의 참고자료 · ' + referenceNote, 'muted small'));
+    for (const referenceNote of a.reference_notes || [])
+      body.append(text('p', referenceNote, 'muted small'));
     const content = text('div', a.text, 'reading-text');
     body.append(content);
     markBody(

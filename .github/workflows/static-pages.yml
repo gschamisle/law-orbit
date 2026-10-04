@@ -49,6 +49,10 @@ jobs:
         run: node --test scripts/test_delegation_collected.mjs
       - name: Compare tax evidence with independently annotated official samples
         run: uv run --frozen python -B -X utf8 -m scripts.verify_tax_citation_samples --site _site --report output/tax-citation-audit-report.json
+      - name: Compare tax evidence with frozen blind source annotations
+        run: uv run --frozen python -B -X utf8 -m scripts.verify_tax_citation_samples --site _site --golden docs/qa/tax-blind-samples-20261004.json --report output/tax-blind-citation-audit-report.json
+      - name: Check reverse citation recall against frozen source annotations
+        run: uv run --frozen python -B -X utf8 -m scripts.verify_tax_reverse_sources --site _site --golden docs/qa/tax-reverse-source-samples-20261004.json --report output/tax-reverse-source-audit-report.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

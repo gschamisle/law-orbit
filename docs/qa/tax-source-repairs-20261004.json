@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "reviewed_on": "2026-10-04",
+  "base_version": "75a7f1b1e7a9dd35eeea",
+  "source_sha256": "92c3f54518aec2a150f65f2163678d2f3c37bf7ed49f74cfed56a85877c46c25",
+  "body_edits": [
+    {
+      "law": "조세특례제한법 시행령",
+      "jo": "79의4",
+      "mst": "288915",
+      "effective": "20260918",
+      "before_sha256": "5ce614b0833a71df9b7359b12c81d8411b706717d01bd06e7410def9bbda1df7",
+      "after_sha256": "f35b05fa6e4958e6712665a019bd4409ac6032010158fcbf0188c647974f7da8",
+      "start": 865,
+      "end": 867,
+      "before": "- ",
+      "after": "×",
+      "official_url": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=288915&efYd=20260918"
+    },
+    {
+      "law": "조세특례제한법 시행령",
+      "jo": "79의5",
+      "mst": "288915",
+      "effective": "20260918",
+      "before_sha256": "4bd2c1bd3096de1e6cdf27d7ed03bbba74eed7412412fa5d1215fb4c896b4fec",
+      "after_sha256": "48ad5eabc6f6aa004aea92e883b63ca491b6af44adcf01e746127191f0f43803",
+      "start": 777,
+      "end": 779,
+      "before": "- ",
+      "after": "×",
+      "official_url": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=288915&efYd=20260918"
+    }
+  ],
+  "reference_note_updates": [
+    {
+      "law": "소득세법",
+      "jo": "14",
+      "mst": "280405",
+      "effective": "20260701",
+      "reference_notes": [
+        "[전문개정 2009.12.31]\n[시행일: 2027.1.1] 제14조제3항제8호다목(제21조제1항제27호에 관한 부분에 한정한다)"
+      ],
+      "official_url": "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=280405&efYd=20260701"
+    }
+  ],
+  "scope": "Same-edition source corrections only. Preserve all other legal texts, historical baselines, annex evidence and collection dates.",
+  "official_xml_provenance": [
+    {
+      "law": "소득세법",
+      "mst": "280405",
+      "effective": "20260701",
+      "sha256": "38a54fcb82387a39123e6a2dd5cc40c773fe28dca06e6b0def9bcab6e4f74ee8"
+    },
+    {
+      "law": "법인세법",
+      "mst": "280349",
+      "effective": "20260701",
+      "sha256": "fdadca1eadda1af82d25aa3ccc3268edbad272daafc1331bfcfbd7942fa55990"
+    },
+    {
+      "law": "조세특례제한법 시행령",
+      "mst": "288915",
+      "effective": "20260918",
+      "sha256": "59a892471ba73509c46943f60c822a074287a13b452447c6691055460aad1e96"
+    }
+  ]
+}

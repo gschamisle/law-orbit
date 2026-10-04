@@ -20,7 +20,7 @@ from scripts.static_storage import Storage
 from scripts.validate_static_galaxies import validate
 
 
-def build(base, source_path, destination):
+def build(base, source_path, destination, repair_path=None):
     base, destination = base.resolve(), destination.resolve()
     stage = destination.with_name(destination.name + '-unpacked')
     if destination.exists() or stage.exists():
@@ -38,6 +38,14 @@ def build(base, source_path, destination):
     old_entries = {e['name']: e for e in catalog['laws']}
     check_current_texts(base, catalog, source)
     print('Verified all current tax editions and bodies', flush=True)
+    repairs=[]
+    if repair_path:
+        from core.tax_source_repairs import apply_repairs
+        plan=json.loads(repair_path.read_text(encoding='utf-8'))
+        if plan['base_version']!=original['version'] or plan['source_sha256']!=hashlib.sha256(source_raw).hexdigest():
+            raise ValueError('Repair plan is for a different immutable snapshot')
+        source,repairs=apply_repairs(source,plan)
+        print('Applied reviewed same-edition source corrections', flush=True)
 
     # Keep the collection date; this run verifies citations in that snapshot.
     source['built_at'] = catalog['built_at']
@@ -147,8 +155,10 @@ def build(base, source_path, destination):
                   preserved_annexes=annex_count, preserved_annex_analyses=count,
                   preserved_annex_citations=len(restored_annex_rows),
                   preserved_historical_baselines=len(baselines),
+                  source_repairs=repairs,
                   untouched_domains=[d['id'] for d in original['domains'] if d['id'] != 'tax'],
-                  source_unchanged=True, current_bodies_unchanged=True,
+                  source_unchanged=True, current_bodies_unchanged=not any(r['kind']=='same-edition-body-correction' for r in repairs),
+                  unreviewed_current_bodies_unchanged=True,
                   history_unchanged=True, cross_domain_unchanged=True)
     destination.with_name(destination.name + '-report.json').write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
@@ -159,5 +169,6 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     for name in ('base-site', 'source', 'destination'):
         p.add_argument('--' + name, type=Path, required=True)
+    p.add_argument('--repairs',type=Path)
     args = p.parse_args()
-    print(json.dumps(build(args.base_site, args.source, args.destination), ensure_ascii=False, indent=2))
+    print(json.dumps(build(args.base_site, args.source, args.destination,args.repairs), ensure_ascii=False, indent=2))

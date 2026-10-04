@@ -59,6 +59,8 @@ uv run streamlit run app.py --server.port 8503
 - [출처·코드·글꼴·이미지 라이선스 확인 상태](docs/sources-and-licenses.md) · [공개자료 점검](docs/public-materials-audit-20261004.md)
 - [웹 보안·오프라인 유지](docs/web-security.md) · [2026-10-04 보강 검증](docs/hardening-verification-20261004.md)
 - [국세 30조의 공식 원문·인용 연결 표본 검증](docs/qa/tax-citation-audit-20261004.md)
+- [추가 24조·역인용·실제 본문 클릭 검증과 보완](docs/qa/tax-validation-phase2-20261004.md)
+- [공개 화면의 출처·이용조건](https://gschamisle.github.io/law-orbit/notices.html)
 
 프로젝트 코드 전체의 라이선스는 아직 명시되지 않았습니다. MaruBuri·Pretendard 등 포함 글꼴의 고지와 법령·이미지의 출처는 위 인벤토리에서 구분해 확인할 수 있습니다.
 

@@ -110,8 +110,14 @@ def parse_body(root, metadata):
                 for mok in ho.findall('목'):
                     mn = re.search(r'[가-하]',mok.findtext('목번호',''))
                     add(mok.findtext('목내용'), ref(jo, hn, hon, mn[0] if mn else ''))
-        articles.append({'jo':jo, 'title':unit.findtext('조문제목',''), 'text':'\n'.join(parts),
-                         'effective':unit.findtext('조문시행일자',''), 'blocks':blocks})
+        article = {'jo':jo, 'title':unit.findtext('조문제목',''), 'text':'\n'.join(parts),
+                   'effective':unit.findtext('조문시행일자',''), 'blocks':blocks}
+        notes = [clean(node.text) for node in unit.findall('조문참고자료') if clean(node.text)]
+        if notes:
+            # Keep partial commencement/history remarks separate from operative
+            # text: they must not become additional citation graph edges.
+            article['reference_notes'] = notes
+        articles.append(article)
     annexes = []
     for a in root.findall('.//별표단위'):
         no = number(a.findtext('별표번호'))

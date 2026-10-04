@@ -1,0 +1,3422 @@
+{
+  "schema": 1,
+  "created": "2026-10-04",
+  "status": "frozen-before-app-comparison",
+  "protocol": "Six targets chosen for consolidated interim payment, tax information secrecy, card deductions, nominal ownership, market value, and housing exceptions. Every discovered candidate paragraph manually resolved from source before reading app rows. Same-family and exact owner-name lexical/range discovery; unmentioned foreign aliases and implicit legal effects are outside scope. AI process with app results withheld, not a separate legal expert review.",
+  "source_sha256": "92c3f54518aec2a150f65f2163678d2f3c37bf7ed49f74cfed56a85877c46c25",
+  "candidate_ledger_sha256": "fa9a335289c8b2214da2b75c3f05c59dcc2f5844e2144238003cda09a8ce239c",
+  "targets": [
+    {
+      "law": "법인세법",
+      "jo": "76의18",
+      "effective": "20260701",
+      "mst": "280349",
+      "counts": {
+        "paragraphs": 7,
+        "own_headings": 1
+      },
+      "annotations": [
+        {
+          "source_law": "법인세법",
+          "source_jo": "76의9",
+          "source_title": "연결납세방식의 취소",
+          "source_effective": "20260701",
+          "source_mst": "280349",
+          "paragraph_start": 1140,
+          "paragraph_end": 1261,
+          "text": "⑤ 제1항에 따라 연결납세방식의 적용 승인이 취소된 경우 제76조의18에 따라 납부한 연결중간예납세액 중 같은 조 제4항의 연결법인별 중간예납세액은 제64조제1항을 적용할 때에 같은 항 제2호의 중간예납세액으로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "cce4cb1fcc40e13d928b1cc41eac0260ee0161140b2189ea8fc31c2098173e50",
+          "candidate_index": 0,
+          "expected": [
+            {
+              "quote": "제76조의18",
+              "start": 1172,
+              "end": 1179,
+              "target_refs": [
+                "제76조의18"
+              ]
+            },
+            {
+              "quote": "같은 조 제4항",
+              "start": 1199,
+              "end": 1207,
+              "target_refs": [
+                "제76조의18제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법",
+          "source_jo": "76의19",
+          "source_title": "연결법인세액의 납부 및 정산",
+          "source_effective": "20260701",
+          "source_mst": "280349",
+          "paragraph_start": 166,
+          "paragraph_end": 200,
+          "text": "2. 제76조의18에 따른 해당 연결사업연도의 연결중간예납세액",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "44e3cb609b96e658574adaedbc2cdbf8f104d978460b3c54947752168d7aa18c",
+          "candidate_index": 2,
+          "expected": [
+            {
+              "quote": "제76조의18",
+              "start": 169,
+              "end": 176,
+              "target_refs": [
+                "제76조의18"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "120의25",
+          "source_title": "연결중간예납",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 17,
+          "paragraph_end": 180,
+          "text": "① 법 제76조의18제4항에 따른 연결법인별 중간예납세액은 직전 연결사업연도에 확정된 연결법인별 산출세액(가산세를 포함하며, 법 제55조의2의 토지등양도소득에 대한 법인세는 제외한다)에서 다음 각 호의 금액을 뺀 금액을 직전 사업연도의 개월수로 나눈 금액에 6을 곱하여 계산한 금액으로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "ed7ed9345d185e72f967300862d5b79e3a86b6fa3602408c073b9ece350cc56d",
+          "candidate_index": 3,
+          "expected": [
+            {
+              "quote": "법 제76조의18제4항",
+              "start": 19,
+              "end": 31,
+              "target_refs": [
+                "제76조의18제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "120의25",
+          "source_title": "연결중간예납",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 253,
+          "paragraph_end": 398,
+          "text": "② 연결모법인이 법 제76조의18제1항제2호에 따라 연결중간예납세액을 계산하는 경우 연결법인별 중간예납세액은 제1항에도 불구하고 해당 중간예납기간을 1사업연도로 보아 제120조의22에 따라 계산한 연결법인별 산출세액에서 다음 각 호의 금액을 뺀 금액으로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "ed7ed9345d185e72f967300862d5b79e3a86b6fa3602408c073b9ece350cc56d",
+          "candidate_index": 4,
+          "expected": [
+            {
+              "quote": "법 제76조의18제1항제2호",
+              "start": 262,
+              "end": 277,
+              "target_refs": [
+                "제76조의18제1항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "120의25",
+          "source_title": "연결중간예납",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 471,
+          "paragraph_end": 575,
+          "text": "③ 법 제76조의18제1항 각 호 외의 부분 단서에서 \"업종별 매출액 등을 고려하여 대통령령으로 정하는 법인\"이란 「조세특례제한법 시행령」 제2조제1항제1호의 요건을 갖춘 기업을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "ed7ed9345d185e72f967300862d5b79e3a86b6fa3602408c073b9ece350cc56d",
+          "candidate_index": 5,
+          "expected": [
+            {
+              "quote": "법 제76조의18제1항",
+              "start": 473,
+              "end": 485,
+              "target_refs": [
+                "제76조의18제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법",
+          "source_jo": "26",
+          "source_title": "고용창출투자세액공제",
+          "source_effective": "20260918",
+          "source_mst": "284389",
+          "paragraph_start": 1442,
+          "paragraph_end": 1740,
+          "text": "② 내국법인이 「법인세법」 제63조 및 제63조의2에 따른 중간예납[같은 법 제63조의2제1항제2호의 방법으로 중간예납(中間豫納)하는 경우는 제외한다] 또는 같은 법 제76조의18에 따른 연결중간예납(같은 법 제76조의18제1항제2호의 방법으로 중간예납하는 경우는 제외한다)을 할 때 그 중간예납기간에 제1항이 적용되는 투자를 한 경우에는 그 중간예납세액에서 제1항을 준용하여 계산한 중간예납기간의 투자분에 해당하는 세액공제액을 뺀 금액을 중간예납세액으로 하여 납부할 수 있다. 이 경우 \"해당 과세연도\"는 \"중간예납기간\"으로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b685cdbbceed18d2050199d972ff65d4fe20ab2a98f2aefc9d42390a7d3091b4",
+          "candidate_index": 6,
+          "expected": [
+            {
+              "quote": "같은 법 제76조의18",
+              "start": 1530,
+              "end": 1542,
+              "target_refs": [
+                "제76조의18"
+              ]
+            },
+            {
+              "quote": "같은 법 제76조의18제1항제2호",
+              "start": 1554,
+              "end": 1572,
+              "target_refs": [
+                "제76조의18제1항제2호"
+              ]
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "source_law": "법인세법",
+          "source_jo": "76의18",
+          "source_title": "연결중간예납",
+          "source_effective": "20260701",
+          "source_mst": "280349",
+          "paragraph_start": 0,
+          "paragraph_end": 15,
+          "text": "제76조의18(연결중간예납)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": true,
+          "source_article_sha256": "58c4499d1032d5dde8e92d008b167547719d24a5d8b9967605a2aa9c361e3d09",
+          "candidate_index": 1,
+          "reason": "own article heading"
+        }
+      ]
+    },
+    {
+      "law": "국세기본법",
+      "jo": "81의13",
+      "effective": "20260811",
+      "mst": "288571",
+      "counts": {
+        "paragraphs": 17,
+        "own_headings": 1
+      },
+      "annotations": [
+        {
+          "source_law": "국세기본법",
+          "source_jo": "81의2",
+          "source_title": "납세자권리헌장의 제정 및 교부",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 25,
+          "paragraph_end": 131,
+          "text": "① 국세청장은 제81조의3부터 제81조의16까지, 제81조의18 및 제81조의19에 규정된 사항과 그 밖에 납세자의 권리보호에 관한 사항을 포함하는 납세자권리헌장을 제정하여 고시하여야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "7d5186867d6eab5b37920534acff590a534b1d3358ac69a79945accc99d2dce7",
+          "candidate_index": 1,
+          "expected": [
+            {
+              "quote": "제81조의3부터 제81조의16까지",
+              "start": 33,
+              "end": 51,
+              "target_refs": [
+                "제81조의13"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세기본법",
+          "source_jo": "85의5",
+          "source_title": "불성실기부금수령단체 등의 명단 공개",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 28,
+          "paragraph_end": 188,
+          "text": "① 국세청장은 제81조의13과 「국제조세조정에 관한 법률」 제57조에도 불구하고 다음 각 호의 어느 하나에 해당하는 자의 인적사항 등을 공개할 수 있다. 다만, 체납된 국세가 이의신청ㆍ심사청구 등 불복청구 중에 있거나 그 밖에 대통령령으로 정하는 사유가 있는 경우에는 그러하지 아니하다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "513aae8bcda4453303a45862aca17b2719a4a0eb0286c7f293f5dd55cba40c9e",
+          "candidate_index": 3,
+          "expected": [
+            {
+              "quote": "제81조의13",
+              "start": 36,
+              "end": 43,
+              "target_refs": [
+                "제81조의13"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세기본법",
+          "source_jo": "85의6",
+          "source_title": "통계자료의 작성 및 공개 등",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 586,
+          "paragraph_end": 752,
+          "text": "⑤ 국세청장은 제81조의13제1항 각 호 외의 부분 본문에도 불구하고 국회 소관 상임위원회가 의결로 국세의 부과ㆍ징수ㆍ감면 등에 관한 자료를 요구하는 경우에는 그 사용목적에 맞는 범위에서 과세정보를 납세자 개인정보를 직접적인 방법 또는 간접적인 방법으로 확인할 수 없도록 가공하여 제공하여야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "a4974ec2ebfa316e07e634bc68548eb0eb25ee2ca071c8e01286e1dadff7fffe",
+          "candidate_index": 4,
+          "expected": [
+            {
+              "quote": "제81조의13제1항",
+              "start": 594,
+              "end": 604,
+              "target_refs": [
+                "제81조의13제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세기본법",
+          "source_jo": "85의6",
+          "source_title": "통계자료의 작성 및 공개 등",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 928,
+          "paragraph_end": 1190,
+          "text": "⑦ 국세청장은 다음 각 호의 어느 하나에 해당하는 자가 조세정책의 평가 및 연구 등에 활용하기 위하여 통계자료 작성에 사용된 기초자료(이하 \"기초자료\"라 한다)를 직접 분석하기를 원하는 경우 제81조의13제1항 각 호 외의 부분 본문에도 불구하고 국세청 내에 설치된 대통령령으로 정하는 시설 내에서 기초자료를 그 사용목적에 맞는 범위에서 제공할 수 있다. 이 경우 기초자료는 개별 납세자의 과세정보를 직접적 또는 간접적 방법으로 확인할 수 없는 상태로 제공하여야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "a4974ec2ebfa316e07e634bc68548eb0eb25ee2ca071c8e01286e1dadff7fffe",
+          "candidate_index": 5,
+          "expected": [
+            {
+              "quote": "제81조의13제1항",
+              "start": 1035,
+              "end": 1045,
+              "target_refs": [
+                "제81조의13제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세기본법",
+          "source_jo": "85의6",
+          "source_title": "통계자료의 작성 및 공개 등",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 1403,
+          "paragraph_end": 1693,
+          "text": "⑧ 국세청장은 조세정책의 평가 및 연구를 목적으로 기초자료를 이용하려는 자가 소득세 관련 기초자료의 일부의 제공을 요구하는 경우에는 제7항 및 제81조의13제1항 각 호 외의 부분 본문에도 불구하고 소득세 관련 기초자료의 일부를 검증된 통계작성기법을 적용하여 표본 형태로 처리한 기초자료(이하 \"표본자료\"라 한다)를 대통령령으로 정하는 방법에 따라 제공할 수 있다. 이 경우 표본자료는 그 사용 목적에 맞는 범위에서 개별 납세자의 과세정보를 직접적 또는 간접적 방법으로 확인할 수 없는 상태로 가공하여 제공하여야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "a4974ec2ebfa316e07e634bc68548eb0eb25ee2ca071c8e01286e1dadff7fffe",
+          "candidate_index": 6,
+          "expected": [
+            {
+              "quote": "제81조의13제1항",
+              "start": 1483,
+              "end": 1493,
+              "target_refs": [
+                "제81조의13제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세기본법",
+          "source_jo": "90",
+          "source_title": "비밀유지 의무 위반에 대한 과태료",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 25,
+          "paragraph_end": 208,
+          "text": "① 국세청장은 제81조의13제1항에 따라 알게 된 과세정보를 타인에게 제공 또는 누설하거나 그 목적 외의 용도로 사용한 자에게 2천만원 이하의 과태료를 부과ㆍ징수한다. 다만, 「형법」 등 다른 법률에 따라 형사처벌을 받은 경우에는 과태료를 부과하지 아니하고, 과태료를 부과한 후 형사처벌을 받은 경우에는 과태료 부과를 취소한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "46ac886eb20d0a79cdd9d62a054b9e9bca771f060da50b35d58cd8ce7e7b2cfc",
+          "candidate_index": 7,
+          "expected": [
+            {
+              "quote": "제81조의13제1항",
+              "start": 33,
+              "end": 43,
+              "target_refs": [
+                "제81조의13제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세기본법 시행규칙",
+          "source_jo": "37의2",
+          "source_title": "과세정보제공요구서",
+          "source_effective": "20260320",
+          "source_mst": "284607",
+          "paragraph_start": 0,
+          "paragraph_end": 207,
+          "text": "제37조의2(과세정보제공요구서) 법 제81조의13제2항에 따라 같은 조 제1항제1호ㆍ제2호 및 제5호부터 제9호까지의 어느 하나에 해당하여 과세정보의 제공을 요구하는 자는 별지 제56호의2서식(1)의 과세정보제공요구서를 해당 세무관서의 장에게 제출해야 한다. 다만, 둘 이상의 납세자의 과세정보의 제공을 요구하는 경우에는 별지 제56호의2서식(2)을 함께 제출해야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "8a682b7ff91eb5e7eb0b9524c16544bff784d839b5a588f71e4763c2b30fa775",
+          "candidate_index": 8,
+          "expected": [
+            {
+              "quote": "법 제81조의13제2항",
+              "start": 18,
+              "end": 30,
+              "target_refs": [
+                "제81조의13제2항"
+              ]
+            },
+            {
+              "quote": "같은 조 제1항제1호ㆍ제2호 및 제5호부터 제9호까지",
+              "start": 35,
+              "end": 64,
+              "target_refs": [
+                "제81조의13제1항제1호",
+                "제81조의13제1항제2호",
+                "제81조의13제1항제5호",
+                "제81조의13제1항제6호",
+                "제81조의13제1항제7호",
+                "제81조의13제1항제8호",
+                "제81조의13제1항제9호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세기본법 시행령",
+          "source_jo": "63의14",
+          "source_title": "과세정보의 안전성 확보조치",
+          "source_effective": "20260701",
+          "source_mst": "283623",
+          "paragraph_start": 24,
+          "paragraph_end": 126,
+          "text": "① 법 제81조의13제1항 단서에 따라 과세정보를 제공받은 자(이하 이 조에서 \"과세정보를 제공받은 자\"라 한다)는 과세정보의 안전성을 확보하기 위해 다음 각 호의 조치를 해야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "308594828b3c19184eea1ebc6b95cb9160e14ced587ac30c8c62cf5e39c67ac0",
+          "candidate_index": 9,
+          "expected": [
+            {
+              "quote": "법 제81조의13제1항",
+              "start": 26,
+              "end": 38,
+              "target_refs": [
+                "제81조의13제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국세징수법",
+          "source_jo": "114",
+          "source_title": "고액ㆍ상습체납자의 명단 공개",
+          "source_effective": "20260602",
+          "source_mst": "286427",
+          "paragraph_start": 23,
+          "paragraph_end": 180,
+          "text": "① 국세청장은 「국세기본법」제81조의13에도 불구하고 체납 발생일부터 1년이 지난 국세의 합계액이 2억원 이상인 경우 체납자의 인적사항 및 체납액 등을 공개할 수 있다. 다만, 체납된 국세와 관련하여 심판청구등이 계속 중이거나 그 밖에 대통령령으로 정하는 경우에는 공개할 수 없다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "333eb745079f31e1fba58213024ed19cc0d94fd98518db48e2231f85732d33d3",
+          "candidate_index": 10,
+          "expected": [
+            {
+              "quote": "「국세기본법」제81조의13",
+              "start": 31,
+              "end": 45,
+              "target_refs": [
+                "제81조의13"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "국제조세조정에 관한 법률",
+          "source_jo": "57",
+          "source_title": "해외금융계좌정보의 비밀유지",
+          "source_effective": "20260102",
+          "source_mst": "280389",
+          "paragraph_start": 21,
+          "paragraph_end": 161,
+          "text": "① 세무공무원은 해외금융계좌정보를 타인에게 제공 또는 누설하거나 목적 외의 용도로 사용해서는 아니 된다. 다만, 「국세기본법」 제81조의13제1항 각 호의 어느 하나에 해당하는 경우에는 그 사용 목적에 맞는 범위에서 해외금융계좌정보를 제공할 수 있다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "d2cc49bc95198f641578d7df9f29d6cc2e523ba2757e3f873ab78b7318d20f8d",
+          "candidate_index": 11,
+          "expected": [
+            {
+              "quote": "「국세기본법」 제81조의13제1항",
+              "start": 84,
+              "end": 102,
+              "target_refs": [
+                "제81조의13제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "벤처기업육성에 관한 특별법",
+          "source_jo": "3의4",
+          "source_title": "종합관리시스템 구축ㆍ운영",
+          "source_effective": "20260701",
+          "source_mst": "284081",
+          "paragraph_start": 256,
+          "paragraph_end": 314,
+          "text": "1. 「국세기본법」 제81조의13에 따른 과세정보로서 당사자의 동의를 받은 다음 각 목의 정보: 국세청장",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "15b76529a5c5d885d58fad5cd0c5b8ea6dfa2c9519bd78ec516b2ac0b7d4cdeb",
+          "candidate_index": 12,
+          "expected": [
+            {
+              "quote": "「국세기본법」 제81조의13",
+              "start": 259,
+              "end": 274,
+              "target_refs": [
+                "제81조의13"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "85",
+          "source_title": "납세자별 재산 과세자료의 수집ㆍ관리",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 217,
+          "paragraph_end": 402,
+          "text": "② 국세청장은 제1항에 따라 수집ㆍ관리하고 있는 재산 과세자료를 과세 목적 외의 용도로 사용하거나 타인에게 제공 또는 누설해서는 아니 되며, 누구든지 국세청장에게 제1항에 따른 재산 과세자료의 제공이나 이용을 요구해서는 아니 된다. 다만, 「국세기본법」 제81조의13제1항 각 호의 어느 하나에 해당하는 경우에는 그러하지 아니하다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "29d697edd5e316d752c086052c268a810f565d04e4943933b17e76fdc3442bc3",
+          "candidate_index": 13,
+          "expected": [
+            {
+              "quote": "「국세기본법」 제81조의13제1항",
+              "start": 351,
+              "end": 369,
+              "target_refs": [
+                "제81조의13제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "중소기업기본법",
+          "source_jo": "20의2",
+          "source_title": "중소기업빅데이터플랫폼의 구축ㆍ운영",
+          "source_effective": "20260701",
+          "source_mst": "281989",
+          "paragraph_start": 450,
+          "paragraph_end": 537,
+          "text": "3. 중소기업시책에 참여하는 기업의 지원효과 분석을 위한 「국세기본법」 제81조의13에 따른 과세정보로서 당사자의 동의를 받은 다음 각 목의 정보: 국세청장",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "810e223cc14038645a6877f474b900971340e6d15f5a6990f107165c56876771",
+          "candidate_index": 15,
+          "expected": [
+            {
+              "quote": "「국세기본법」 제81조의13",
+              "start": 482,
+              "end": 497,
+              "target_refs": [
+                "제81조의13"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "중소기업창업 지원법",
+          "source_jo": "62",
+          "source_title": "자료의 요청",
+          "source_effective": "20260701",
+          "source_mst": "281995",
+          "paragraph_start": 782,
+          "paragraph_end": 840,
+          "text": "1. 「국세기본법」 제81조의13에 따른 과세정보로서 당사자의 동의를 받은 다음 각 목의 정보: 국세청장",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "9268d26953979983b0e7eed1980302760dba1acf24a32203bdd6925e8514a2a1",
+          "candidate_index": 16,
+          "expected": [
+            {
+              "quote": "「국세기본법」 제81조의13",
+              "start": 785,
+              "end": 800,
+              "target_refs": [
+                "제81조의13"
+              ]
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "source_law": "국세기본법",
+          "source_jo": "49",
+          "source_title": "가산세 한도",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 151,
+          "paragraph_end": 225,
+          "text": "1. 「소득세법」 제81조, 제81조의3, 제81조의6, 제81조의7, 제81조의10, 제81조의11 및 제81조의13에 따른 가산세",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "17867c86b374854ad78a211781c722e3b09999c49ed79a83960a9c81716f8376",
+          "candidate_index": 0,
+          "reason": "소득세법 제81조의13"
+        },
+        {
+          "source_law": "국세기본법",
+          "source_jo": "81의13",
+          "source_title": "비밀 유지",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 0,
+          "paragraph_end": 14,
+          "text": "제81조의13(비밀 유지)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": true,
+          "source_article_sha256": "977619644094aab952557c3a03c8baf8f484b4e62e9d8759462ec70bfab44367",
+          "candidate_index": 2,
+          "reason": "own article heading"
+        },
+        {
+          "source_law": "소득세법",
+          "source_jo": "15",
+          "source_title": "세액 계산의 순서",
+          "source_effective": "20260701",
+          "source_mst": "280405",
+          "paragraph_start": 529,
+          "paragraph_end": 656,
+          "text": "3. 제2호에 따라 계산한 결정세액에 제81조 및 제81조의2부터 제81조의13까지의 규정과 「국세기본법」 제47조의2부터 제47조의4까지의 규정에 따라 가산세를 더하여 종합소득 총결정세액과 퇴직소득 총결정세액을 각각 계산한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "c81a9e4bfe5835343e60af5fc968328e31c19cb2e2d6d79b17689fbee9a400d5",
+          "candidate_index": 14,
+          "reason": "소득세법 제81조의2~제81조의13"
+        }
+      ]
+    },
+    {
+      "law": "조세특례제한법",
+      "jo": "126의2",
+      "effective": "20260918",
+      "mst": "284389",
+      "counts": {
+        "paragraphs": 33,
+        "own_headings": 1
+      },
+      "annotations": [
+        {
+          "source_law": "농어촌특별세법 시행령",
+          "source_jo": "4",
+          "source_title": "비과세",
+          "source_effective": "20260102",
+          "source_mst": "280835",
+          "paragraph_start": 1941,
+          "paragraph_end": 2269,
+          "text": "1. 「조세특례제한법」 제10조, 제10조의2, 제12조, 제12조의2, 제13조, 제14조, 제16조의2, 제18조, 제18조의2, 제18조의3, 제19조제2항, 제29조의6, 제30조, 제30조의3, 제33조, 제63조, 제63조의2, 제64조, 제76조제1항, 제92조, 제95조의2, 제98조의3, 제98조의5, 제99조의9, 제99조의11, 제104조의8제1항ㆍ제3항, 제104조의21, 제104조의24, 제104조의28, 제104조의31, 제118조의2, 제121조의2부터 제121조의4까지, 제121조의13, 제126조의2, 제126조의6 및 제126조의7제9항에 따른 감면",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b3996f7c2f93ff33697d0bbef571413c051b6024a49c8be444a38f76fce4bff7",
+          "candidate_index": 0,
+          "expected": [
+            {
+              "quote": "제126조의2",
+              "start": 2233,
+              "end": 2240,
+              "target_refs": [
+                "제126조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법",
+          "source_jo": "25",
+          "source_title": "기업업무추진비의 손금불산입",
+          "source_effective": "20260701",
+          "source_mst": "280349",
+          "paragraph_start": 539,
+          "paragraph_end": 592,
+          "text": "나. 「조세특례제한법」 제126조의2제1항제2호에 따른 현금영수증(이하 \"현금영수증\"이라 한다)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "cb24ca3968767c86010f5e41a0a51e3bfb6e7661e31e1e4a44f7b5f02a24c3d6",
+          "candidate_index": 1,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항제2호",
+              "start": 542,
+              "end": 565,
+              "target_refs": [
+                "제126조의2제1항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "41",
+          "source_title": "기업업무추진비의 신용카드등의 사용",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 694,
+          "paragraph_end": 766,
+          "text": "3. 「조세특례제한법」 제126조의2제1항제4호에 따른 기명식선불카드, 직불전자지급수단, 기명식선불전자지급수단 또는 기명식전자화폐",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "66c0bc9c599c6a2d7fb952bdb11ad558eb87c649df2daeebecf2b162cbc1649a",
+          "candidate_index": 2,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항제4호",
+              "start": 697,
+              "end": 720,
+              "target_refs": [
+                "제126조의2제1항제4호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "158",
+          "source_title": "지출증명서류의 수취 및 보관",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 1059,
+          "paragraph_end": 1131,
+          "text": "3. 「조세특례제한법」 제126조의2제1항제4호에 따른 기명식선불카드, 직불전자지급수단, 기명식선불전자지급수단 또는 기명식전자화폐",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b132a1ba3f364fcbb79fede0df79c3bac381b39507626d00b31820340caed4a4",
+          "candidate_index": 3,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항제4호",
+              "start": 1062,
+              "end": 1085,
+              "target_refs": [
+                "제126조의2제1항제4호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "83",
+          "source_title": "기업업무추진비의 범위 등",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 788,
+          "paragraph_end": 860,
+          "text": "3. 「조세특례제한법」 제126조의2제1항제4호에 따른 기명식선불카드, 직불전자지급수단, 기명식선불전자지급수단 또는 기명식전자화폐",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "0e3900541835f7ddda69ec954ff8c2202f75e133879e4346d4b44856a5f6499a",
+          "candidate_index": 4,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항제4호",
+              "start": 791,
+              "end": 814,
+              "target_refs": [
+                "제126조의2제1항제4호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "208의2",
+          "source_title": "경비 등의 지출증명 수취 및 보관",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 852,
+          "paragraph_end": 975,
+          "text": "1. 다음 각 목의 어느 하나에 해당하는 사업자(이하 이 조에서 \"신용카드업자등\"이라 한다)로부터 교부받은 신용카드 월별이용대금명세서 및 「조세특례제한법」 제126조의2제1항제4호에 따른 기명식선불카드의 월별이용대금명세서",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "eec4ed38ded5158e4ab966166a7ff7c11e465e3cc282cdcd71b5e26e2f2c5991",
+          "candidate_index": 8,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항제4호",
+              "start": 929,
+              "end": 952,
+              "target_refs": [
+                "제126조의2제1항제4호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "208의2",
+          "source_title": "경비 등의 지출증명 수취 및 보관",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 1079,
+          "paragraph_end": 1255,
+          "text": "2. 신용카드업자등으로부터 전송받아 전사적자원관리시스템에 보관하고 있는 신용카드, 현금영수증, 직불카드 및 「조세특례제한법」 제126조의2제1항제4호에 따른 기명식선불카드, 직불전자지급수단, 기명식선불전자지급수단, 기명식 전자화폐의 거래정보(「국세기본법 시행령」 제65조의7 각호의 요건을 충족하는 경우만 해당한다)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "eec4ed38ded5158e4ab966166a7ff7c11e465e3cc282cdcd71b5e26e2f2c5991",
+          "candidate_index": 9,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항제4호",
+              "start": 1139,
+              "end": 1162,
+              "target_refs": [
+                "제126조의2제1항제4호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "208의4",
+          "source_title": "금융회사 등의 증명서 발급내역의 작성ㆍ보관의무",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 250,
+          "paragraph_end": 346,
+          "text": "다. 소득공제대상이 되는 「조세특례제한법」 제126조의2제1항에 따른 신용카드, 직불카드, 기명식선불카드, 직불전자지급수단, 기명식선불전자지급수단, 기명식전자화폐의 이용금액",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "4e1e548abf2640b53dbf433d3ac2454b28c9d69f00250b86cc2af6ed87bbd398",
+          "candidate_index": 10,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항",
+              "start": 264,
+              "end": 284,
+              "target_refs": [
+                "제126조의2제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "208의5",
+          "source_title": "사업용계좌의 신고 등",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 574,
+          "paragraph_end": 677,
+          "text": "4. 「조세특례제한법」 제126조의2제1항에 따른 신용카드, 직불카드, 기명식선불카드, 직불전자지급수단, 기명식선불전자지급수단, 기명식전자화폐를 통하여 이루어진 거래대금의 지급 및 수취",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b89c46c01e59e36d735abbfc19f2c782dd1af5d40d4cfbdf76e59d810014e162",
+          "candidate_index": 11,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2제1항",
+              "start": 577,
+              "end": 597,
+              "target_refs": [
+                "제126조의2제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "216의3",
+          "source_title": "소득공제 및 세액공제 증명서류의 제출 및 행정지도",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 1057,
+          "paragraph_end": 1096,
+          "text": "8. 「조세특례제한법」 제126조의2의 규정에 따른 신용카드등 사용금액",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "4e1d8f448d171ac3942a2fbfe2249f4214b73cd5029a7ac310334800e2c7c750",
+          "candidate_index": 12,
+          "expected": [
+            {
+              "quote": "「조세특례제한법」 제126조의2",
+              "start": 1060,
+              "end": 1077,
+              "target_refs": [
+                "제126조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법",
+          "source_jo": "7의4",
+          "source_title": "상생결제 지급금액에 대한 세액공제",
+          "source_effective": "20260918",
+          "source_mst": "284389",
+          "paragraph_start": 26,
+          "paragraph_end": 523,
+          "text": "① 중소기업 및 대통령령으로 정하는 중견기업(이하 제10조를 제외하고 \"중견기업\"이라 한다)을 경영하는 내국인이 2028년 12월 31일까지 중소기업 및 중견기업에 지급한 구매대금(제7조의2제3항제1호에 따른 구매대금을 말한다. 이하 이 조에서 같다) 중 대통령령으로 정하는 상생결제제도(이하 이 조에서 \"상생결제제도\"라 한다)를 통하여 지급한 금액이 있는 경우로서 해당 과세연도에 지급한 구매대금 중 약속어음으로 결제한 금액이 차지하는 비율이 직전 과세연도보다 증가하지 아니하는 경우에는 제2항에 따라 계산한 금액을 소득세[사업소득(「소득세법」 제45조제2항에 따른 부동산임대업에서 발생하는 소득은 포함하지 아니한다. 제122조의3, 제126조의2, 제126조의6 및 제132조를 제외하고 이하에서 같다)에 대한 소득세만 해당한다] 또는 법인세에서 공제한다. 다만, 공제받는 금액이 해당 과세연도의 소득세 또는 법인세의 100분의 10을 초과하는 경우에는 100분의 10을 한도로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "51e13b3c89f40bc99e145e192d5113156130aa4355cd6cc565f44f06d3e9e1e2",
+          "candidate_index": 13,
+          "expected": [
+            {
+              "quote": "제126조의2",
+              "start": 382,
+              "end": 389,
+              "target_refs": [
+                "제126조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법",
+          "source_jo": "132의2",
+          "source_title": "소득세 소득공제 등의 종합한도",
+          "source_effective": "20260918",
+          "source_mst": "284389",
+          "paragraph_start": 484,
+          "paragraph_end": 519,
+          "text": "9. 제126조의2에 따른 신용카드 등 사용금액에 대한 소득공제",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "ebafc3953cd6a84270e025d74d6beaf63511dcc56898c9e6d3d465ca35ca3cfd",
+          "candidate_index": 15,
+          "expected": [
+            {
+              "quote": "제126조의2",
+              "start": 487,
+              "end": 494,
+              "target_refs": [
+                "제126조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법",
+          "source_jo": "136",
+          "source_title": "기업업무추진비의 손금불산입 특례",
+          "source_effective": "20260918",
+          "source_mst": "284389",
+          "paragraph_start": 2076,
+          "paragraph_end": 2176,
+          "text": "1. 제126조의2제1항에 따른 신용카드등사용금액에 해당할 것. 다만, 지역사랑상품권으로 지출한 경우에는 대통령령으로 정하는 지역사랑상품권 지출 증명자료에 기재된 금액을 포함한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "da584dfaf27eaf4e63916de3ad8533b9b099e9bd922d479b451828b3b76f6829",
+          "candidate_index": 16,
+          "expected": [
+            {
+              "quote": "제126조의2제1항",
+              "start": 2079,
+              "end": 2089,
+              "target_refs": [
+                "제126조의2제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행규칙",
+          "source_jo": "52의3",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "289267",
+          "paragraph_start": 283,
+          "paragraph_end": 435,
+          "text": "③ 영 제121조의2제17항 단서에서 \"재정경제부령으로 정하는 금액\"이란 법 제126조의2제2항제3호다목 전단에 따라 지급한 금액으로서 영 제121조의2제17항 본문에 따른 체육시설이용분과 체육시설이용외비용이 분리되지 않는 금액의 100분의 50에 해당하는 금액을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "e7a630df27cb066ae726fbda620ff5e52499f3bfbfbaa158e812c9b73b439e1b",
+          "candidate_index": 17,
+          "expected": [
+            {
+              "quote": "법 제126조의2제2항제3호다목",
+              "start": 324,
+              "end": 341,
+              "target_refs": [
+                "제126조의2제2항제3호다목"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 29,
+          "paragraph_end": 109,
+          "text": "①법 제126조의2제1항제4호에서 \"대통령령으로 정하는 바에 따라 실지명의가 확인되는 것\"이란 다음 각 호의 어느 하나에 해당하는 것을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 18,
+          "expected": [
+            {
+              "quote": "법 제126조의2제1항제4호",
+              "start": 30,
+              "end": 45,
+              "target_refs": [
+                "제126조의2제1항제4호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 403,
+          "paragraph_end": 470,
+          "text": "② 법 제126조의2제2항제1호에서 \"대통령령으로 정하는 법인 또는 사업자\"란 다음 각 호의 법인 또는 사업자를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 19,
+          "expected": [
+            {
+              "quote": "법 제126조의2제2항제1호",
+              "start": 405,
+              "end": 420,
+              "target_refs": [
+                "제126조의2제2항제1호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 606,
+          "paragraph_end": 908,
+          "text": "③법 제126조의2제3항에서 \"대통령령으로 정하는 자\"란 다음 각 호의 어느 하나에 해당하는 자를 말한다. 이 경우 제2호에 규정된 생계를 같이 하는 직계존비속은 주민등록표상의 동거가족으로서 해당 거주자의 주소 또는 거소에서 현실적으로 생계를 같이 하는 자(직계비속의 경우는 그러하지 아니하며, 「소득세법」 제53조제2항 및 제3항에 해당하는 경우에는 생계를 같이 하는 자로 본다)로 하며, 생계를 같이 하는지 여부의 판정은 해당 연도의 과세기간 종료일(과세기간 종료일전에 사망한 자인 경우에는 사망일 전일을 말한다) 현재의 상황에 의한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 20,
+          "expected": [
+            {
+              "quote": "법 제126조의2제3항",
+              "start": 607,
+              "end": 619,
+              "target_refs": [
+                "제126조의2제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 1171,
+          "paragraph_end": 1300,
+          "text": "④법 제126조의2제4항제2호에서 \"대통령령으로 정하는 신용카드, 직불카드, 직불전자지급수단, 기명식선불카드, 기명식선불전자지급수단, 기명식전자화폐 또는 현금영수증의 비정상적인 사용행위\"란 다음 각호의 1에 해당하는 행위를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 21,
+          "expected": [
+            {
+              "quote": "법 제126조의2제4항제2호",
+              "start": 1172,
+              "end": 1187,
+              "target_refs": [
+                "제126조의2제4항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 1578,
+          "paragraph_end": 1816,
+          "text": "⑤법 제126조의2제5항에서 \"대통령령으로 정하는 사유\"란 원천징수의무자가 제8항의 규정에 의한 근로자소득공제신고서 및 신용카드소득공제신청서에 기재된 법 제126조의2제1항에 따른 신용카드등사용금액(이하 이 조에서 \"신용카드등사용금액\"이라 한다)에 대한 소득공제금액에 제6항 각 호에 해당하는 금액 또는 법 제126조의2제4항 각호에 해당하는 금액이 포함되어 있음을 근로소득세액의 연말정산시까지 확인할 수 없는 경우를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 22,
+          "expected": [
+            {
+              "quote": "법 제126조의2제5항",
+              "start": 1579,
+              "end": 1591,
+              "target_refs": [
+                "제126조의2제5항"
+              ]
+            },
+            {
+              "quote": "법 제126조의2제1항",
+              "start": 1662,
+              "end": 1674,
+              "target_refs": [
+                "제126조의2제1항"
+              ]
+            },
+            {
+              "quote": "법 제126조의2제4항",
+              "start": 1748,
+              "end": 1760,
+              "target_refs": [
+                "제126조의2제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 1817,
+          "paragraph_end": 1918,
+          "text": "⑥법 제126조의2를 적용할 때 신용카드등사용금액은 국세청장이 정하는 기간의 신용카드등사용금액을 합계하되, 다음 각 호의 어느 하나에 해당하는 금액은 포함하지 아니하는 것으로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 23,
+          "expected": [
+            {
+              "quote": "법 제126조의2",
+              "start": 1818,
+              "end": 1827,
+              "target_refs": [
+                "제126조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 2462,
+          "paragraph_end": 2648,
+          "text": "8. 「부가가치세법 시행령」 제46조제1호 및 제3호에 해당하는 업종 외의 업무를 수행하는 국가ㆍ지방자치단체 또는 지방자치단체조합(「의료법」에 따른 의료기관, 「지역보건법」에 따른 보건소 및 법 제126조의2제2항제3호가목 및 나목에 따른 문화체육관광부장관이 지정하는 법인 또는 사업자는 제외한다)에 지급하는 사용료ㆍ수수료 등의 대가",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 24,
+          "expected": [
+            {
+              "quote": "법 제126조의2제2항제3호가목 및 나목",
+              "start": 2569,
+              "end": 2591,
+              "target_refs": [
+                "제126조의2제2항제3호가목",
+                "제126조의2제2항제3호나목"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 3537,
+          "paragraph_end": 3885,
+          "text": "⑧신용카드등사용금액에 대한 소득공제를 적용받고자 하는 자는 소득공제금액을 「소득세법」 제140조제1항의 규정에 의한 근로소득자소득공제신고서에 기재하고, 근로소득자소득공제신고서를 원천징수의무자에게 제출하는 때에 재정경제부령으로 정하는 신용카등등소득공제신청서와 신용카드등사용금액확인서를 함께 제출하여야 한다. 다만, 신용카드등사용금액확인서에 법 제126조의2제2항제1호부터 제3호까지의 규정에 따른 전통시장사용분, 대중교통이용분, 문화체육사용분이 누락된 경우 영수증, 승차권, 입장권 등 전통시장사용분, 대중교통이용분, 문화체육사용분임을 증명할 수 있는 자료를 제출함으로써 신용카드등사용금액에 대한 소득공제를 신청할 수 있다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 25,
+          "expected": [
+            {
+              "quote": "법 제126조의2제2항제1호부터 제3호까지",
+              "start": 3726,
+              "end": 3749,
+              "target_refs": [
+                "제126조의2제2항제1호",
+                "제126조의2제2항제2호",
+                "제126조의2제2항제3호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 3886,
+          "paragraph_end": 4107,
+          "text": "⑨ 제8항을 적용할 때 재정경제부령으로 정하는 매출액 기준 이하의 사업자(도서 또는 신문을 취급하는 사업자의 경우 해당 매출액이 전체 매출액의 100분의 90 이상인 경우에 한정한다)로부터 발급받은 영수증 등에 대해서는 문화체육사용분(법 제126조의2제2항제3호다목의 금액은 제외한다. 이하 이 항에서 같다)과 그 밖의 사용분이 명확하게 구분되지 않는 경우에도 그 전체를 문화체육사용분으로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 26,
+          "expected": [
+            {
+              "quote": "법 제126조의2제2항제3호다목",
+              "start": 4017,
+              "end": 4034,
+              "target_refs": [
+                "제126조의2제2항제3호다목"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 4812,
+          "paragraph_end": 4892,
+          "text": "⑭ 법 제126조의2제4항 각 호 외의 부분 단서에서 \"대통령령으로 정하는 중고자동차\"란 「자동차관리법」에 따른 자동차 중 중고자동차를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 27,
+          "expected": [
+            {
+              "quote": "법 제126조의2제4항",
+              "start": 4814,
+              "end": 4826,
+              "target_refs": [
+                "제126조의2제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 4893,
+          "paragraph_end": 4967,
+          "text": "⑮ 법 제126조의2제4항 각 호 외의 부분 단서에서 \"대통령령으로 정하는 금액\"이란 중고자동차 구입금액의 100분의 10을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 28,
+          "expected": [
+            {
+              "quote": "법 제126조의2제4항",
+              "start": 4895,
+              "end": 4907,
+              "target_refs": [
+                "제126조의2제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 4968,
+          "paragraph_end": 5059,
+          "text": "법 제126조의2제2항제3호다목 전단에서 \"대통령령으로 정하는 체육시설\"이란 「체육시설의 설치ㆍ이용에 관한 법률 시행령」 별표 1의 수영장 및 체력단련장을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 29,
+          "expected": [
+            {
+              "quote": "법 제126조의2제2항제3호다목",
+              "start": 4968,
+              "end": 4985,
+              "target_refs": [
+                "제126조의2제2항제3호다목"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 5060,
+          "paragraph_end": 5306,
+          "text": "체육활동을 위한 개인강습비 및 「체육시설의 설치ㆍ이용에 관한 법률」 제17조에 따라 모집한 회원의 입회금액 등 체육시설의 이용과 직접 관련이 없는 비용(이하 이 항에서 \"체육시설이용외비용\"이라 한다)은 법 제126조의2제2항제3호다목에 따른 체육시설이용분(이하 이 항에서 \"체육시설이용분\"이라 한다)에 포함되지 않는다. 다만, 체육시설이용분과 체육시설이용외비용이 분리되지 않는 경우에는 재정경제부령으로 정하는 금액을 체육시설이용분으로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 30,
+          "expected": [
+            {
+              "quote": "법 제126조의2제2항제3호다목",
+              "start": 5173,
+              "end": 5190,
+              "target_refs": [
+                "제126조의2제2항제3호다목"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의2",
+          "source_title": "신용카드등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 5307,
+          "paragraph_end": 5485,
+          "text": "법 제126조의2제10항 각 호 외의 부분 단서에서 \"자녀, 손자녀 등 대통령령으로 정하는 부양가족\"이란 거주자의 직계비속(「소득세법 시행령」 제106조제6항제2호에 따른 사람, 같은 조 제7항에 따른 동거 입양자 및 같은 조 제9항에 따른 위탁아동을 포함한다)으로서 다음 각 호의 요건을 모두 충족하는 사람을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "6b9ceb851bdfaa919b173e5cb18b03c787785293b83978eed8c187b0aa83071a",
+          "candidate_index": 31,
+          "expected": [
+            {
+              "quote": "법 제126조의2제10항",
+              "start": 5307,
+              "end": 5320,
+              "target_refs": [
+                "제126조의2제10항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "121의5",
+          "source_title": "현금거래의 확인 등",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 20,
+          "paragraph_end": 118,
+          "text": "① 법 제126조의5제1항 전단에서 \"대통령령으로 정하는 사업자\"란 법 제126조의2에 따라 사용금액에 대하여 소득공제를 받을 수 있는 재화나 용역을 제공하는 사업자를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "eb0617c4d4da09f17a593d427a7a2bc609ed2b45923e263804903a4fed67f7e9",
+          "candidate_index": 32,
+          "expected": [
+            {
+              "quote": "법 제126조의2",
+              "start": 58,
+              "end": 67,
+              "target_refs": [
+                "제126조의2"
+              ]
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "183의4",
+          "source_title": "비거주자의 유가증권양도소득에 대한 신고ㆍ납부 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 37,
+          "paragraph_end": 186,
+          "text": "①비거주자는 법 제126조의2의 규정에 의하여 양도당시 조세조약에서 정한 과세기준을 충족하지 아니하여 주식 또는 출자지분의 양도소득중 원천징수되지 아니한 소득의 원천징수세액상당액을 당해 유가증권을 발행한 내국법인의 소재지를 관할하는 세무서장에게 신고ㆍ납부하여야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "db3258d6fa623da20adc42e8424314ce91f2ab62279da91c344135863639af6b",
+          "candidate_index": 5,
+          "reason": "소득세법 제126조의2"
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "183의4",
+          "source_title": "비거주자의 유가증권양도소득에 대한 신고ㆍ납부 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 357,
+          "paragraph_end": 430,
+          "text": "③ 법 제126조의2제3항 본문에서 \"대통령령으로 정하는 주식ㆍ출자지분이나 그 밖의 유가증권\"이란 다음 각 호의 유가증권을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "db3258d6fa623da20adc42e8424314ce91f2ab62279da91c344135863639af6b",
+          "candidate_index": 6,
+          "reason": "소득세법 제126조의2"
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "183의4",
+          "source_title": "비거주자의 유가증권양도소득에 대한 신고ㆍ납부 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 532,
+          "paragraph_end": 653,
+          "text": "④ 법 제126조의2제3항에 따라 신고ㆍ납부하려는 비거주자는 해당 주식등 유가증권을 발행한 내국법인의 소재지를 관할하는 세무서장에게 재정경제부령으로 정하는 비거주자유가증권양도소득신고서를 작성하여 신고ㆍ납부하여야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "db3258d6fa623da20adc42e8424314ce91f2ab62279da91c344135863639af6b",
+          "candidate_index": 7,
+          "reason": "소득세법 제126조의2"
+        },
+        {
+          "source_law": "조세특례제한법",
+          "source_jo": "126의2",
+          "source_title": "신용카드 등 사용금액에 대한 소득공제",
+          "source_effective": "20260918",
+          "source_mst": "284389",
+          "paragraph_start": 0,
+          "paragraph_end": 29,
+          "text": "제126조의2(신용카드 등 사용금액에 대한 소득공제)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": true,
+          "source_article_sha256": "ce85e6b573ddcb97471c101bdaee16377d6da18b5ef97cbf152472d4d7000344",
+          "candidate_index": 14,
+          "reason": "own article heading"
+        }
+      ]
+    },
+    {
+      "law": "상속세 및 증여세법",
+      "jo": "45의2",
+      "effective": "20260102",
+      "mst": "276123",
+      "counts": {
+        "paragraphs": 18,
+        "own_headings": 1
+      },
+      "annotations": [
+        {
+          "source_law": "국세기본법",
+          "source_jo": "26의2",
+          "source_title": "국세의 부과제척기간",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 2171,
+          "paragraph_end": 2219,
+          "text": "7. 「상속세 및 증여세법」 제45조의2에 따른 명의신탁재산의 증여의제에 해당하는 경우",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "a3f7e214a8820c39f7e44afb4c39dcf547db2eabddc84ef2659f8a07aa8bca30",
+          "candidate_index": 0,
+          "expected": [
+            {
+              "quote": "「상속세 및 증여세법」 제45조의2",
+              "start": 2174,
+              "end": 2193,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "4",
+          "source_title": "증여세 과세대상",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 547,
+          "paragraph_end": 632,
+          "text": "② 제45조의2부터 제45조의5까지의 규정에 해당하는 경우에는 그 재산 또는 이익을 증여받은 것으로 보아 그 재산 또는 이익에 대하여 증여세를 부과한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "0d8d98484172428057d9e0f3638900a322e57630085045315479cf236b1c70c1",
+          "candidate_index": 2,
+          "expected": [
+            {
+              "quote": "제45조의2부터 제45조의5까지",
+              "start": 549,
+              "end": 566,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "4의2",
+          "source_title": "증여세 납부의무",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 281,
+          "paragraph_end": 380,
+          "text": "② 제1항에도 불구하고 제45조의2에 따라 재산을 증여한 것으로 보는 경우(명의자가 영리법인인 경우를 포함한다)에는 실제소유자가 해당 재산에 대하여 증여세를 납부할 의무가 있다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "526c28a8e7e74c586dffe122a83ff4d881f5dccaa5ad6b30b73620a836fc6377",
+          "candidate_index": 3,
+          "expected": [
+            {
+              "quote": "제45조의2",
+              "start": 294,
+              "end": 300,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "4의2",
+          "source_title": "증여세 납부의무",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 1404,
+          "paragraph_end": 1596,
+          "text": "⑨ 실제소유자가 제45조의2에 따른 증여세ㆍ가산금 또는 강제징수비를 체납한 경우에 그 실제소유자의 다른 재산에 대하여 강제징수를 하여도 징수할 금액에 미치지 못하는 경우에는 「국세징수법」에서 정하는 바에 따라 제45조의2에 따라 명의자에게 증여한 것으로 보는 재산으로써 납세의무자인 실제소유자의 증여세ㆍ가산금 또는 강제징수비를 징수할 수 있다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "526c28a8e7e74c586dffe122a83ff4d881f5dccaa5ad6b30b73620a836fc6377",
+          "candidate_index": 4,
+          "expected": [
+            {
+              "quote": "제45조의2",
+              "start": 1413,
+              "end": 1419,
+              "target_refs": [
+                "제45조의2"
+              ]
+            },
+            {
+              "quote": "제45조의2",
+              "start": 1521,
+              "end": 1527,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "6",
+          "source_title": "과세 관할",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 451,
+          "paragraph_end": 482,
+          "text": "3. 제45조의2에 따라 재산을 증여한 것으로 보는 경우",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "8456a41fc332be799e3de6d2464a2b431c55f48dd6d085982221270b49563e41",
+          "candidate_index": 5,
+          "expected": [
+            {
+              "quote": "제45조의2",
+              "start": 454,
+              "end": 460,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "32",
+          "source_title": "증여재산의 취득시기",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 0,
+          "paragraph_end": 188,
+          "text": "제32조(증여재산의 취득시기) 증여재산의 취득시기는 제33조부터 제39조까지, 제39조의2, 제39조의3, 제40조, 제41조의2부터 제41조의5까지, 제42조, 제42조의2, 제44조, 제45조 및 제45조의2부터 제45조의5까지가 적용되는 경우를 제외하고는 재산을 인도한 날 또는 사실상 사용한 날 등 대통령령으로 정하는 날로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "4a34d009597a6ad0ffe81f94b002d230c438c0be2fb7e4280e7e0862ded5c73d",
+          "candidate_index": 6,
+          "expected": [
+            {
+              "quote": "제45조의2부터 제45조의5까지",
+              "start": 112,
+              "end": 129,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "47",
+          "source_title": "증여세 과세가액",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 15,
+          "paragraph_end": 257,
+          "text": "① 증여세 과세가액은 증여일 현재 이 법에 따른 증여재산가액을 합친 금액[제31조제1항제3호, 제40조제1항제2호ㆍ제3호, 제41조의3, 제41조의5, 제42조의3, 제45조 및 제45조의2부터 제45조의4까지의 규정에 따른 증여재산(이하 \"합산배제증여재산\"이라 한다)의 가액은 제외한다]에서 그 증여재산에 담보된 채무(그 증여재산에 관련된 채무 등 대통령령으로 정하는 채무를 포함한다)로서 수증자가 인수한 금액을 뺀 금액으로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "7d779d14fb2c003929f370fd5ce8354f3959cd1fe23c77d2ab782e9fabed1dc4",
+          "candidate_index": 8,
+          "expected": [
+            {
+              "quote": "제45조의2부터 제45조의4까지",
+              "start": 115,
+              "end": 132,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "55",
+          "source_title": "증여세의 과세표준 및 과세최저한",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 100,
+          "paragraph_end": 141,
+          "text": "1. 제45조의2에 따른 명의신탁재산의 증여 의제: 그 명의신탁재산의 금액",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "cbdf55846c39db4e4365728f427d8de44bac2c202d368776e14bf2f303fd484c",
+          "candidate_index": 9,
+          "expected": [
+            {
+              "quote": "제45조의2",
+              "start": 103,
+              "end": 109,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "34의2",
+          "source_title": "명의신탁재산의 증여의제",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 0,
+          "paragraph_end": 119,
+          "text": "제34조의2(명의신탁재산의 증여의제) 법 제45조의2제4항 후단에서 \"증여세 또는 양도소득세 등의 과세표준신고서에 기재된 소유권 이전일 등 대통령령으로 정하는 날\"이란 다음 각 호의 순서에 따라 정한 날을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b8088c7f598e3110b94466adaab864f2ac2a418310879bb8e8389ff78b7a6bab",
+          "candidate_index": 14,
+          "expected": [
+            {
+              "quote": "법 제45조의2제4항",
+              "start": 21,
+              "end": 32,
+              "target_refs": [
+                "제45조의2제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "34의2",
+          "source_title": "명의신탁재산의 증여의제",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 159,
+          "paragraph_end": 197,
+          "text": "2. 법 제45조의2제4항 전단의 주식등변동상황명세서에 기재된 거래일",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b8088c7f598e3110b94466adaab864f2ac2a418310879bb8e8389ff78b7a6bab",
+          "candidate_index": 15,
+          "expected": [
+            {
+              "quote": "법 제45조의2제4항",
+              "start": 162,
+              "end": 173,
+              "target_refs": [
+                "제45조의2제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "53",
+          "source_title": "코스닥시장에 상장신청을 한 법인의 주식등의 평가 등",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 1444,
+          "paragraph_end": 1521,
+          "text": "8. 주식등의 실제소유자와 명의자가 다른 경우로서 법 제45조의2에 따라 해당 주식등을 명의자가 실제소유자로부터 증여받은 것으로 보는 경우",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "19304804f71212e08685405caacd6d0b3a50ab13855218ebbe6db6255322c472",
+          "candidate_index": 17,
+          "expected": [
+            {
+              "quote": "법 제45조의2",
+              "start": 1472,
+              "end": 1480,
+              "target_refs": [
+                "제45조의2"
+              ]
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "source_law": "국세기본법",
+          "source_jo": "26의2",
+          "source_title": "국세의 부과제척기간",
+          "source_effective": "20260811",
+          "source_mst": "288571",
+          "paragraph_start": 2970,
+          "paragraph_end": 3096,
+          "text": "3. 제45조의2제1항ㆍ제2항ㆍ제5항 및 제6항 또는 「국제조세조정에 관한 법률」 제19조제1항 및 제33조제2항에 따른 경정청구 또는 같은 법 제20조제2항에 따른 조정권고가 있는 경우: 경정청구일 또는 조정권고일부터 2개월",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "a3f7e214a8820c39f7e44afb4c39dcf547db2eabddc84ef2659f8a07aa8bca30",
+          "candidate_index": 1,
+          "reason": "국세기본법 제45조의2"
+        },
+        {
+          "source_law": "상속세 및 증여세법",
+          "source_jo": "45의2",
+          "source_title": "명의신탁재산의 증여 의제",
+          "source_effective": "20260102",
+          "source_mst": "276123",
+          "paragraph_start": 0,
+          "paragraph_end": 21,
+          "text": "제45조의2(명의신탁재산의 증여 의제)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": true,
+          "source_article_sha256": "826cbfd9cabf8d2b8f42b06659e05e8c7ac7584ceaab05e9840d94078c009dc5",
+          "candidate_index": 7,
+          "reason": "own article heading"
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행규칙",
+          "source_jo": "14의7",
+          "source_title": "신탁재산의 변경",
+          "source_effective": "20260320",
+          "source_mst": "284609",
+          "paragraph_start": 0,
+          "paragraph_end": 117,
+          "text": "제14조의7(신탁재산의 변경) 영 제45조의2제9항제1호에서 \"기타 재정경제부령이 정하는 사유\"란 「자본시장과 금융투자업에 관한 법률」에 따른 신탁업자에게 신탁된 재산이 수용 등의 사유로 처분된 경우를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "300d88bf7d005ec2327de3c7898e187740dd3553282265ade76960d05916d939",
+          "candidate_index": 10,
+          "reason": "상증령 제45조의2"
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행규칙",
+          "source_jo": "24",
+          "source_title": "일반서식",
+          "source_effective": "20260320",
+          "source_mst": "284609",
+          "paragraph_start": 328,
+          "paragraph_end": 384,
+          "text": "4. 영 제18조제4항 및 영 제45조의2제12항제3호의 규정에 의한 장애인증명서 : 별지 제4호서식",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "27a4a987678d3bb21030b1e0baafbbecb90adc0c1c6d3649ed9cbeddf662cb88",
+          "candidate_index": 11,
+          "reason": "상증령 제45조의2"
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행규칙",
+          "source_jo": "24",
+          "source_title": "일반서식",
+          "source_effective": "20260320",
+          "source_mst": "284609",
+          "paragraph_start": 575,
+          "paragraph_end": 619,
+          "text": "8. 영 제45조의2제7항에 따른 장애인신탁 원금 인출신청서: 별지 제33호서식",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "27a4a987678d3bb21030b1e0baafbbecb90adc0c1c6d3649ed9cbeddf662cb88",
+          "candidate_index": 12,
+          "reason": "상증령 제45조의2"
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행규칙",
+          "source_jo": "24",
+          "source_title": "일반서식",
+          "source_effective": "20260320",
+          "source_mst": "284609",
+          "paragraph_start": 620,
+          "paragraph_end": 666,
+          "text": "8의2. 영 제45조의2제8항에 따른 장애인신탁 원금 인출내역서: 별지 제34호서식",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "27a4a987678d3bb21030b1e0baafbbecb90adc0c1c6d3649ed9cbeddf662cb88",
+          "candidate_index": 13,
+          "reason": "상증령 제45조의2"
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "45의2",
+          "source_title": "장애인이 증여받은 재산의 과세가액불산입",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 0,
+          "paragraph_end": 29,
+          "text": "제45조의2(장애인이 증여받은 재산의 과세가액불산입)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "cb328dd069c2a8a868d1b4ef1cd04d431c99da62e8bece603ed3a425cbeeab46",
+          "candidate_index": 16,
+          "reason": "상증령 제45조의2 own heading"
+        }
+      ]
+    },
+    {
+      "law": "법인세법 시행령",
+      "jo": "89",
+      "effective": "20260227",
+      "mst": "283635",
+      "counts": {
+        "paragraphs": 33,
+        "own_headings": 1
+      },
+      "annotations": [
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "42의6",
+          "source_title": "주권상장법인이 발행한 주식의 시가",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 27,
+          "paragraph_end": 243,
+          "text": "① 영 제89조제1항 각 호 외의 부분 단서에서 \"재정경제부령으로 정하는 바에 따라 사실상 경영권의 이전이 수반되는 경우\"란 다음 각 호의 어느 하나에 해당하는 경우를 말한다. 다만, 영 제10조제1항제1호부터 제3호까지 및 제6호의 어느 하나에 해당하는 법인이 해당 호에 따른 회생계획, 기업개선계획, 경영정상화계획 또는 사업재편계획을 이행하기 위하여 주식을 거래하는 경우는 제외한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "513ddcf49929a27e188518d1ae55a8c66a3fc59983c0e5394077a980e209359f",
+          "candidate_index": 2,
+          "expected": [
+            {
+              "quote": "영 제89조제1항",
+              "start": 29,
+              "end": 38,
+              "target_refs": [
+                "제89조제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "42의6",
+          "source_title": "주권상장법인이 발행한 주식의 시가",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 367,
+          "paragraph_end": 511,
+          "text": "② 영 제89조제1항제2호에서 \"대량매매 등 재정경제부령으로 정하는 방법\"이란 「자본시장과 금융투자업에 관한 법률」 제393조에 따른 거래소의 증권시장업무규정에서 일정 수량 또는 금액 이상의 요건을 충족하는 경우에 한정하여 매매가 성립하는 거래방법을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "513ddcf49929a27e188518d1ae55a8c66a3fc59983c0e5394077a980e209359f",
+          "candidate_index": 3,
+          "expected": [
+            {
+              "quote": "영 제89조제1항제2호",
+              "start": 369,
+              "end": 381,
+              "target_refs": [
+                "제89조제1항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "43",
+          "source_title": "가중평균차입이자율의 계산방법 등",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 24,
+          "paragraph_end": 355,
+          "text": "① 영 제89조제3항 각 호 외의 부분 본문에서 \"재정경제부령으로 정하는 가중평균차입이자율\"이란 자금을 대여한 법인의 대여시점 현재 각각의 차입금 잔액(특수관계인으로부터의 차입금은 제외한다)에 차입 당시의 각각의 이자율을 곱한 금액의 합계액을 해당 차입금 잔액의 총액으로 나눈 비율을 말한다. 이 경우 산출된 비율 또는 대여금리가 해당 대여시점 현재 자금을 차입한 법인의 각각의 차입금 잔액(특수관계인으로부터의 차입금은 제외한다)에 차입 당시의 각각의 이자율을 곱한 금액의 합계액을 해당 차입금 잔액의 총액으로 나눈 비율보다 높은 때에는 해당 사업연도의 가중평균차입이자율이 없는 것으로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5a794fcd48074c99745ebc7c191a7aa8c85aa00352da13c500fb0a903d7d5f31",
+          "candidate_index": 4,
+          "expected": [
+            {
+              "quote": "영 제89조제3항",
+              "start": 26,
+              "end": 35,
+              "target_refs": [
+                "제89조제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "43",
+          "source_title": "가중평균차입이자율의 계산방법 등",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 356,
+          "paragraph_end": 427,
+          "text": "② 영 제89조제3항 각 호 외의 부분 단서에서 \"재정경제부령으로 정하는 당좌대출이자율\"이란 연간 1,000분의 46을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5a794fcd48074c99745ebc7c191a7aa8c85aa00352da13c500fb0a903d7d5f31",
+          "candidate_index": 5,
+          "expected": [
+            {
+              "quote": "영 제89조제3항",
+              "start": 358,
+              "end": 367,
+              "target_refs": [
+                "제89조제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "43",
+          "source_title": "가중평균차입이자율의 계산방법 등",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 428,
+          "paragraph_end": 492,
+          "text": "③ 영 제89조제3항제1호에서 \"재정경제부령으로 정하는 사유\"란 다음 각 호의 어느 하나에 해당하는 경우를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5a794fcd48074c99745ebc7c191a7aa8c85aa00352da13c500fb0a903d7d5f31",
+          "candidate_index": 6,
+          "expected": [
+            {
+              "quote": "영 제89조제3항제1호",
+              "start": 430,
+              "end": 442,
+              "target_refs": [
+                "제89조제3항제1호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "43",
+          "source_title": "가중평균차입이자율의 계산방법 등",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 625,
+          "paragraph_end": 768,
+          "text": "④ 영 제89조제3항제1호의2에서 \"재정경제부령으로 정하는 경우\"란 대여한 날(계약을 갱신한 경우에는 그 갱신일을 말한다)부터 해당 사업연도 종료일(해당 사업연도에 상환하는 경우는 상환일을 말한다)까지의 기간이 5년을 초과하는 대여금이 있는 경우를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5a794fcd48074c99745ebc7c191a7aa8c85aa00352da13c500fb0a903d7d5f31",
+          "candidate_index": 7,
+          "expected": [
+            {
+              "quote": "영 제89조제3항제1호의2",
+              "start": 627,
+              "end": 641,
+              "target_refs": [
+                "제89조제3항제1호의2"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "43",
+          "source_title": "가중평균차입이자율의 계산방법 등",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 769,
+          "paragraph_end": 870,
+          "text": "⑤ 영 제89조제3항제2호에 따라 법인이 이자율을 선택하는 경우에는 제82조제1항제19호에 따른 별지 제19호서식의 가지급금 등의 인정이자조정명세서(갑)를 작성하여 제출하여야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5a794fcd48074c99745ebc7c191a7aa8c85aa00352da13c500fb0a903d7d5f31",
+          "candidate_index": 8,
+          "expected": [
+            {
+              "quote": "영 제89조제3항제2호",
+              "start": 771,
+              "end": 783,
+              "target_refs": [
+                "제89조제3항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "44",
+          "source_title": "인정이자 계산의 특례",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 0,
+          "paragraph_end": 82,
+          "text": "제44조(인정이자 계산의 특례) 영 제89조제5항 단서에서 \"재정경제부령이 정하는 금전의 대여\"란 다음 각 호의 어느 하나에 해당하는 것을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "53ed9ada558f8de620e47fe83aad15a2e33dc5008e28eb2266101ede257cf911",
+          "candidate_index": 9,
+          "expected": [
+            {
+              "quote": "영 제89조제5항",
+              "start": 18,
+              "end": 27,
+              "target_refs": [
+                "제89조제5항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "104",
+          "source_title": "추계결정 및 경정",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 1580,
+          "paragraph_end": 1623,
+          "text": "2. 특수관계인과의 거래에서 제88조 및 제89조에 따라 익금에 산입하는 금액",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "019c49a37b0a7041e7966c217d78c4ca0e06c51150e2077f63c69260a097e54b",
+          "candidate_index": 13,
+          "expected": [
+            {
+              "quote": "제89조",
+              "start": 1603,
+              "end": 1607,
+              "target_refs": [
+                "제89조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "부가가치세법 시행령",
+          "source_jo": "62",
+          "source_title": "시가의 기준",
+          "source_effective": "20260401",
+          "source_mst": "283641",
+          "paragraph_start": 267,
+          "paragraph_end": 364,
+          "text": "3. 제1호나 제2호에 따른 가격이 없거나 시가가 불분명한 경우에는 「소득세법 시행령」 제98조제3항 및 제4항 또는 「법인세법 시행령」 제89조제2항 및 제4항에 따른 가격",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "7866cf079ac1625173958826b2032490da99ffd5075d7cfe56889656bdd814a7",
+          "candidate_index": 15,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조제2항 및 제4항",
+              "start": 333,
+              "end": 357,
+              "target_refs": [
+                "제89조제2항",
+                "제89조제4항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "31의4",
+          "source_title": "금전 무상대출 등에 따른 이익의 계산방법 등",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 33,
+          "paragraph_end": 170,
+          "text": "① 법 제41조의4제1항 각 호 외의 부분 본문에서 \"적정 이자율\"이란 당좌대출이자율을 고려하여 재정경제부령으로 정하는 이자율을 말한다. 다만, 법인으로부터 대출받은 경우에는 「법인세법 시행령」 제89조제3항에 따른 이자율을 적정 이자율로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "54ae8994fcaf0dfc39081e81f0d74d642b54f5e4ffc5ede822ade18f46b0e4fa",
+          "candidate_index": 16,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조제3항",
+              "start": 131,
+              "end": 149,
+              "target_refs": [
+                "제89조제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "32",
+          "source_title": "재산사용 및 용역제공 등에 따른 이익의 계산방법 등",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 781,
+          "paragraph_end": 832,
+          "text": "2. 부동산 임대용역 외의 경우: 「법인세법 시행령」 제89조제4항제2호에 따라 계산한 금액",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "c65f233bec119701957bce5d2b7d2328bd53727cd13e82d783a5f006fe3b46be",
+          "candidate_index": 17,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조제4항제2호",
+              "start": 800,
+              "end": 821,
+              "target_refs": [
+                "제89조제4항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "34의5",
+          "source_title": "특정법인과의 거래를 통한 이익의 증여 의제",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 2247,
+          "paragraph_end": 2295,
+          "text": "⑧ 제7항을 적용할 때 재산 또는 용역의 시가는 「법인세법 시행령」 제89조에 따른다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "f84a225983a4a454aa97ed0ec4ef1c97fb9e459a34226e1901251bde281ca3ad",
+          "candidate_index": 18,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조",
+              "start": 2274,
+              "end": 2289,
+              "target_refs": [
+                "제89조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "22의2",
+          "source_title": "시가의 계산",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 0,
+          "paragraph_end": 85,
+          "text": "제22조의2(시가의 계산) 영 제51조제5항제5호에서 \"재정경제부령이 정하는 시가\"라 함은 「법인세법 시행령」 제89조를 준용하여 계산한 금액으로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "42963a99f52d021f16dd71b3173266bee1fabc46f86c9db54dfccfb4db9b83e8",
+          "candidate_index": 19,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조",
+              "start": 51,
+              "end": 66,
+              "target_refs": [
+                "제89조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "48",
+          "source_title": "시가의 계산",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 0,
+          "paragraph_end": 83,
+          "text": "제48조(시가의 계산) 영 제89조제1항제3호에서 \"재정경제부령이 정하는 시가\"라 함은 「법인세법 시행령」 제89조를 준용하여 계산한 금액을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "25bcccb97b375685cf222d78793444c07a2520a2d5eee32eeac6aae214b2c737",
+          "candidate_index": 20,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조",
+              "start": 49,
+              "end": 64,
+              "target_refs": [
+                "제89조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "98",
+          "source_title": "부당행위계산의 부인",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 655,
+          "paragraph_end": 719,
+          "text": "③제2항제1호의 규정에 의한 시가의 산정에 관하여는 「법인세법 시행령」 제89조제1항 및 제2항의 규정을 준용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "f84a4dd76eadbdf8ea657a5343327bf97cb9f959e63595958589a0e48b910545",
+          "candidate_index": 23,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조제1항 및 제2항",
+              "start": 684,
+              "end": 708,
+              "target_refs": [
+                "제89조제1항",
+                "제89조제2항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "98",
+          "source_title": "부당행위계산의 부인",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 720,
+          "paragraph_end": 794,
+          "text": "④제2항제2호 내지 제5호의 규정에 의한 소득금액의 계산에 관하여는 「법인세법 시행령」 제89조제3항 내지 제5항의 규정을 준용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "f84a4dd76eadbdf8ea657a5343327bf97cb9f959e63595958589a0e48b910545",
+          "candidate_index": 24,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조제3항 내지 제5항",
+              "start": 758,
+              "end": 783,
+              "target_refs": [
+                "제89조제3항",
+                "제89조제4항",
+                "제89조제5항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167",
+          "source_title": "양도소득의 부당행위 계산",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 947,
+          "paragraph_end": 1147,
+          "text": "⑥개인과 법인간에 재산을 양수 또는 양도하는 경우로서 그 대가가 「법인세법 시행령」 제89조의 규정에 의한 가액에 해당되어 당해 법인의 거래에 대하여 「법인세법」 제52조의 규정이 적용되지 아니하는 경우에는 법 제101조제1항의 규정을 적용하지 아니한다. 다만, 거짓 그 밖의 부정한 방법으로 양도소득세를 감소시킨 것으로 인정되는 경우에는 그러하지 아니하다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "4b76ee78a9cb310d1e6c061c6ecacdfe77df455d1467f6a3e33c4264583a0a4a",
+          "candidate_index": 27,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조",
+              "start": 983,
+              "end": 998,
+              "target_refs": [
+                "제89조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167",
+          "source_title": "양도소득의 부당행위 계산",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 1148,
+          "paragraph_end": 1244,
+          "text": "⑦ 제5항에도 불구하고 주권상장법인이 발행한 주식의 시가는 「법인세법 시행령」 제89조제1항에 따른 시가로 한다. 이 경우 제3항 각 호 외의 부분 단서는 적용하지 않는다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "4b76ee78a9cb310d1e6c061c6ecacdfe77df455d1467f6a3e33c4264583a0a4a",
+          "candidate_index": 28,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조제1항",
+              "start": 1181,
+              "end": 1199,
+              "target_refs": [
+                "제89조제1항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "123",
+          "source_title": "투자세액공제 등의 배제",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 321,
+          "paragraph_end": 373,
+          "text": "│이자지원금 = 융자받은 시점의 「법인세법 시행령」 제89조제3항에 따른 이자율을 적용하여 │",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "32423085af1f9cd79e0e194d055c0d3bd2c3172f5fa4300ebfa4baf8b3d733dc",
+          "candidate_index": 31,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조제3항",
+              "start": 339,
+              "end": 357,
+              "target_refs": [
+                "제89조제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "증권거래세법 시행령",
+          "source_jo": "4",
+          "source_title": "양도가액평가방법",
+          "source_effective": "20260102",
+          "source_mst": "280901",
+          "paragraph_start": 78,
+          "paragraph_end": 168,
+          "text": "1. 시가액 : 「소득세법 시행령」 제167조, 「법인세법 시행령」 제89조 또는 「상속세 및 증여세법 시행령」 제26조에 따라 시가로 인정된 해당 주권등의 가액",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "e7afdfda6820b1825a1d83252fe3b49af9a3fb33dc3b32b941be0d976a868709",
+          "candidate_index": 32,
+          "expected": [
+            {
+              "quote": "「법인세법 시행령」 제89조",
+              "start": 105,
+              "end": 120,
+              "target_refs": [
+                "제89조"
+              ]
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "source_law": "농어촌특별세법 시행령",
+          "source_jo": "4",
+          "source_title": "비과세",
+          "source_effective": "20260102",
+          "source_mst": "280835",
+          "paragraph_start": 3120,
+          "paragraph_end": 3828,
+          "text": "5. 「지방세법」 제9조제2항, 「지방세특례제한법」 제13조제2항제1호의2, 제15조제2항, 제16조제1항, 제17조, 제17조의2, 제19조, 제20조, 제21조제1항, 제22조제1항ㆍ제4항ㆍ제7항ㆍ제8항, 제22조의2제1항ㆍ제2항, 제22조의3, 제23조, 제28조제1항, 제29조, 제30조제3항, 제31조제1항ㆍ제2항, 제31조의3제1항ㆍ제2항, 제31조의4, 제33조제1항ㆍ제2항, 제34조, 제36조, 제37조, 제38조제1항, 제40조, 제40조의3, 제41조제1항ㆍ제5항ㆍ제7항, 제42조제2항ㆍ제3항, 제43조제1항, 제44조제1항, 같은 조 제2항제1호, 같은 조 제3항, 제44조의2, 제45조제1항, 같은 조 제2항제1호, 제46조, 제50조제1항, 제52조제1항ㆍ제2항, 제53조, 제54조제5항, 제57조의2제1항(「법인세법」 제44조제2항 각 호의 요건을 충족하거나 같은 조 제3항에 해당하여 양도손익이 없는 것으로 한 합병의 경우로 한정한다), 제57조의2제3항제2호, 같은 조 제9항, 제58조의2, 제60조제4항, 제63조, 제64조제1항, 제66조제3항ㆍ제4항, 제67조제1항ㆍ제2항, 제72조제1항, 제73조제1항, 제73조의2, 제74조제3항, 제74조의2제1항, 제76조제1항, 제79조, 제80조, 제81조제1항ㆍ제2항, 제83조제1항ㆍ제2항, 제85조제1항, 제85조의2, 제88조, 제89조 및 제90조제1항에 따른 감면",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b3996f7c2f93ff33697d0bbef571413c051b6024a49c8be444a38f76fce4bff7",
+          "candidate_index": 0,
+          "reason": "지방세특례제한법 제89조"
+        },
+        {
+          "source_law": "법인세법",
+          "source_jo": "89",
+          "source_title": "징수",
+          "source_effective": "20260701",
+          "source_mst": "280349",
+          "paragraph_start": 0,
+          "paragraph_end": 8,
+          "text": "제89조(징수)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "0c7ef3d84dc9127a06092728ceef326dcdc0b99a12da69d3b1fd7d0f639b265f",
+          "candidate_index": 1,
+          "reason": "법인세법 제89조 own heading"
+        },
+        {
+          "source_law": "법인세법 시행규칙",
+          "source_jo": "46의2",
+          "source_title": "부득이한 사유가 있어 비사업용 토지로 보지 아니하는 토지의 판정기준 등",
+          "source_effective": "20260701",
+          "source_mst": "287787",
+          "paragraph_start": 3022,
+          "paragraph_end": 3155,
+          "text": "5. 「신용협동조합법」에 따른 신용협동조합이 같은 법 제86조제1항에 따라 금융위원회로부터 경영관리를 받거나, 같은 법 제89조제4항에 따라 신용협동조합중앙회장으로부터 재무상태의 개선을 위한 조치를 하도록 요청받고 그에 따라 양도하는 토지",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "42af93c54f7dcf0f9c76574aab94f361a49786c3707514ac1cdce5312b1d4d73",
+          "candidate_index": 10,
+          "reason": "신용협동조합법 제89조"
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "72",
+          "source_title": "자산의 취득가액 등",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 1566,
+          "paragraph_end": 1905,
+          "text": "5의3. 「상속세 및 증여세법 시행령」 제12조에 따른 공익법인 등이 기부받은 자산: 특수관계인 외의 자로부터 기부받은 법 제24조제3항제1호에 따른 기부금에 해당하는 자산(제36조제1항에 따른 금전 외의 자산만 해당한다)은 기부한 자의 기부 당시 장부가액[사업소득과 관련이 없는 자산(개인인 경우만 해당한다)의 경우에는 취득 당시의 「소득세법 시행령」 제89조에 따른 취득가액을 말한다]. 다만, 「상속세 및 증여세법」에 따라 증여세 과세가액에 산입되지 않은 출연재산이 그 후에 과세요인이 발생하여 그 과세가액에 산입되지 않은 출연재산에 대하여 증여세의 전액이 부과되는 경우에는 기부 당시의 시가로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "f34f7d009b612bc9ba6d1c2b62fef3a905de917e91b65de16ee4af8a0ec1cee3",
+          "candidate_index": 11,
+          "reason": "소득세법 시행령 제89조"
+        },
+        {
+          "source_law": "법인세법 시행령",
+          "source_jo": "89",
+          "source_title": "시가의 범위 등",
+          "source_effective": "20260227",
+          "source_mst": "283635",
+          "paragraph_start": 0,
+          "paragraph_end": 14,
+          "text": "제89조(시가의 범위 등)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": true,
+          "source_article_sha256": "39ea08f9e4ba05261d71ae5a011600cece3e22c9b2f8a70216d3526210a764df",
+          "candidate_index": 12,
+          "reason": "own article heading"
+        },
+        {
+          "source_law": "부가가치세법 시행령",
+          "source_jo": "60",
+          "source_title": "취득가액 등을 기준으로 한 공급가액",
+          "source_effective": "20260401",
+          "source_mst": "283641",
+          "paragraph_start": 26,
+          "paragraph_end": 196,
+          "text": "① 법 제29조제3항제5호에서 \"대통령령으로 정하는 가액\"이란 「소득세법 시행령」 제89조 또는 「법인세법 시행령」 제72조제2항 및 제4항에 따른 취득가액을 말한다. 다만, 취득가액에 일정액을 더하여 공급하여 자기의 다른 사업장에 반출하는 경우에는 그 취득가액에 일정액을 더한 금액을 공급가액으로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "c1f4533bcf8bf9a6d21b0498583fd03b0a2b06055bd8a21a8878942ad644656c",
+          "candidate_index": 14,
+          "reason": "소득세법 시행령 제89조"
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "55",
+          "source_title": "사업소득의 필요경비의 계산",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 338,
+          "paragraph_end": 486,
+          "text": "2. 부동산의 양도 당시의 장부가액(건물건설업과 부동산 개발 및 공급업의 경우만 해당한다). 이 경우 사업용 외의 목적으로 취득한 부동산을 사업용으로 사용한 것에 대해서는 해당 사업자가 당초에 취득한 때의 제89조를 준용하여 계산한 취득가액을 그 장부가액으로 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "31a7f5a50195e6d19c3ee9d7a3de11fc3d678c136b0204cafabc6bd732304043",
+          "candidate_index": 21,
+          "reason": "소득세법 시행령 제89조"
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "89",
+          "source_title": "자산의 취득가액등",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 0,
+          "paragraph_end": 15,
+          "text": "제89조(자산의 취득가액등)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "653038157641879dab5f427500d46f9a21996af10497eba978e1eaae83bb955e",
+          "candidate_index": 22,
+          "reason": "소득세법 시행령 제89조 own heading"
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "163",
+          "source_title": "양도자산의 필요경비",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 75,
+          "paragraph_end": 214,
+          "text": "1. 제89조제1항 및 제3항을 준용하여 계산한 취득원가에 상당하는 가액(제89조제2항제1호에 따른 현재가치할인차금과 「부가가치세법」 제10조제1항 및 제6항에 따라 납부하였거나 납부할 부가가치세를 포함하되 부당행위계산에 의한 시가초과액을 제외한다)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2fd0ab6533f3dd2e61d0cffc23b176ea1e6a50d8a10c93118cf79a3b11ae7127",
+          "candidate_index": 25,
+          "reason": "소득세법 시행령 제89조"
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "163",
+          "source_title": "양도자산의 필요경비",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 1042,
+          "paragraph_end": 1194,
+          "text": "② 제1항제1호에 따라 제89조제2항제1호에 따른 현재가치할인차금을 취득원가에 포함하는 경우에 있어서 양도자산의 보유기간 중에 그 현재가치할인차금의 상각액을 각 연도의 사업소득금액 계산 시 필요경비로 산입하였거나 산입할 금액이 있는 때에는 이를 제1항의 금액에서 공제한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2fd0ab6533f3dd2e61d0cffc23b176ea1e6a50d8a10c93118cf79a3b11ae7127",
+          "candidate_index": 26,
+          "reason": "소득세법 시행령 제89조"
+        },
+        {
+          "source_law": "조세특례제한법",
+          "source_jo": "98의2",
+          "source_title": "지방 미분양주택 취득에 대한 양도소득세 등 과세특례",
+          "source_effective": "20260918",
+          "source_mst": "284389",
+          "paragraph_start": 609,
+          "paragraph_end": 679,
+          "text": "④ 「소득세법」 제89조제1항제3호를 적용할 때 제1항을 적용받는 지방 미분양주택은 해당 거주자의 소유주택으로 보지 아니한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "def88965ff8e149813405391f2d0ad28ee7c635bdf001fb7d4c786cdc04be7ad",
+          "candidate_index": 29,
+          "reason": "소득세법 제89조"
+        },
+        {
+          "source_law": "조세특례제한법 시행령",
+          "source_jo": "14의5",
+          "source_title": "산업재산권 현물출자 이익에 대한 과세특례",
+          "source_effective": "20260918",
+          "source_mst": "288915",
+          "paragraph_start": 1513,
+          "paragraph_end": 1587,
+          "text": "⑧ 법 제16조의5제3항에 따른 산업재산권의 취득가액의 계산은 「소득세법 시행령」 제89조에 따른 자산의 취득가액 계산방법에 따른다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b4fc48016e320449a1db12ca29e19cb4a6cd305dc8cf00dc5215cb4a5958ed7e",
+          "candidate_index": 30,
+          "reason": "소득세법 시행령 제89조"
+        }
+      ]
+    },
+    {
+      "law": "소득세법 시행령",
+      "jo": "155",
+      "effective": "20260701",
+      "mst": "286211",
+      "counts": {
+        "paragraphs": 36,
+        "own_headings": 1
+      },
+      "annotations": [
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "20의2",
+          "source_title": "동거주택 인정의 범위",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 487,
+          "paragraph_end": 535,
+          "text": "4. 피상속인이 「소득세법 시행령」 제155조제7항제2호에 따른 이농주택을 소유한 경우",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5b7ec361ce989809c3d259779fa3933f4481ebd5efa123c3ac7e1dc73ed3a8dd",
+          "candidate_index": 0,
+          "expected": [
+            {
+              "quote": "「소득세법 시행령」 제155조제7항제2호",
+              "start": 496,
+              "end": 518,
+              "target_refs": [
+                "제155조제7항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "상속세 및 증여세법 시행령",
+          "source_jo": "20의2",
+          "source_title": "동거주택 인정의 범위",
+          "source_effective": "20260918",
+          "source_mst": "288887",
+          "paragraph_start": 536,
+          "paragraph_end": 584,
+          "text": "5. 피상속인이 「소득세법 시행령」 제155조제7항제3호에 따른 귀농주택을 소유한 경우",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5b7ec361ce989809c3d259779fa3933f4481ebd5efa123c3ac7e1dc73ed3a8dd",
+          "candidate_index": 1,
+          "expected": [
+            {
+              "quote": "「소득세법 시행령」 제155조제7항제3호",
+              "start": 545,
+              "end": 567,
+              "target_refs": [
+                "제155조제7항제3호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "61의4",
+          "source_title": "중증질환자 등의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 0,
+          "paragraph_end": 172,
+          "text": "제61조의4(중증질환자 등의 범위) 영 제118조의5제4항 및 제155조제4항제3호에서 \"재정경제부령으로 정하는 사람\"이란 「국민건강보험법 시행령」 제19조제1항에 따라 보건복지부장관이 정하여 고시하는 기준에 따라 중증질환자, 희귀난치성질환자 또는 결핵환자 산정특례 대상자로 등록되거나 재등록된 자를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "14d33c4f52cca3f63c4cd1fa7e93885a3232e084a7401a952275310ae00cef70",
+          "candidate_index": 3,
+          "expected": [
+            {
+              "quote": "제155조제4항제3호",
+              "start": 35,
+              "end": 46,
+              "target_refs": [
+                "제155조제4항제3호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "72",
+          "source_title": "1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 490,
+          "paragraph_end": 541,
+          "text": "③영 제155조제18항을 적용받으려는 자는 다음 각 호의 어느 하나의 서류를 제출해야 한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "56ae3f1e7cde041027600554d73fcc32bf1bf5e4bac529aa7fe5eb721dedcccc",
+          "candidate_index": 4,
+          "expected": [
+            {
+              "quote": "영 제155조제18항",
+              "start": 491,
+              "end": 502,
+              "target_refs": [
+                "제155조제18항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "72",
+          "source_title": "1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 794,
+          "paragraph_end": 893,
+          "text": "④영 제155조제18항제1호에 따라 매각을 의뢰한 부동산의 처분방법, 처분조건의 협의절차 등에 관하여는 「부동산 실권리자명의 등기에 관한 법률 시행령」 제6조의 규정을 준용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "56ae3f1e7cde041027600554d73fcc32bf1bf5e4bac529aa7fe5eb721dedcccc",
+          "candidate_index": 5,
+          "expected": [
+            {
+              "quote": "영 제155조제18항제1호",
+              "start": 795,
+              "end": 809,
+              "target_refs": [
+                "제155조제18항제1호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "72",
+          "source_title": "1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 1107,
+          "paragraph_end": 1309,
+          "text": "⑦ 영 제155조제8항 및 같은 조 제10항제5호에서 \"재정경제부령으로 정하는 취학, 근무상의 형편, 질병의 요양, 그밖에 부득이한 사유\"란 세대의 구성원 중 일부(영 제155조제10항제5호의 경우를 말한다) 또는 세대전원(영 제155조제8항의 경우를 말한다)이 제71조제3항 각 호의 어느 하나에 해당하는 사유로 다른 시ㆍ군으로 주거를 이전하는 경우를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "56ae3f1e7cde041027600554d73fcc32bf1bf5e4bac529aa7fe5eb721dedcccc",
+          "candidate_index": 6,
+          "expected": [
+            {
+              "quote": "영 제155조제8항",
+              "start": 1109,
+              "end": 1119,
+              "target_refs": [
+                "제155조제8항"
+              ]
+            },
+            {
+              "quote": "같은 조 제10항제5호",
+              "start": 1122,
+              "end": 1134,
+              "target_refs": [
+                "제155조제10항제5호"
+              ]
+            },
+            {
+              "quote": "영 제155조제10항제5호",
+              "start": 1199,
+              "end": 1213,
+              "target_refs": [
+                "제155조제10항제5호"
+              ]
+            },
+            {
+              "quote": "영 제155조제8항",
+              "start": 1232,
+              "end": 1242,
+              "target_refs": [
+                "제155조제8항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "72",
+          "source_title": "1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 1371,
+          "paragraph_end": 1510,
+          "text": "⑨ 영 제155조제8항에 따른 사유로서 제7항을 적용할 때 제71조제3항 각 호의 사유가 발생한 당사자 외의 세대원 중 일부가 취학, 근무 또는 사업상의 형편 등으로 당사자와 함께 주거를 이전하지 못하는 경우에도 세대원이 주거를 이전한 것으로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "56ae3f1e7cde041027600554d73fcc32bf1bf5e4bac529aa7fe5eb721dedcccc",
+          "candidate_index": 7,
+          "expected": [
+            {
+              "quote": "영 제155조제8항",
+              "start": 1373,
+              "end": 1383,
+              "target_refs": [
+                "제155조제8항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "73",
+          "source_title": "농어촌주택",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 22,
+          "paragraph_end": 89,
+          "text": "③영 제155조제10항제4호다목에서 \"재정경제부령이 정하는 어업인\"이란 다음 각 호의 어느 하나에 해당하는 자를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "9c164d8c45a5dfe91afbb122c34638e4b42b44fc6e7287b08cfe42e96f00b03e",
+          "candidate_index": 8,
+          "expected": [
+            {
+              "quote": "영 제155조제10항제4호다목",
+              "start": 23,
+              "end": 39,
+              "target_refs": [
+                "제155조제10항제4호다목"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "73",
+          "source_title": "농어촌주택",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 229,
+          "paragraph_end": 292,
+          "text": "④영 제155조제13항 각 호 외의 부분 전단에서 \"재정경제부령으로 정하는 서류\"란 다음 각 호의 서류를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "9c164d8c45a5dfe91afbb122c34638e4b42b44fc6e7287b08cfe42e96f00b03e",
+          "candidate_index": 9,
+          "expected": [
+            {
+              "quote": "영 제155조제13항",
+              "start": 230,
+              "end": 241,
+              "target_refs": [
+                "제155조제13항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "74의2",
+          "source_title": "계속 임대로 보는 부득이한 사유",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 0,
+          "paragraph_end": 97,
+          "text": "제74조의2(계속 임대로 보는 부득이한 사유) 영 제155조제22항제2호가목에서 \"재정경제부령으로 정하는 부득이한 사유\"란 다음 각 호의 어느 하나에 해당하는 경우를 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "5649c3c70010a6922eb4cde42bcdd498af6502e6417b400381462983a3a031b0",
+          "candidate_index": 10,
+          "expected": [
+            {
+              "quote": "영 제155조제22항제2호가목",
+              "start": 26,
+              "end": 42,
+              "target_refs": [
+                "제155조제22항제2호가목"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행규칙",
+          "source_jo": "103",
+          "source_title": "양도소득세 관련서식",
+          "source_effective": "20260701",
+          "source_mst": "286379",
+          "paragraph_start": 18,
+          "paragraph_end": 392,
+          "text": "① 영 제155조제13항 각 호 외의 부분 전단에 따른 농어촌주택 소유자 1세대1주택 특례적용신고서는 별지 제83호서식, 영 제155조제23항 각 호 외의 부분에 따른 임대주택사업자의 거주주택 1세대1주택 특례적용신고서는 별지 제83호의2서식, 영 제155조의2제4항에 따른 장기저당담보주택에 대한 특례적용신고서는 별지 제83호의3서식, 영 제155조의3제5항 전단에 따른 상생임대주택에 대한 특례적용신고서는 별지 제83호의4서식, 영 제156조의2제12항에 따른 조합원입주권 또는 분양권 소유자 1세대1주택 특례적용신고서는 별지 제83호의5서식, 영 제167조의3제7항에 따른 1세대3주택 이상자의 장기임대주택 등 일반세율 적용신청서는 별지 제83호의6서식에 따른다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "8850380f69ee013032f95978b20fdadced397e08b8762c7789b2ccb3731221df",
+          "candidate_index": 11,
+          "expected": [
+            {
+              "quote": "영 제155조제13항",
+              "start": 20,
+              "end": 31,
+              "target_refs": [
+                "제155조제13항"
+              ]
+            },
+            {
+              "quote": "영 제155조제23항",
+              "start": 86,
+              "end": 97,
+              "target_refs": [
+                "제155조제23항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "154",
+          "source_title": "1세대1주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 3496,
+          "paragraph_end": 3622,
+          "text": "⑩ 제1항에 따른 1세대 1주택이 다음 각 호의 요건에 모두 해당하는 경우에는 제155조제20항 각 호 외의 부분 후단에 따른 직전거주주택의 양도일 후의 기간분에 대해서만 국내에 1주택을 보유한 것으로 보아 제1항을 적용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "1bb10160327c2b784e2199b71f488dd75f125c27ea2e659182aee405b3c7e302",
+          "candidate_index": 12,
+          "expected": [
+            {
+              "quote": "제155조제20항",
+              "start": 3540,
+              "end": 3549,
+              "target_refs": [
+                "제155조제20항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "154",
+          "source_title": "1세대1주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 3713,
+          "paragraph_end": 3763,
+          "text": "2. 해당 주택이 제155조제20항 각 호 외의 부분 후단에 따른 직전거주주택보유주택일 것",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "1bb10160327c2b784e2199b71f488dd75f125c27ea2e659182aee405b3c7e302",
+          "candidate_index": 13,
+          "expected": [
+            {
+              "quote": "제155조제20항",
+              "start": 3723,
+              "end": 3732,
+              "target_refs": [
+                "제155조제20항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "154",
+          "source_title": "1세대1주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 3764,
+          "paragraph_end": 3846,
+          "text": "⑪ 법 제89조제1항제3호나목에서 \"대통령령으로 정하는 주택\"이란 제155조에 따른 1세대1주택의 특례에 해당하여 이 조를 적용하는 주택을 말한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "1bb10160327c2b784e2199b71f488dd75f125c27ea2e659182aee405b3c7e302",
+          "candidate_index": 14,
+          "expected": [
+            {
+              "quote": "제155조",
+              "start": 3801,
+              "end": 3806,
+              "target_refs": [
+                "제155조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "154",
+          "source_title": "1세대1주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 3847,
+          "paragraph_end": 3977,
+          "text": "⑫ 제1항을 적용할 때 취득 당시에 조정대상지역에 있는 주택으로서 제155조제3항 각 호 외의 부분 본문에 따른 공동상속주택인 경우 거주기간은 해당 주택에 거주한 공동상속인 중 그 거주기간이 가장 긴 사람이 거주한 기간으로 판단한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "1bb10160327c2b784e2199b71f488dd75f125c27ea2e659182aee405b3c7e302",
+          "candidate_index": 15,
+          "expected": [
+            {
+              "quote": "제155조제3항",
+              "start": 3884,
+              "end": 3892,
+              "target_refs": [
+                "제155조제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "155의3",
+          "source_title": "상생임대주택에 대한 1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 31,
+          "paragraph_end": 237,
+          "text": "① 국내에 1주택(제155조, 제155조의2, 제156조의2, 제156조의3 및 그 밖의 법령에 따라 1세대1주택으로 보는 경우를 포함한다)을 소유한 1세대가 다음 각 호의 요건을 모두 갖춘 주택(이하 \"상생임대주택\"이라 한다)을 양도하는 경우에는 제154조제1항, 제155조제20항제1호 및 제159조의4를 적용할 때 해당 규정에 따른 거주기간의 제한을 받지 않는다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "fa02016e19ad407a994e6c23be70525c73808d25118053537577a148747a52f9",
+          "candidate_index": 17,
+          "expected": [
+            {
+              "quote": "제155조",
+              "start": 41,
+              "end": 46,
+              "target_refs": [
+                "제155조"
+              ]
+            },
+            {
+              "quote": "제155조제20항제1호",
+              "start": 180,
+              "end": 192,
+              "target_refs": [
+                "제155조제20항제1호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "156",
+          "source_title": "고가주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 305,
+          "paragraph_end": 389,
+          "text": "③제155조제15항에 따라 단독주택으로 보는 다가구주택의 경우에는 그 전체를 하나의 주택으로 보아 법 제89조제1항제3호 각 목 외의 부분을 적용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2e2b17a9a3c309a357db5d1177b631d0889f9d1b4efc84759d5e4e6bbfbcd37c",
+          "candidate_index": 18,
+          "expected": [
+            {
+              "quote": "제155조제15항",
+              "start": 306,
+              "end": 315,
+              "target_refs": [
+                "제155조제15항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "156의2",
+          "source_title": "주택과 조합원입주권을 소유한 경우 1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 3176,
+          "paragraph_end": 3256,
+          "text": "1. 상속받은 주택. 이 경우 피상속인이 상속개시 당시 2 이상의 주택을 소유한 경우에는 제155조제2항 각 호의 순위에 따른 1주택에 한한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "fd144c2fa3d001494d72f69f68cea629f2c7250d4f84b7762169b9b95efc58df",
+          "candidate_index": 19,
+          "expected": [
+            {
+              "quote": "제155조제2항",
+              "start": 3226,
+              "end": 3234,
+              "target_refs": [
+                "제155조제2항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "156의2",
+          "source_title": "주택과 조합원입주권을 소유한 경우 1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 5880,
+          "paragraph_end": 6037,
+          "text": "⑩제155조제6항제1호에 해당하는 주택과 그 밖의 주택(이하 이 항에서 \"일반주택\"이라 한다) 및 조합원입주권을 국내에 각각 1개씩 소유하고 있는 1세대가 일반주택을 양도하는 경우에는 국내에 일반주택과 조합원입주권을 소유하고 있는 것으로 보아 제3항 내지 제5항의 규정을 적용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "fd144c2fa3d001494d72f69f68cea629f2c7250d4f84b7762169b9b95efc58df",
+          "candidate_index": 20,
+          "expected": [
+            {
+              "quote": "제155조제6항제1호",
+              "start": 5881,
+              "end": 5892,
+              "target_refs": [
+                "제155조제6항제1호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "156의2",
+          "source_title": "주택과 조합원입주권을 소유한 경우 1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 6038,
+          "paragraph_end": 6211,
+          "text": "⑪제155조제7항의 규정에 따른 농어촌주택 중 동항제2호의 이농주택과 그 밖의 주택(이하 이 조에서 \"일반주택\"이라 한다) 및 조합원입주권을 국내에 각각 1개씩 소유하고 있는 1세대가 일반주택을 양도하는 경우에는 국내에 일반주택과 조합원입주권을 소유하고 있는 것으로 보아 제3항 내지 제5항의 규정을 적용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "fd144c2fa3d001494d72f69f68cea629f2c7250d4f84b7762169b9b95efc58df",
+          "candidate_index": 21,
+          "expected": [
+            {
+              "quote": "제155조제7항",
+              "start": 6039,
+              "end": 6047,
+              "target_refs": [
+                "제155조제7항"
+              ]
+            },
+            {
+              "quote": "동항제2호",
+              "start": 6064,
+              "end": 6069,
+              "target_refs": [
+                "제155조제7항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "156의3",
+          "source_title": "주택과 분양권을 소유한 경우 1세대 1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 2112,
+          "paragraph_end": 2194,
+          "text": "1. 상속받은 주택. 이 경우 피상속인이 상속개시 당시 2 이상의 주택을 소유한 경우에는 제155조제2항 각 호의 순위에 따른 1주택으로 한정한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "3add5b3ecfe706891383d772fb3f6444b6a056b9504a18e167bf928895e6a77e",
+          "candidate_index": 22,
+          "expected": [
+            {
+              "quote": "제155조제2항",
+              "start": 2162,
+              "end": 2170,
+              "target_refs": [
+                "제155조제2항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "156의3",
+          "source_title": "주택과 분양권을 소유한 경우 1세대 1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 2989,
+          "paragraph_end": 3137,
+          "text": "⑦ 제155조제6항제1호에 해당하는 주택과 그 밖의 주택(이하 이 항에서 \"일반주택\"이라 한다) 및 분양권을 국내에 각각 1개씩 소유하고 있는 1세대가 일반주택을 양도하는 경우에는 국내에 일반주택과 분양권을 소유하고 있는 것으로 보아 제2항 또는 제3항을 적용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "3add5b3ecfe706891383d772fb3f6444b6a056b9504a18e167bf928895e6a77e",
+          "candidate_index": 23,
+          "expected": [
+            {
+              "quote": "제155조제6항제1호",
+              "start": 2991,
+              "end": 3002,
+              "target_refs": [
+                "제155조제6항제1호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "156의3",
+          "source_title": "주택과 분양권을 소유한 경우 1세대 1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 3138,
+          "paragraph_end": 3301,
+          "text": "⑧ 제155조제7항에 따른 농어촌주택 중 같은 항 제2호의 이농주택과 그 밖의 주택(이하 이 조에서 \"일반주택\"이라 한다) 및 분양권을 국내에 각각 1개씩 소유하고 있는 1세대가 일반주택을 양도하는 경우에는 국내에 일반주택과 분양권을 소유하고 있는 것으로 보아 제2항 또는 제3항을 적용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "3add5b3ecfe706891383d772fb3f6444b6a056b9504a18e167bf928895e6a77e",
+          "candidate_index": 24,
+          "expected": [
+            {
+              "quote": "제155조제7항",
+              "start": 3140,
+              "end": 3148,
+              "target_refs": [
+                "제155조제7항"
+              ]
+            },
+            {
+              "quote": "같은 항 제2호",
+              "start": 3161,
+              "end": 3169,
+              "target_refs": [
+                "제155조제7항제2호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "159의4",
+          "source_title": "장기보유특별공제",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 0,
+          "paragraph_end": 391,
+          "text": "제159조의4(장기보유특별공제) 법 제95조제2항 표 외의 부분 단서 및 같은 조 제5항 각 호 외의 부분에서 \"대통령령으로 정하는 1세대 1주택\"이란 각각 1세대가 양도일(주택의 매매계약을 체결한 후 해당 계약에 따라 주택을 주택 외의 용도로 용도변경하여 양도하는 경우에는 해당 주택의 매매계약일을 말한다) 현재 국내에 1주택(제155조ㆍ제155조의2ㆍ제156조의2ㆍ제156조의3 및 그 밖의 규정에 따라 1세대 1주택으로 보는 주택을 포함한다)을 보유하고 보유기간 중 거주기간이 2년 이상인 것을 말한다. 이 경우 해당 1주택이 제155조제3항 각 호 외의 부분 본문에 따른 공동상속주택인 경우 거주기간은 해당 주택에 거주한 공동상속인 중 그 거주기간이 가장 긴 사람이 거주한 기간으로 판단한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "d13f2304a10991120c00e52086f9011f9ec4d7f73a6e4fa17f526529953ee4b4",
+          "candidate_index": 25,
+          "expected": [
+            {
+              "quote": "제155조",
+              "start": 184,
+              "end": 189,
+              "target_refs": [
+                "제155조"
+              ]
+            },
+            {
+              "quote": "제155조제3항",
+              "start": 298,
+              "end": 306,
+              "target_refs": [
+                "제155조제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "161",
+          "source_title": "직전거주주택보유주택 등에 대한 양도소득금액 등의 계산",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 37,
+          "paragraph_end": 163,
+          "text": "①제154조제10항에 따른 1세대 1주택 및 제155조제20항 각 호 외의 부분 후단에 따른 직전거주주택보유주택(이하 이 조에서 \"직전거주주택보유주택등\"이라 한다)의 양도소득금액은 다음 계산식에 따라 계산한 금액으로 한다.  ",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "bfdfa4aee86f8a0204cbade69d1fdf495ca598e56413c514d2c961bb3e329057",
+          "candidate_index": 26,
+          "expected": [
+            {
+              "quote": "제155조제20항",
+              "start": 62,
+              "end": 71,
+              "target_refs": [
+                "제155조제20항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의3",
+          "source_title": "1세대 3주택 이상에 해당하는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 6841,
+          "paragraph_end": 6868,
+          "text": "6. 제155조제6항제1호에 해당하는 국가유산주택",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2d7aec6a6fae5142c630ca9e5d6423374888db377598db8ecd38b34157157191",
+          "candidate_index": 27,
+          "expected": [
+            {
+              "quote": "제155조제6항제1호",
+              "start": 6844,
+              "end": 6855,
+              "target_refs": [
+                "제155조제6항제1호"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의3",
+          "source_title": "1세대 3주택 이상에 해당하는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 6869,
+          "paragraph_end": 6926,
+          "text": "7. 제155조제2항에 해당하는 상속받은 주택(상속받은 날부터 5년이 경과하지 아니한 경우에 한정한다)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2d7aec6a6fae5142c630ca9e5d6423374888db377598db8ecd38b34157157191",
+          "candidate_index": 28,
+          "expected": [
+            {
+              "quote": "제155조제2항",
+              "start": 6872,
+              "end": 6880,
+              "target_refs": [
+                "제155조제2항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의3",
+          "source_title": "1세대 3주택 이상에 해당하는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 10277,
+          "paragraph_end": 10391,
+          "text": "13. 제155조 또는 「조세특례제한법」에 따라 1세대가 국내에 1개의 주택을 소유하고 있는 것으로 보거나 1세대 1주택으로 보아 제154조제1항이 적용되는 주택으로서 같은 항의 요건을 모두 충족하는 주택",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2d7aec6a6fae5142c630ca9e5d6423374888db377598db8ecd38b34157157191",
+          "candidate_index": 29,
+          "expected": [
+            {
+              "quote": "제155조",
+              "start": 10281,
+              "end": 10286,
+              "target_refs": [
+                "제155조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의3",
+          "source_title": "1세대 3주택 이상에 해당하는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 10430,
+          "paragraph_end": 10511,
+          "text": "1. 다가구주택 : 제155조제15항을 준용하여 주택수를 계산한다. 이 경우 제155조제15항 단서는 거주자가 선택하는 경우에 한정하여 적용한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2d7aec6a6fae5142c630ca9e5d6423374888db377598db8ecd38b34157157191",
+          "candidate_index": 30,
+          "expected": [
+            {
+              "quote": "제155조제15항",
+              "start": 10441,
+              "end": 10450,
+              "target_refs": [
+                "제155조제15항"
+              ]
+            },
+            {
+              "quote": "제155조제15항",
+              "start": 10473,
+              "end": 10482,
+              "target_refs": [
+                "제155조제15항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의3",
+          "source_title": "1세대 3주택 이상에 해당하는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 10512,
+          "paragraph_end": 10629,
+          "text": "2. 공동상속주택 : 상속지분이 가장 큰 상속인의 소유로 하여 주택수를 계산하되, 상속지분이 가장 큰 자가 2인 이상인 경우에는 제155조제3항 각호의 순서에 의한 자가 당해 공동상속주택을 소유한 것으로 본다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "2d7aec6a6fae5142c630ca9e5d6423374888db377598db8ecd38b34157157191",
+          "candidate_index": 31,
+          "expected": [
+            {
+              "quote": "제155조제3항",
+              "start": 10584,
+              "end": 10592,
+              "target_refs": [
+                "제155조제3항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의4",
+          "source_title": "1세대 3주택ㆍ입주권 또는 분양권 이상에서 제외되는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 2272,
+          "paragraph_end": 2403,
+          "text": "7. 제155조, 제156조의2, 제156조의3 또는 「조세특례제한법」에 따라 1세대가 국내에 1개의 주택을 소유하고 있는 것으로 보거나 1세대 1주택으로 보아 제154조제1항이 적용되는 주택으로서 같은 항의 요건을 모두 충족하는 주택",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "18d4a929530c374b69c7764e5a1560d53a445932022a00830dd69ceb8299668e",
+          "candidate_index": 32,
+          "expected": [
+            {
+              "quote": "제155조",
+              "start": 2275,
+              "end": 2280,
+              "target_refs": [
+                "제155조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의10",
+          "source_title": "양도소득세가 중과되는 1세대 2주택에 해당하는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 833,
+          "paragraph_end": 863,
+          "text": "4. 제155조제8항에 따른 수도권 밖에 소재하는 주택",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "4385d9f09d5e199c709c55e11edea4d58d0fb3b00d1995f35612275fc539201d",
+          "candidate_index": 33,
+          "expected": [
+            {
+              "quote": "제155조제8항",
+              "start": 836,
+              "end": 844,
+              "target_refs": [
+                "제155조제8항"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의10",
+          "source_title": "양도소득세가 중과되는 1세대 2주택에 해당하는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 2744,
+          "paragraph_end": 2858,
+          "text": "15. 제155조 또는 「조세특례제한법」에 따라 1세대가 국내에 1개의 주택을 소유하고 있는 것으로 보거나 1세대 1주택으로 보아 제154조제1항이 적용되는 주택으로서 같은 항의 요건을 모두 충족하는 주택",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "4385d9f09d5e199c709c55e11edea4d58d0fb3b00d1995f35612275fc539201d",
+          "candidate_index": 34,
+          "expected": [
+            {
+              "quote": "제155조",
+              "start": 2748,
+              "end": 2753,
+              "target_refs": [
+                "제155조"
+              ]
+            }
+          ]
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "167의11",
+          "source_title": "1세대 2주택ㆍ조합원입주권 또는 분양권에서 제외되는 주택의 범위",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 647,
+          "paragraph_end": 677,
+          "text": "5. 제155조제8항에 따른 수도권 밖에 소재하는 주택",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "27134f7b68ced6f2550501c2705c8e2215bbff42d2a99394c5abc9f1f7bd7c11",
+          "candidate_index": 35,
+          "expected": [
+            {
+              "quote": "제155조제8항",
+              "start": 650,
+              "end": 658,
+              "target_refs": [
+                "제155조제8항"
+              ]
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "source_law": "소득세법",
+          "source_jo": "155",
+          "source_title": "원천징수의 배제",
+          "source_effective": "20260701",
+          "source_mst": "280405",
+          "paragraph_start": 0,
+          "paragraph_end": 137,
+          "text": "제155조(원천징수의 배제) 제127조제1항 각 호의 소득으로서 발생 후 지급되지 아니함으로써 소득세가 원천징수되지 아니한 소득이 종합소득에 합산되어 종합소득에 대한 소득세가 과세된 경우에 그 소득을 지급할 때에는 소득세를 원천징수하지 아니한다.",
+          "discovery": "literal-or-containing-range",
+          "own_heading": false,
+          "source_article_sha256": "b2317349196d9c17fa52f9b967ee4f3173d0665caa3f710ab8a9f4f994171f58",
+          "candidate_index": 2,
+          "reason": "소득세법 제155조 own heading"
+        },
+        {
+          "source_law": "소득세법 시행령",
+          "source_jo": "155",
+          "source_title": "1세대1주택의 특례",
+          "source_effective": "20260701",
+          "source_mst": "286211",
+          "paragraph_start": 0,
+          "paragraph_end": 17,
+          "text": "제155조(1세대1주택의 특례)",
+          "discovery": "literal-or-containing-range",
+          "own_heading": true,
+          "source_article_sha256": "b241cf96cabe1cac9efa88d0d01fc9ddc53013c159068627850affc2bf439454",
+          "candidate_index": 16,
+          "reason": "own article heading"
+        }
+      ]
+    }
+  ]
+}

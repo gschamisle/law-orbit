@@ -174,11 +174,15 @@ def get_law_text(law_mst: str, api_key: str = "", openai_key: str = "") -> dict[
                     if mok_text:
                         parts.append("    " + mok_text)
 
-        articles.append({
+        article = {
             "조번호": f"{no}의{sub}" if sub else no,
             "제목": title,
             "내용": "\n".join(parts),
-        })
+        }
+        notes = [_clean(node.text or "", oai_key) for node in jo.findall("조문참고자료")]
+        if any(notes):
+            article["참고자료"] = [note for note in notes if note]
+        articles.append(article)
 
     byeolpyo = _extract_byeolpyo(root, law_name)
     digest = hashlib.sha256(

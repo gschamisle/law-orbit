@@ -6,19 +6,30 @@ from dataclasses import dataclass, field
 # 한글 목은 호 바로 뒤에 붙는다. 캡처를 하나로 유지하여 아래 패턴의 기존
 # group 번호와 숫자 '제N목' 호환성을 보존한다. 단독 '가목'의 조·호는 추측하지 않는다.
 _MOK = r'(?:(?:제(?=\d)|(?<=호)(?=[가나다라마바사아자차카타파하]))(\d+|[가나다라마바사아자차카타파하])목)?'
+# Explicit historical-edition parentheses identify the owner but do not verify
+# the historical article body. No arbitrary parenthetical prose is skipped.
+_HISTORICAL_EDITION = (r'\((?:법률|대통령령|총리령|[가-힣]+부령)\s*제\s*\d+\s*호'
+                       r'[^()\n「」]*?개정되기\s*전의\s*것(?:을\s*말한다)?\)')
+HISTORICAL_EDITION_RE = re.compile(_HISTORICAL_EDITION)
 # 타법 인용: 「법령명」 제X조제Y항...  (최우선 파싱)
-_CROSS_LAW = r'「([^」]+)」\s*제(\d+)조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호)?' + _MOK
+_CROSS_LAW = r'「([^」]+)」\s*(?:' + _HISTORICAL_EDITION + r')?\s*제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?' + _MOK
 # 타법 인용: 법령명이 낫표 없이 직접 쓰인 경우 (예: 상속세 및 증여세법 제60조)
-_NAMED_LAW = r'([가-힣][가-힣\sㆍ·]{1,40}(?:법률|법|영|령|규칙))\s*제(\d+)조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호)?' + _MOK
+_NAMED_LAW = r'([가-힣][가-힣\sㆍ·]{1,40}(?:법률|법|영|령|규칙))\s*제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?' + _MOK
 # 같은 법/령/영/규칙 인용: 같은 법 제X조제Y항...
-_SAME_LAW = r'(같은\s*(?:법|령|영|규칙))\s*제(\d+)조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호)?' + _MOK
+_SAME_LAW = r'(같은\s*(?:법|령|영|규칙))\s*제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?' + _MOK
 # 같은 조 인용: 같은 조 제X항...
 _SAME_JO = r'(같은\s*조)\s*(?:제(\d+)항)?(?:제(\d+)호)?' + _MOK
+# 같은 항/동항은 명시 항 앵커를 요구한다. 단독 목도 원문으로 잡되 호를 추측하지 않는다.
+_SAME_HANG = (r'(?<![가-힣])(같은\s*항|동항)(?=\s|제\s*\d|[가-하]\s*목|[.,;()]|에|의|을|과|으로|상|$)\s*'
+              r'(?:제\s*(\d+)\s*호(?:\s*의\s*(\d+))?)?'
+              r'(?:\s*(?:제\s*(\d+)\s*목|([가나다라마바사아자차카타파하])\s*목))?')
 # 지시적 법령 인용: "법 제X조"(시행령·시행규칙→모법), "영 제X조"(시행규칙→시행령),
 # "이 법/이 영/이 규칙 제X조"(자기 참조). 법령명 끝글자 오인 방지를 위해 직전 한글 금지.
-_DEICTIC_LAW = r'(?<![가-힣ㆍ·」])(이\s*법|이\s*영|이\s*규칙|법|영|규칙)\s*제(\d+)조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호)?' + _MOK
+_DEICTIC_LAW = r'(?<![가-힣ㆍ·」])(이\s*법|이\s*영|이\s*규칙|법|영|규칙)\s*제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?' + _MOK
 # 조 번호를 포함한 직접 인용: 제X조, 제X조의Y, 제X조제Y항, ...
-_DIRECT = r"제(\d+)조(?:의(\d+))?(?:제(\d+)항)?(?:제(\d+)호)?" + _MOK
+# 공식 법인세법 시행규칙49③의 제95조1항처럼 조 바로 뒤의 항앞 제만 생략 허용.
+# 조의 가지번호 뒤·단독 항·임의 공백/문구에서는 제를 생략해 추측하지 않는다.
+_DIRECT = r"제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?" + _MOK
 # 항/호/목 범위 인용: 제X항부터 제Y항까지
 _RANGE = r"제(\d+)(항|호|목)(?:부터|에서)\s*제(\d+)(항|호|목)까지"
 # 조 범위 인용: 제X조부터 제Y조까지
@@ -38,6 +49,7 @@ CROSS_LAW_RE = re.compile(_CROSS_LAW)
 NAMED_LAW_RE = re.compile(_NAMED_LAW)
 SAME_LAW_RE = re.compile(_SAME_LAW)
 SAME_JO_RE = re.compile(_SAME_JO)
+SAME_HANG_RE = re.compile(_SAME_HANG)
 DEICTIC_LAW_RE = re.compile(_DEICTIC_LAW)
 DIRECT_RE = re.compile(_DIRECT)
 RANGE_RE = re.compile(_RANGE)
@@ -66,6 +78,7 @@ class Citation:
     relative: str = ""         # "같은법", "같은조" 등 문장 내 선행 참조 해석용
     is_junyo: bool = False     # "준용한다"로 끌어쓴 인용(준용)인지 — 단순 인용과 구분
     byeolpyo: str = ""         # 별표·별지서식 인용 시 표기(예: "별표 1", "별지 제40호서식")
+    edition_qualifier: str = ""  # 원문의 과거판본 한정; 그 판본의 본문을 검증했다는 뜻 아님
 
 
 # Citation.relative에 기록되는 지시적 참조 토큰 (공백 제거 정규화)
@@ -148,6 +161,19 @@ def _last_bracket_law(text: str, start: int, end: int) -> str:
     return matches[-1].group(1) if matches else ""
 
 
+def _anchor_in_closed_bracket(text: str, anchor: int, end: int) -> bool:
+    """An aside's citation must not own a later relative outside that aside."""
+    stack = []
+    for mark in re.finditer(r'[()[\]]', text[:end]):
+        if mark.group(0) in '([':
+            stack.append(mark.start())
+        elif stack:
+            start = stack.pop()
+            if start < anchor < mark.start():
+                return True
+    return False
+
+
 def _resolve_relative_citations(citations: list[Citation], text: str) -> None:
     """'같은 조'는 같은 문장 앞 조문으로, '같은 법'은 조문 전체에서 가장 최근 명시
     법령으로 해석한다.
@@ -173,6 +199,28 @@ def _resolve_relative_citations(citations: list[Citation], text: str) -> None:
                 # 앵커가 지시참조(영/법)·같은법이면 그 relative도 물려받아 effective가
                 # 모법·시행령으로 해석하게 한다('영 제186조 … 같은 조 제2항' 누락 방지)
                 cite.relative = anchor.relative
+                cite.edition_qualifier = anchor.edition_qualifier
+        elif cite.relative in ("같은항", "동항"):
+            sent_start = _sentence_start(text, cite.span[0])
+            previous = [c for c in citations[:idx] if c.span[0] >= sent_start]
+            # A nearer unresolved/paragraph-less/range citation is a barrier. Do
+            # not reach back past it to a convenient older paragraph number.
+            anchor = previous[-1] if previous else None
+            if (anchor is None or not anchor.jo or not anchor.hang
+                    or anchor.is_range or anchor.hang_end or anchor.byeolpyo
+                    or anchor.law_name.startswith("같은")
+                    or _anchor_in_closed_bracket(text, anchor.span[0], cite.span[0])
+                    or (cite.mok and not cite.ho)):
+                continue
+            # A new named law outside a completed aside makes the owner unclear.
+            # A name only inside a closed parenthetical does not replace the
+            # outer numbered anchor (VAT rule54(4)'s telecom-business example).
+            if any(not _anchor_in_closed_bracket(text, law.start(), cite.span[0])
+                   for law in _BRACKET_LAW_RE.finditer(text, anchor.span[1], cite.span[0])):
+                continue
+            cite.jo, cite.jo_sub, cite.hang = anchor.jo, anchor.jo_sub, anchor.hang
+            cite.law_name, cite.relative = anchor.law_name, anchor.relative
+            cite.edition_qualifier = anchor.edition_qualifier
         elif cite.law_name.startswith("같은"):
             # 조문 전체에서 가장 최근의 명시 법령(낫표·낫표없는 타법). 지시참조(법/영)·
             # 미해석 '같은…'은 제외.
@@ -213,6 +261,7 @@ def _resolve_range_law_names(citations: list[Citation]) -> None:
             if other.span[0] <= cite.span[0] < other.span[1]:
                 cite.law_name = other.law_name
                 cite.relative = other.relative
+                cite.edition_qualifier = other.edition_qualifier
                 break
 
 
@@ -225,7 +274,7 @@ def _resolve_range_law_names(citations: list[Citation]) -> None:
 # (농특세법 시행령 제4조: 「관세법」 제88조 … 제94조, 제96조부터 제101조까지 → 제94조 이후 단절).
 _CONN_RE = re.compile(r"및|와|과|또는|,|ㆍ|·")
 _CONN_FILLER_RE = re.compile(
-    r"제\s*\d+\s*(?:항|호|목)|[가나다라마바사아자차카타파하]\s*목|전단|후단|단서|본문|각\s*호|각\s*목|외의\s*부분|"
+    r"의\s*표\s*제\s*\d+\s*호|제\s*\d+\s*(?:항|호|목)|[가나다라마바사아자차카타파하]\s*목|전단|후단|단서|본문|각\s*호|각\s*목|외의\s*부분|"
     r"부터|까지|내지|항|호|목|\s"
 )
 
@@ -294,6 +343,15 @@ def _resolve_enumerated_law_names(citations: list[Citation], text: str) -> None:
         cur = citations[idx]
         if cur.law_name or cur.relative or cur.byeolpyo or not cur.jo:
             continue
+        # Historical-edition enumerations can themselves be inside a bracketed
+        # exception. Propagate only across their literal connective; never across
+        # the closing bracket or other substantive prose.
+        historical = next((p for p in reversed(citations[:idx]) if p.jo), None)
+        if (historical is not None and historical.edition_qualifier
+                and _is_connective(text[historical.span[1]:cur.span[0]])):
+            cur.law_name, cur.relative = historical.law_name, historical.relative
+            cur.edition_qualifier = historical.edition_qualifier
+            continue
         # 앵커 = jo를 가진 가장 가까운 앞 인용. 중간의 jo 없는 항·호 인용
         # ('제3항ㆍ제4항'의 '제4항' 등)과 괄호 속 인용은 건너뛰어 열거 체인을 잇는다.
         prev = next(
@@ -307,6 +365,7 @@ def _resolve_enumerated_law_names(citations: list[Citation], text: str) -> None:
             continue
         cur.law_name = prev.law_name
         cur.relative = prev.relative
+        cur.edition_qualifier = prev.edition_qualifier
 
 
 def trim_law_name(name: str) -> str:
@@ -344,6 +403,28 @@ def _byeolpyo_label(kind: str, num: str, sub: str) -> str:
     return f"별표 {num}" + (f"의{sub}" if sub else "")
 
 
+def _single_box_law_name(name: str, text: str, span: tuple[int, int]) -> str:
+    """Join one verified text wrap inside a single bordered formula box.
+
+    Preserve the source quotation and offsets. Multiple cells, nested quoted
+    names, missing box boundaries and more than one wrapped line stay unresolved.
+    """
+    wrap = re.fullmatch(r'([가-힣ㆍ· ]+?)[ \t]+│[ \t]*\r?\n[ \t]*│([가-힣ㆍ· ]+)', name)
+    if not wrap:
+        return name
+    start = text.rfind('┌', 0, span[0])
+    end = text.find('┘', span[1])
+    if start < 0 or end < 0:
+        return name
+    lines = text[start:end + 1].splitlines()
+    if (len(lines) < 3 or not re.fullmatch(r'┌─+┐', lines[0])
+            or not re.fullmatch(r'└─+┘', lines[-1])
+            or not all(re.fullmatch(r'│[^│┌┐└┘├┤┬┴┼]*│', line) for line in lines[1:-1])):
+        return name
+    normalized = ' '.join((wrap[1] + ' ' + wrap[2]).split())
+    return normalized if normalized.endswith(('법', '법률', '시행령', '시행규칙')) else name
+
+
 def parse_citations(text: str) -> list[Citation]:
     """텍스트에서 조문 인용 목록 추출."""
     results: list[Citation] = []
@@ -356,13 +437,14 @@ def parse_citations(text: str) -> list[Citation]:
         seen.add(m.span())
         results.append(Citation(
             raw=m.group(0),
-            law_name=m.group(1),
+            law_name=_single_box_law_name(m.group(1), text, m.span()),
             jo=m.group(2),
             jo_sub=m.group(3) or "",
             hang=m.group(4) or "",
             ho=m.group(5) or "",
             mok=m.group(6) or "",
             span=m.span(),
+            edition_qualifier=(historical.group(0) if (historical := HISTORICAL_EDITION_RE.search(m.group(0))) else ""),
         ))
 
     # 1.5. 낫표 없는 타법 인용: 법령명 제X조...
@@ -424,6 +506,22 @@ def parse_citations(text: str) -> list[Citation]:
             mok=m.group(4) or "",
             span=m.span(),
             relative="같은조",
+        ))
+
+    # 2.6. 같은 항/동항 제X호... The resolved paragraph is filled only from
+    # an unambiguous preceding anchor; unanchored tokens retain jo="".
+    for m in SAME_HANG_RE.finditer(text):
+        if _is_inside(m.span(), seen):
+            continue
+        # Avoid including trailing spacing when the token has no numbered tail.
+        end = m.start() + len(m.group(0).rstrip())
+        span = (m.start(), end)
+        seen.add(span)
+        results.append(Citation(
+            raw=text[span[0]:span[1]], jo="",
+            ho=(m.group(2) or "") + ('의' + m.group(3) if m.group(3) else ''),
+            mok=m.group(4) or m.group(5) or "",
+            span=span, relative=re.sub(r'\s+', '', m.group(1)),
         ))
 
     # 2.7. 지시적 법령 인용: 법/영/규칙 제X조 (시행령→모법 등)
