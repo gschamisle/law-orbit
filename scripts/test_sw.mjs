@@ -113,10 +113,16 @@ test('missing or incomplete new shell retains every old shell',async()=>{
 });
 
 test('unavailable cache inventory or replacement shell does not block activation or delete old data',async()=>{
- for(const options of [{keysError:Error('inventory unavailable')},{failRead:['law-orbit-shell-cache-cleanup-v1']}]){
+ for(const options of [{keysError:Error('inventory unavailable')},{failOpen:[]},{failRead:[]}]){
   const w=worker(options);w.seed(oldShell,[['./','old']]);seedProtected(w);
-  await w.lifecycle('install');await w.lifecycle('activate');
+  await w.lifecycle('install');
+  // Fail the actual replacement cache only during activation. A release may
+  // rename SHELL; a stale literal would silently stop injecting the failure.
+  (options.failOpen||options.failRead)?.push(w.shell);
+  await w.lifecycle('activate');
   assert(w.saved.has(oldShell));assert(w.saved.has(dataCache));assert(w.saved.has(manifestCache));
+  assert(w.saved.has(w.shell));
+  assert.equal(w.operations.filter(([op])=>op==='claim').length,1);
   assert.equal(w.operations.some(([op])=>op==='delete'),false);
  }
 });
