@@ -73,21 +73,15 @@ with st.container(key='page_galaxy'):
     with st.container(key='constitution_view'):
         mofe_map_ui.render('constitution')
     with st.container(key='field_views'):
-        tax, procurement, customs, forex, state_property, public_institutions, treasury, finance, ftc, labor, medical, local_tax, housing, environment = st.tabs([title for domain,title in DOMAINS.items() if domain!='constitution'])
-        with tax: law_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with procurement: procurement_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with finance: fsc_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with ftc: ftc_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with local_tax: local_tax_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with housing: housing_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with environment: environment_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with state_property: state_property_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with forex: forex_map_ui.render(LAW_API_KEY, OPENAI_API_KEY)
-        with public_institutions: mofe_map_ui.render('public_institutions')
-        with customs: mofe_map_ui.render('customs')
-        with treasury: mofe_map_ui.render('treasury')
-        with labor: mofe_map_ui.render('labor')
-        with medical: mofe_map_ui.render('medical')
+        fields=[domain for domain in DOMAINS if domain!='constitution']
+        tabs=dict(zip(fields,st.tabs([DOMAINS[d] for d in fields]),strict=True))
+        screens={'tax':law_map_ui,'procurement':procurement_map_ui,'fsc':fsc_map_ui,
+                 'ftc':ftc_map_ui,'local_tax':local_tax_map_ui,'housing':housing_map_ui,
+                 'environment':environment_map_ui,'state_property':state_property_map_ui,'forex':forex_map_ui}
+        for domain,tab in tabs.items():
+            with tab:
+                if domain in screens:screens[domain].render(LAW_API_KEY, OPENAI_API_KEY)
+                else:mofe_map_ui.render(domain)
 
 for key, label, module in pages[1:]:
     with st.container(key='page_' + key):

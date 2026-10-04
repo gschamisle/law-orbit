@@ -54,7 +54,7 @@ def prepare_text_aliases(document):
             document['alias_evidence'].append(dict(alias=alias,target_law=target,raw=text[m.start():m.end()],start=m.start(),end=m.end()))
 
 # Opt-in profiles: numeric items are source locations, never invented legal articles.
-TEXT_DOMAINS = ('ftc', 'treasury', 'procurement')
+TEXT_DOMAINS = ('ftc', 'treasury', 'procurement', 'prices', 'subsidy')
 ITEM_SECTION = re.compile(r'(?m)^[ \t]*(?:[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫIVX]+\.|\d+(?:-\d+)*\.|[□■○]\s*)[^\n]+')
 
 def source_locator(heading, profile):
@@ -63,6 +63,16 @@ def source_locator(heading, profile):
         number=re.match(r'\d+(?:-\d+)*\.\s*(?:\([^()\n]*\))?', label)
         if number:return number[0].strip()
     return label
+
+def paragraph_locator(headings, start, profile):
+    preceding=[h for h in headings if h.start()<=start]
+    if not preceding:return '본문'
+    locator=source_locator(preceding[-1],profile)
+    if profile=='prices':
+        parent=next((h[0].strip() for h in reversed(preceding)
+                     if re.match(r'^[ \t]*[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫIVX]+\.',h[0])),None)
+        if parent and parent!=locator:locator=parent+' / '+locator
+    return locator
 
 def collect_text_citations(source, *, profile='ftc'):
     if profile not in TEXT_DOMAINS or source.get('domain', profile) != profile:
@@ -83,8 +93,12 @@ def collect_text_citations(source, *, profile='ftc'):
         starts=sorted(set([0]+[h.start() for h in headings]+[len(text)]))
         for start,end in zip(starts,starts[1:]):
             raw=text[start:end];part={'text':scan[start:end],'jo':''}
-            locator=next((source_locator(h,profile) for h in reversed(headings) if h.start()<=start),'본문')
-            for c in adapter(deepcopy(parsing_doc),part,docs):
+            locator=paragraph_locator(headings,start,profile)
+            citations=adapter(deepcopy(parsing_doc),part,docs)
+            if profile=='prices':
+                from core.prices_citations import bare_law_references
+                citations+=bare_law_references(part,docs,citations)
+            for c in sorted(citations,key=lambda r:r['start']):
                 dest=by_name.get(norm(c['target_name']));kind=c.get('kind','article')
                 if kind=='law' and not dest and not c['target_name'].endswith(('법','법률','시행령','시행규칙','규칙','고시','지침','기준','규정','요령')):continue
                 a,b=start+c['start'],start+c['end'];owner=dest['name'] if dest else c['target_name']

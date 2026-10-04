@@ -3,7 +3,7 @@ from copy import deepcopy
 from core.fsc_collection import CollectionError,norm,ymd
 from core.procurement_collection import record,discover_query,collect_sources
 from core.fsc_administrative import index_rule
-from core.mofe_profiles import WORK_PROFILES as PROFILES,selected,tags
+from core.mofe_profiles import WORK_PROFILES as PROFILES,selected,tags,CANDIDATE_DOMAINS
 
 LABELS={
  '공기업·준정부기관 계약사무규칙':'공기업·준정부 계약규칙',
@@ -61,14 +61,15 @@ def prepare_source(source):
         result['administrative_rules'][i]=parsed
     for d in result['laws']+result['administrative_rules']:
         if d['category']!=domain or not selected(domain,d['name'],d['managing_authority'],d['provider']):
-            raise ValueError('재경부 분야 수집 범위 불일치')
+            raise ValueError('분야별 수집 범위 불일치')
         display=next((v for k,v in LABELS.items() if norm(k)==norm(d['name'])),None)
         d['display_name']=display or d.get('short_name') or d['name'].replace(' 사무처리에 관한 고시',' 고시').replace(' 운영에 관한 고시',' 운영 고시')
         # Display abbreviations are not legal citation aliases.
         d['citation_names']=list(dict.fromkeys([n for n in (d['name'],d.get('short_name')) if n]))
         d['sectors']=tags(domain,d['name'],'')
-        if domain=='medical':
-            from core.medical_profile import document_tags
+        if domain=='medical' or domain in CANDIDATE_DOMAINS:
+            from importlib import import_module
+            document_tags=import_module('core.'+domain+'_profile').document_tags
             d['sectors']=document_tags(d['name'])
         reference_role=''
         if domain=='public_institutions':
@@ -80,8 +81,9 @@ def prepare_source(source):
             if domain=='labor':
                 from core.labor_profile import article_tags
                 a['sectors']=list(dict.fromkeys(a['sectors']+article_tags(d['name'],a)))
-            if domain=='medical':
-                from core.medical_profile import article_tags
+            if domain=='medical' or domain in CANDIDATE_DOMAINS:
+                from importlib import import_module
+                article_tags=import_module('core.'+domain+'_profile').article_tags
                 a['sectors']=article_tags(d['name'],a)
             if reference_role:
                 a['sectors']=list(dict.fromkeys(a['sectors']+(['scope'] if reference_role=='scope-reference' else ['privatization'])))

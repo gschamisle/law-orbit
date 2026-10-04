@@ -182,7 +182,7 @@ class HealthcareSiteTests(unittest.TestCase):
         self.assertEqual((domain['title'], domain['laws']), ('보건·의료', 9))
         self.assertEqual(catalog['sector_aliases'], {'opening': 'health'})
         self.assertEqual(Storage(destination, final).read(catalog['overview'])['galaxy_title'], '보건·의료')
-        self.assertEqual(len(result['untouched_domains']), 14)
+        self.assertEqual(len(result['untouched_domains']), len(self.original['domains'])-1)
         self.assertEqual(result['preserved_medical']['documents'], 8)
         self.assertEqual(len(result['preserved_medical']['annexes']), 4)
         self.assertEqual(result['added_documents'], 1)

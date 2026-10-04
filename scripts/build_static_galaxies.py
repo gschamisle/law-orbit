@@ -22,7 +22,7 @@ from core.law_galaxy import build as build_map
 from core.domain_navigation import DOMAINS
 
 ROOT=Path(__file__).resolve().parents[1]
-WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical')
+WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical','privacy','prices','subsidy')
 PALETTE=['#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed','#cedc80','#ffa58e','#91a1ff']
 LIMIT=24*1024*1024
 from core.annex_metadata import annex_index, annotate_annex
@@ -176,7 +176,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
     for d in docs:
         if write_names is not None and d['name'] not in write_names:continue
         entry=metadata(d,domain,region);entry['id']=ids[d['name']]
-        if domain in ('ftc','treasury','procurement') and d.get('text_analysis'):entry['text_analysis']=d['text_analysis']
+        if domain in ('ftc','treasury','procurement','prices','subsidy') and d.get('text_analysis'):entry['text_analysis']=d['text_analysis']
         if domain=='forex':
             entry.update(source_notes=d.get('source_notes',[]),unparsed_provisions=d.get('unparsed_provisions',[]),
                          pdf_url=safe_url(d.get('pdf_url','')),article_sectors={a['jo']:a.get('sectors',[]) for a in d['articles']})
@@ -239,7 +239,7 @@ def export_documents(writer,domain,region,docs,graph,*,write_names=None,central_
                         row={**e,'raw':e['cite_raw'],'direction':'forward','neighbor_kind':kind,'neighbor_jo':jo,'neighbor_law':e['target_law'],'neighbor_ref':e['target_ref'],'external':e['target_law'] not in ids}
                         item['connections'].append(public_row(row))
                 extra['annexes'].append(item)
-        if domain in ('ftc','treasury','procurement') and d.get('text_analysis'):
+        if domain in ('ftc','treasury','procurement','prices','subsidy') and d.get('text_analysis'):
             extra.update(text_connections=text_forward[d['name']],text_issues=[i for i in graph.get('text_citation_issues',[]) if i['source_law']==d['name']])
         entry['file']=writer.data(dict(meta=entry,articles=articles,details=inline,broad=broad,unstructured_text=body,**extra))
         result.append(entry)
@@ -305,15 +305,19 @@ def build(source,dest,previous_site=None):
             # Keep the same no-unconnected-external-law overview as the tax app.
             entries,ids=export_documents(writer,domain,'',docs,graph)
             map_graph=graph
-            if domain=='ftc':
+            if domain in ('ftc','privacy','prices','subsidy'):
                 from core.ftc_universe import overview_graph
                 map_graph=overview_graph(bundle)
             catalog=dict(laws=entries,overview=writer.data(overview(map_graph,domain,ids,entries)),coverage=graph.get('coverage_note','수집한 명시적 인용 범위입니다.'),built_at=graph['built_at'],sectors={'all':'전체 연결',**sectors})
-            if domain in ('treasury','procurement'):
+            if domain in ('treasury','procurement','prices','subsidy'):
                 catalog['text_summary']=dict(documents=sum(bool(d.get('text_analysis')) for d in docs),citations=len(graph.get('text_citations',[])),issues=len(graph.get('text_citation_issues',[])))
             if domain=='state_property':catalog['special_cases']=writer.data(export_special_cases(src['special_cases'],ids))
             if domain in WORK_DOMAINS:
                 catalog['workbench']=workbench(bundle,ids)
+                from core.mofe_profiles import WORK_PROFILES
+                if domain in ('privacy','prices','subsidy'):
+                    catalog['default_laws']=WORK_PROFILES[domain]['default_laws']
+                    catalog['default_refs']=WORK_PROFILES[domain]['default_refs']
                 from core.mofe_profiles import WORK_PROFILES
                 if WORK_PROFILES[domain].get('sector_aliases'):
                     catalog['sector_aliases']=WORK_PROFILES[domain]['sector_aliases']
@@ -337,7 +341,7 @@ def workbench(bundle,ids):
     from core.mofe_universe import assessment
     result=assessment(bundle)
     if result['decision']=='hold':raise ValueError('업무 질문의 인용 근거 검증을 통과하지 못한 분야입니다.')
-    result['cases']=[{**c,'law_id':ids[c['law']]} for c in result['cases'] if c['available']]
+    result['cases']=[{**c,'law_id':ids[c['law']],'reference':Provision(c['jo']).label} for c in result['cases'] if c['available']]
     if bundle['graph'].get('constitution_guide'):
         from copy import deepcopy
         result['constitution_guide']=deepcopy(bundle['graph']['constitution_guide'])

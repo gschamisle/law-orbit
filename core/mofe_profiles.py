@@ -103,9 +103,17 @@ from core.labor_profile import PROFILE as LABOR_PROFILE
 # Reuse the work-area engine without reclassifying labor as a MOFE corpus.
 from core.constitution_profile import PROFILE as CONSTITUTION_PROFILE
 from core.medical_profile import PROFILE as MEDICAL_PROFILE
-WORK_PROFILES={**PROFILES,'labor':LABOR_PROFILE,'constitution':CONSTITUTION_PROFILE,'medical':MEDICAL_PROFILE}
+from core.privacy_profile import PROFILE as PRIVACY_PROFILE
+from core.prices_profile import PROFILE as PRICES_PROFILE
+from core.subsidy_profile import PROFILE as SUBSIDY_PROFILE
+CANDIDATE_DOMAINS=('privacy','prices','subsidy')
+WORK_PROFILES={**PROFILES,'labor':LABOR_PROFILE,'constitution':CONSTITUTION_PROFILE,'medical':MEDICAL_PROFILE,
+               'privacy':PRIVACY_PROFILE,'prices':PRICES_PROFILE,'subsidy':SUBSIDY_PROFILE}
 
 def selected(domain,name,authority,provider):
+    if domain in CANDIDATE_DOMAINS:
+        from importlib import import_module
+        return import_module('core.'+domain+'_profile').selected(name,authority,provider)
     if domain=='constitution':
         from core.constitution_profile import selected as constitution_selected
         return constitution_selected(name,authority,provider)
@@ -134,4 +142,4 @@ def selected(domain,name,authority,provider):
 def tags(domain,name,text):
     p=WORK_PROFILES[domain];value=norm(name+' '+text)
     matches=[s for s,words in p['keywords'].items() if any(norm(w) in value for w in words)]
-    return matches if domain in ('labor','constitution','medical') else matches or [next(iter(p['keywords']))]
+    return matches if domain in ('labor','constitution','medical',*CANDIDATE_DOMAINS) else matches or [next(iter(p['keywords']))]

@@ -122,8 +122,9 @@ def build(base, bundle, destination):
     bundle_raw = bundle_path.read_bytes()
     original = json.loads(manifest_raw)
     ids = [d['id'] for d in original['domains']]
-    if len(ids) != 15 or len(set(ids)) != 15 or ids.count(DOMAIN) != 1:
-        raise ValueError('Expected the published fifteen-domain base snapshot')
+    required={'constitution','tax','procurement','customs','forex','state_property','public_institutions','treasury','fsc','ftc','labor','medical','local_tax','housing','environment'}
+    if len(ids)!=len(set(ids)) or not required.issubset(ids) or ids.count(DOMAIN)!=1:
+        raise ValueError('Expected all original published fields with one healthcare field')
     baseline = validate(base)
     source_bundle = validate_bundle(json.loads(bundle_raw), DOMAIN)
     acceptance = assessment(source_bundle)
@@ -160,7 +161,7 @@ def build(base, bundle, destination):
     (stage / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     materialize_reachable(base, stage, manifest)
     convert(stage, destination, validate_site=False)
-    print('Packed the healthcare expansion; validating all fifteen domains', flush=True)
+    print('Packed the healthcare expansion; validating every original field and healthcare', flush=True)
     verification = validate(destination)
     final = json.loads((destination / 'manifest.json').read_bytes())
     unchanged = check_unchanged_domains(base, destination, original, final)

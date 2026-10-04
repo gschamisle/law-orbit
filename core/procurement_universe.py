@@ -45,7 +45,7 @@ def build_graph(source, *, domain="procurement", coverage_note=None, article_ada
     graph['coverage'] = dict(scope=source['inventory']['scope'], supplement='not-indexed', annex_body='not-indexed',
                              chapters_sections='not-indexed', external_reverse='not-collected', semantic_similarity='not-analyzed')
     if annex_bodies:graph['coverage']['annex_body']='selected-verified-annexes; explicit citations only'
-    if domain in ('procurement', 'treasury'):
+    if domain in ('procurement', 'treasury', 'prices', 'subsidy'):
         from core.ftc_text_citations import collect_text_citations, validate_text_citations
         rows, issues = collect_text_citations(source, profile=domain)
         validate_text_citations(source, rows)
@@ -85,7 +85,7 @@ def validate_bundle(bundle, *, domain="procurement"):
         raise ValueError('기본 지도에 미수집 대상이 포함되었습니다.')
     if any(e['source_law'] not in names or e['target_law'] in names for e in graph.get('external_references',[])):
         raise ValueError('외부 인용 상태가 잘못되었습니다.')
-    if domain in ('procurement','treasury'):
+    if domain in ('procurement','treasury','prices','subsidy'):
         from core.ftc_text_citations import validate_text_citations
         validate_text_citations(source, graph.get('text_citations',[]))
     return bundle

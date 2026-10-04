@@ -157,7 +157,7 @@ function usesArticleTags() {
 function readableUnstructured(document) {
   const raw = document.unstructured_text || '';
   if (
-    !['public_institutions', 'customs', 'treasury', 'ftc', 'procurement', 'labor'].includes(
+    !['public_institutions', 'customs', 'treasury', 'ftc', 'procurement', 'labor', 'privacy', 'prices', 'subsidy'].includes(
       document.meta?.domain,
     )
   )
@@ -374,11 +374,16 @@ function renderWorkbench() {
     work = catalog.workbench;
   box.hidden = !work;
   box.replaceChildren();
+  const entry = work?.entry_guide;
+  const controls = document.querySelector('main > .controls');
+  const anchor = document.querySelector('main > .followup-entry');
+  if (entry?.first) controls.before(box);
+  else anchor.before(box);
   if (!work) return;
   const head = document.createElement('div');
   head.className = 'workbench-head';
-  head.append(
-    text('h2', domain === 'constitution' ? '헌법에서 시작하기' : '업무 질문으로 시작'),
+  head.append(text('h2', entry?.title || (domain === 'constitution' ? '헌법에서 시작하기' : '업무 질문으로 시작')));
+  if (!entry) head.append(
     text(
       'span',
       `조문 분석 ${work.indexed_documents} / 수집 ${work.documents}개 문서`,
@@ -386,20 +391,28 @@ function renderWorkbench() {
     ),
   );
   box.append(head, text('p', work.purpose, 'muted small'));
+  if (entry?.note) box.append(text('p', entry.note, 'muted small'));
   const cases = document.createElement('div');
   cases.className = 'work-cases';
   for (const c of work.cases) {
     const b = text('button', c.title, 'work-case');
     b.type = 'button';
     b.append(
-      text('small', `${c.law} 제${c.jo}조 · 다른 문서의 연결 조문 ${c.connected_articles}개`),
+      text('small', `${c.law} ${c.reference || `제${c.jo}조`} · 다른 문서의 연결 조문 ${c.connected_articles}개`),
     );
+    if (entry) b.append(text('span', c.description, 'work-description'));
     b.title = c.description;
     b.onclick = () =>
-      navigate(domain, { sector: 'all', law: c.law_id, reference: `제${c.jo}조`, query: '' });
+      navigate(domain, { sector: 'all', law: c.law_id, reference: c.reference || `제${c.jo}조`, query: '' });
     cases.append(b);
   }
   box.append(cases);
+  for (const source of work.companion_sources.filter((s) => s.kind === 'reader')) {
+    const p = text('p', '보호법을 깊이 읽을 때 · ', 'muted small work-reader');
+    p.append(link(source.url, source.title + ' ↗'));
+    if (source.description) p.append(text('span', ' ' + source.description));
+    box.append(p);
+  }
   const scope = text(
     'button',
     `지원 범위·빠진 자료 확인${work.unindexed.length ? ' · ' + work.unindexed.length + '개 문서의 분석 범위 확인' : ''} ↗`,
@@ -577,7 +590,7 @@ async function navigate(id, overrides = {}) {
     document.querySelector('.page-head p').textContent =
       id === 'constitution'
         ? '헌법에서 출발해, 원칙을 구체화하는 법률을 읽습니다.'
-        : '조문을 불러오면, 함께 살펴볼 법이 보입니다.';
+        : catalog.workbench?.entry_guide?.subtitle || '조문을 불러오면, 함께 살펴볼 법이 보입니다.';
     special = null;
     specialScope = {};
     if ($('special').open) $('special').close();
@@ -623,13 +636,15 @@ async function navigate(id, overrides = {}) {
       public: ['지역보건법', '제11조'],
       insurance: ['국민건강보험법', '제42조'],
     }[state.sector] || ['의료법', '제43조'];
-    const preferred = id === 'medical' ? medicalDefault[0] : defaults[id];
+    const configuredLaw = catalog.default_laws?.[state.sector] || catalog.default_laws?.all;
+    const configuredRef = catalog.default_refs?.[state.sector] || catalog.default_refs?.all;
+    const preferred = configuredLaw || (id === 'medical' ? medicalDefault[0] : defaults[id]);
     const chosen = lookup.get(state.law) || choices.find((d) => d.name === preferred) || choices[0];
     const previousQuery = state.query;
     if (chosen) {
       await openLaw(
         chosen.id,
-        state.reference ||
+        state.reference || (chosen.name === configuredLaw ? configuredRef : '') ||
           (id === 'ftc' && chosen.name === defaults.ftc
             ? '제45조'
             : id === 'labor' && chosen.name === defaults.labor

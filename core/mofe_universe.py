@@ -70,7 +70,7 @@ def present(data,graph,sector):
 
 def assessment(bundle):
     from core.galaxy_focus import analyze_focus
-    from core.citation_scope import parse_target
+    from core.citation_scope import parse_target,Provision
     domain=bundle['graph']['domain'];p=PROFILES[domain];g=bundle['graph'];docs=documents(bundle['source'])
     pairs=set();incident=Counter();cross=[];missing=[]
     indexed={(d['name'],a['jo']) for d in docs for a in d['articles']}
@@ -87,19 +87,28 @@ def assessment(bundle):
     for law,jo,title,description in p['cases']:
         from core.fsc_collection import norm
         law=next((d['name'] for d in docs if norm(d['name'])==norm(law)),law)
-        article_for(bundle,law,'제'+jo+'조')
-        result=analyze_focus(law,'제'+jo+'조',g)
+        article_for(bundle,law,Provision(jo).label)
+        result=analyze_focus(law,Provision(jo).label,g)
         useful=[r for r in result['rows'] if r['neighbor_kind']=='article' and r['neighbor_law']!=law and (r['neighbor_law'],r['neighbor_jo']) in indexed]
         cases.append(dict(law=law,jo=jo,title=title,description=description,
             connected_articles=len({(r['neighbor_law'],r['neighbor_jo']) for r in useful}),
             evidence_ids=list(dict.fromkeys(r['evidence_id'] for r in useful)),
             forward=sum(r['direction']=='forward' for r in useful),reverse=sum(r['direction']=='reverse' for r in useful),
             available=bool(useful)))
+    if p.get('case_expectations'):
+        from core.candidate_evidence import case_proof
+        for case in cases:
+            expected=next((v for (law,jo),v in p['case_expectations'].items()
+                           if norm(law)==norm(case['law']) and jo==case['jo']),())
+            proof=case_proof(g,expected,known_articles=indexed)
+            case.update(available=proof['available'],case_proof=proof)
+            case['evidence_ids']=list(dict.fromkeys(case['evidence_ids']+proof['evidence_ids']))
     # This is a release gate for a demonstrable task, not a numerical usefulness rating.
     eligible=sum(c['available'] for c in cases)>=2 and len({(e['source_law'],e['target_law']) for e in cross})>=2
+    if p.get('case_expectations'):eligible=len(cases)>=3 and all(c['available'] for c in cases)
     unindexed=[dict(name=d['name'],status=d.get('analysis_error','미분석'),url=d['source_url']) for d in docs if not d['articles']]
     return dict(domain=domain,title=p['title'],purpose=p['purpose'],decision='limited-release' if eligible else 'hold',
-        decision_basis='2개 이상의 실무 질문에서 서로 다른 문서의 수집 조문과 인용 원문을 확인할 수 있어야 공개합니다. 사용성·개정 필요성의 정량 점수는 아닙니다.',
+        decision_basis=('선정한 모든 업무 질문에서 사전에 확인한 공식 원문의 정확한 인용 관계를 재현해야 공개합니다. 연결 수를 효용 점수로 사용하지 않습니다.' if p.get('case_expectations') else '2개 이상의 실무 질문에서 서로 다른 문서의 수집 조문과 인용 원문을 확인할 수 있어야 공개합니다. 사용성·개정 필요성의 정량 점수는 아닙니다.'),
         cases=cases,documents=len(docs),indexed_documents=sum(bool(d['articles']) for d in docs),
         articles=sum(len(d['articles']) for d in docs),unique_article_connections=len(pairs),
         cross_document_evidence=len(cross),cross_document_pairs=len({(e['source_law'],e['target_law']) for e in cross}),
@@ -107,7 +116,8 @@ def assessment(bundle):
         target_article_unavailable=len(missing),unindexed=unindexed,
         isolated_documents=[d['name'] for d in docs if d['articles'] and not incident[d['name']]],
         limitations=p['limitations'],companion_sources=p['companion_sources'],
-        unavailable_selected_rules=bundle['source']['inventory'].get('unavailable_selected_rules',[]))
+        unavailable_selected_rules=bundle['source']['inventory'].get('unavailable_selected_rules',[]),
+        **({'entry_guide':dict(p['entry_guide'])} if p.get('entry_guide') else {}))
 
 def report(bundle):
     p=PROFILES[bundle['graph']['domain']]

@@ -90,7 +90,13 @@
       "scripts/test_public_scope.mjs",
       "scripts/test_reading.mjs",
       "scripts/test_store.mjs",
-      "scripts/test_sw.mjs"
+      "scripts/test_sw.mjs",
+      "scripts/test_privacy_profile.py",
+      "scripts/test_prices_profile.py",
+      "scripts/test_subsidy_profile.py",
+      "scripts/test_candidate_collection.py",
+      "scripts/test_candidate_site.py",
+      "scripts/test_candidate_evidence.py"
     ],
     "collected": [
       "scripts/test_procurement_ui.py",
