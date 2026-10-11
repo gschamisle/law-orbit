@@ -96,7 +96,7 @@ def index_rule(rule: dict) -> dict:
                              effective=rule['effective'],blocks=provision_blocks(raw,jo),
                              body_start=h.start(), heading_raw=h[0].strip()))
     aliases, evidence = aliases_from(main)
-    result.update(articles=articles, annexes=[], aliases=aliases, alias_evidence=evidence,
+    result.update(articles=articles, annexes=deepcopy(rule.get('annexes',[])), aliases=aliases, alias_evidence=evidence,
                   body_status='indexed-administrative-text' if articles else 'collected-not-indexed',
                   coverage=dict(provisions='parsed' if articles else 'no-supported-article-headings',
                                 supplement='not-indexed',annex_body='not-indexed',
@@ -182,8 +182,10 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
             derivative = re.search(r'「([^」]+)」\s*(시행령|시행규칙)\s*$',before)
         named = prefix.search(before)
         same = re.search(r'같은\s*(법|영|시행령|규칙|시행규칙|규정|세칙|조례)\s*$',before)
-        if strict:same=re.search(r'같은\s*(법\s*시행령|법\s*시행규칙|법|영|시행령|규칙|시행규칙|규정|세칙|조례)\s*$',before)
+        if strict:same=re.search(r'(?:같은|동)\s*(법\s*시행령|법\s*시행규칙|법|영|시행령|규칙|시행규칙|규정|세칙|조례)\s*$',before)
         review = False
+        from core.citation_ownership import joined_owner
+        continuation = strict and previous_owner and joined_owner(text[previous_end:match.start()])
         if derivative:
             owner, start = derivative[1]+' '+derivative[2], derivative.start()
         elif quote:
@@ -198,6 +200,8 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
                 owner = re.sub(r'\s*시행(?:령|규칙)$','',owner) + (' 시행령' if derivative_token in ('영','시행령','법시행령') else ' 시행규칙')
         elif named:
             owner, start = aliases[norm(named[1])], named.start()
+        elif continuation:
+            owner, start, review = previous_owner, match.start(), True
         elif previous_owner and re.fullmatch(r'\s*(?:및|,|ㆍ|·)\s*동조\s*준용규정\s*[,ㆍ·]\s*',text[previous_end:match.start()]):
             owner, start, review = previous_owner,match.start(),True
         else:
@@ -215,9 +219,13 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
         raw = text[start:end]
         occupied.append((start,end))
         if not owner:
+            previous_owner, previous_end = '', end
             issues.append(dict(raw=raw,start=start,end=end,reason='인용 법령·규정의 별칭 또는 상대 참조 미해결'))
             continue
-        if quote or derivative or named or same: previous_owner = owner
+        if quote or derivative or named or same or continuation:
+            previous_owner = owner
+        elif strict:
+            previous_owner = ""
         previous_end = end
         scope_text=text[match.start():end]
         if strict:scope_text=re.sub(r'\([^()]*\)','',scope_text)
@@ -241,12 +249,14 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
             if strict and missing:
                 issues.append(dict(raw=raw,start=start,end=end,reason=f'수집 판본에 대상 조문 없음 · {owner} {ref} · 대상 해석 또는 판본 확인 필요'))
                 continue
+            from core.citation_history import movement_review
+            history = movement_review(dest, target, article.get('effective') or law.get('effective', '')) if strict else {}
             outputs.append(dict(target_name=owner,target_ref=ref,raw=raw,start=start,end=end,
                                 relation='junyo' if re.match(r'\s*(?:을|를)?\s*준용',text[end:]) else 'direct',
-                                via_range=bool(ranges),target_provision_status='missing-from-collected-body' if missing else 'deleted' if deleted else 'collected' if dest else 'not-collected',
-                                context_review=bool(missing or deleted or review or parsed.review_reason or
+                                via_range=bool(ranges),target_provision_status=history.get('target_provision_status') or ('missing-from-collected-body' if missing else 'deleted' if deleted else 'collected' if dest else 'not-collected'),
+                                context_review=bool(history or missing or deleted or review or parsed.review_reason or
                                       re.search(r'제외|한정|단서|불구',text[max(0,start-30):end+30])),
-                                alias_basis=[e for e in law.get('alias_evidence',[]) if norm(e['alias']) in norm(raw)]))
+                                alias_basis=[e for e in law.get('alias_evidence',[]) if norm(e['alias']) in norm(raw)], **{k:v for k,v in history.items() if k not in ('context_review','target_provision_status')}))
             if missing:
                 issues.append(dict(raw=raw,start=start,end=end,reason=f'수집 판본에 대상 조문 없음 · {owner} {ref} 원문 확인 필요'))
     # Keep document-level quoted references separate from definite article links.

@@ -24,30 +24,51 @@ def article_projection(document, effective):
             for a in document['articles']]
 
 
-def check_current_documents(base, catalog, source):
-    """Allow additions and retagging, never replace the eight published editions."""
+def edition_signature(document, effective):
+    return hashlib.sha256(json.dumps(article_projection(document,effective),ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
+
+
+def annex_signature(document):
+    metadata = [{k:a.get(k) for k in ('ref','title','effective','urls')}
+                for a in document.get('annexes',[])]
+    return hashlib.sha256(json.dumps(metadata,ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
+
+
+def check_current_documents(base, catalog, source, updates=None):
+    """Require exact reviewed fingerprints for newer editions; preserve analysed annexes."""
+    updates = updates or {}
     storage = Storage(base)
     docs = documents(source)
     by_name = {d['name']: d for d in docs}
     entries = {e['name']: e for e in catalog['laws']}
     if len(by_name) != len(docs) or len(entries) != len(catalog['laws']):
         raise ValueError('Duplicate medical document name')
-    if len(entries) != 8 or not entries.keys() <= by_name.keys():
-        raise ValueError('Original eight medical documents are missing')
+    if len(entries) < 8 or not entries.keys() <= by_name.keys():
+        raise ValueError('Published medical documents are missing')
     analyses = []
     article_count = 0
     for name, entry in entries.items():
         current, law = storage.read(entry['file']), by_name[name]
-        if (law['effective'] != entry['effective'] or
-                article_projection(law, law['effective']) != article_projection(current, entry['effective'])):
-            raise ValueError('Current public edition changed: ' + name)
+        changed_edition = (law['effective'] != entry['effective'] or
+                article_projection(law, law['effective']) != article_projection(current, entry['effective']))
+        if changed_edition:
+            approved = updates.get(name, {})
+            if (not approved or approved.get('old_effective') != entry['effective']
+                    or approved.get('new_effective') != law['effective']
+                    or law['effective'] <= entry['effective']
+                    or approved.get('old_signature') != edition_signature(current,entry['effective'])
+                    or approved.get('new_signature') != edition_signature(law,law['effective'])
+                    or approved.get('old_annex_signature') != annex_signature(current)
+                    or approved.get('new_annex_signature') != annex_signature(law)):
+                raise ValueError('Current public edition changed: ' + name)
         article_count += len(current['articles'])
         annexes = {a['ref']: a for a in law.get('annexes', [])}
         if len(annexes) != len(law.get('annexes', [])):
             raise ValueError('Duplicate medical annex reference: ' + name)
         for old in current.get('annexes', []):
             new = annexes.get(old['ref'])
-            if new is None or any(old.get(k) != new.get(k) for k in ('ref', 'title', 'effective', 'urls')):
+            if (not changed_edition or old.get('analysis')) and (new is None or
+                    any(old.get(k) != new.get(k) for k in ('ref', 'title', 'effective', 'urls'))):
                 raise ValueError('Published annex identity changed: ' + name + ' ' + old['ref'])
             if old.get('analysis'):
                 if old['analysis'] != new.get('body_analysis'):
@@ -60,7 +81,7 @@ def check_current_documents(base, catalog, source):
     return dict(documents=len(entries), articles=article_count, annexes=analyses)
 
 
-def check_exported_documents(base, old_catalog, destination, new_catalog):
+def check_exported_documents(base, old_catalog, destination, new_catalog, updates=None):
     """Recheck the public export, independently of the source-to-export pipeline."""
     storage = Storage(destination)
     docs = []
@@ -69,7 +90,7 @@ def check_exported_documents(base, old_catalog, destination, new_catalog):
         docs.append(dict(name=entry['name'], effective=entry['effective'], articles=public['articles'],
                          annexes=[{**a, 'body_analysis': a.get('analysis')}
                                   for a in public.get('annexes', [])]))
-    return check_current_documents(base, old_catalog, dict(laws=docs))
+    return check_current_documents(base, old_catalog, dict(laws=docs), updates)
 
 
 def check_unchanged_domains(base, destination, original, final):
@@ -116,8 +137,9 @@ def output_paths(base, bundle, destination):
     return base, bundle, destination, stage, result
 
 
-def build(base, bundle, destination):
+def build(base, bundle, destination, edition_updates=None):
     base, bundle_path, destination, stage, result_path = output_paths(base, bundle, destination)
+    updates = json.loads(Path(edition_updates).read_bytes()) if edition_updates else {}
     manifest_raw = (base / 'manifest.json').read_bytes()
     bundle_raw = bundle_path.read_bytes()
     original = json.loads(manifest_raw)
@@ -133,8 +155,8 @@ def build(base, bundle, destination):
     source, graph = source_bundle['source'], source_bundle['graph']
     old_domain = next(d for d in original['domains'] if d['id'] == DOMAIN)
     old_catalog = Storage(base, original).read(old_domain['catalog'])
-    preserved = check_current_documents(base, old_catalog, source)
-    print('Verified the original eight medical editions and four annex analyses', flush=True)
+    preserved = check_current_documents(base, old_catalog, source, updates)
+    print('Verified all published medical editions and four annex analyses', flush=True)
 
     stage.mkdir(parents=True)
     # Uses the current reviewed web shell and introduction; no source-site files are edited.
@@ -165,13 +187,13 @@ def build(base, bundle, destination):
     verification = validate(destination)
     final = json.loads((destination / 'manifest.json').read_bytes())
     unchanged = check_unchanged_domains(base, destination, original, final)
-    check_exported_documents(base, old_catalog, destination, catalog)
+    check_exported_documents(base, old_catalog, destination, catalog, updates)
     if (base / 'manifest.json').read_bytes() != manifest_raw or bundle_path.read_bytes() != bundle_raw:
         raise ValueError('Immutable source changed during build')
     result = dict(verification=verification, baseline_verification=baseline,
                   base_manifest_sha256=hashlib.sha256(manifest_raw).hexdigest(),
                   healthcare_source_sha256=hashlib.sha256(bundle_raw).hexdigest(),
-                  preserved_medical=preserved, **unchanged, collection=collection,
+                  preserved_medical=preserved, reviewed_edition_updates=updates, **unchanged, collection=collection,
                   current_documents=len(entries), current_articles=sum(len(d['articles']) for d in documents(source)),
                   added_documents=len(entries)-preserved['documents'], source_unchanged=True)
     result_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -182,5 +204,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('base-site', 'bundle', 'destination'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--edition-updates', type=Path)
     args = parser.parse_args()
-    print(json.dumps(build(args.base_site, args.bundle, args.destination), ensure_ascii=False, indent=2))
+    print(json.dumps(build(args.base_site, args.bundle, args.destination, args.edition_updates), ensure_ascii=False, indent=2))

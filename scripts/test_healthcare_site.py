@@ -94,6 +94,52 @@ class HealthcareSiteTests(unittest.TestCase):
         expanded['laws'][0]['articles'][0]['sectors'] = ['health']
         self.assertEqual(site.check_current_documents(self.base, self.catalog, expanded)['documents'], 8)
 
+    def test_reviewed_edition_updates_require_exact_old_and_new_signatures(self):
+        expanded = deepcopy(self.source)
+        law = expanded['laws'][0]
+        old = Storage(self.base).read(self.catalog['laws'][0]['file'])
+        law['effective'] = '20261012'
+        law['articles'][0]['effective'] = '20261012'
+        law['articles'][0]['text'] += ' 공식 개정 문구'
+        spec = {law['name']:dict(old_effective='20260928',new_effective='20261012',
+                    old_signature=site.edition_signature(old,'20260928'),
+                    new_signature=site.edition_signature(law,'20261012'),
+                    old_annex_signature=site.annex_signature(old),new_annex_signature=site.annex_signature(law))}
+        self.assertEqual(site.check_current_documents(self.base,self.catalog,expanded,spec)['documents'],8)
+        for problem in ('old_signature','new_signature','old_effective','new_effective','old_annex_signature','new_annex_signature'):
+            broken = deepcopy(spec)
+            broken[law['name']][problem] = 'wrong'
+            with self.subTest(problem=problem),self.assertRaisesRegex(ValueError,'edition changed'):
+                site.check_current_documents(self.base,self.catalog,expanded,broken)
+        law['articles'][0]['text'] += ' 서명 이후 변조'
+        with self.assertRaisesRegex(ValueError,'edition changed'):
+            site.check_current_documents(self.base,self.catalog,expanded,spec)
+
+    def test_reviewed_new_edition_can_replace_metadata_but_not_analysed_evidence(self):
+        expanded=deepcopy(self.source)
+        law=expanded['laws'][4]
+        old=Storage(self.base).read(self.catalog['laws'][4]['file'])
+        law['effective']='20261012'
+        law['articles'][0]['effective']='20261012'
+        law['annexes']=[dict(ref='별표 1',title='신규 공식표',effective='20261012',urls=[])]
+        def spec(document,baseline):
+            return {document['name']:dict(old_effective='20260928',new_effective='20261012',
+                old_signature=site.edition_signature(baseline,'20260928'),
+                new_signature=site.edition_signature(document,'20261012'),
+                old_annex_signature=site.annex_signature(baseline),new_annex_signature=site.annex_signature(document))}
+        approved=spec(law,old)
+        site.check_current_documents(self.base,self.catalog,expanded,approved)
+        law['annexes'][0]['title']='검토 이후 변조'
+        with self.assertRaisesRegex(ValueError,'edition changed'):
+            site.check_current_documents(self.base,self.catalog,expanded,approved)
+        expanded=deepcopy(self.source)
+        law=expanded['laws'][0]
+        old=Storage(self.base).read(self.catalog['laws'][0]['file'])
+        law['effective']='20261012';law['articles'][0]['effective']='20261012'
+        law['annexes'][0]['effective']='20261012'
+        with self.assertRaisesRegex(ValueError,'annex identity changed'):
+            site.check_current_documents(self.base,self.catalog,expanded,spec(law,old))
+
     def test_missing_or_duplicate_original_documents_fail(self):
         for change in ('missing', 'duplicate'):
             with self.subTest(change=change):

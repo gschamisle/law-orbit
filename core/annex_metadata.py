@@ -63,3 +63,36 @@ def public_annex_metadata(annex):
     """Only identity and official links. Existing verified analyses stay separate."""
     return {**{k: annex.get(k) for k in ('ref', 'title', 'effective', 'urls')},
             'status': 'not-analyzed', 'connections': [], 'issues': []}
+
+
+def administrative_annexes(root, effective):
+    """Official administrative XML identity and file links; no body analysis."""
+    from urllib.parse import parse_qs, urljoin, urlparse
+    result, seen = [], set()
+    for node in root.findall('.//별표단위'):
+        kind = node.findtext('별표구분', '별표')
+        digits = re.sub(r'[^0-9]', '', node.findtext('별표번호', ''))
+        branch = re.sub(r'[^0-9]', '', node.findtext('별표가지번호', ''))
+        number = str(int(digits)) if digits and int(digits) else ''
+        if branch and int(branch):
+            number += '의' + str(int(branch))
+        ref = '별지 제' + number + '호서식' if kind in ('서식','별지') and number else kind + (' ' + number if number else '')
+        if ref in seen:
+            raise ValueError('Administrative annex reference duplicated')
+        seen.add(ref)
+        urls = []
+        for field in ('별표서식파일링크', '별표서식PDF파일링크'):
+            raw = node.findtext(field, '').strip()
+            if not raw:
+                continue
+            url = urljoin('https://www.law.go.kr', raw.replace('http://','https://',1))
+            parsed = urlparse(url)
+            keyed = any(re.search(r'oc|key|token|secret|auth|password',key,re.I)
+                        for key in parse_qs(parsed.query))
+            if (parsed.scheme == 'https' and parsed.hostname == 'www.law.go.kr'
+                    and not parsed.username and not parsed.password and not keyed):
+                urls.append(url)
+        result.append(dict(ref=ref,title=node.findtext('별표제목','').strip(),
+                           effective=node.findtext('별표시행일자','') or effective,
+                           urls=list(dict.fromkeys(urls))))
+    return result

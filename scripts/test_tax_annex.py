@@ -1,6 +1,7 @@
 """Always-run unit tests and optional pinned local tax-corpus checks."""
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
 import struct
 import tempfile
@@ -97,7 +98,8 @@ class TaxAnnexTests(unittest.TestCase):
 
 
 class TaxAnnexCorpusTests(unittest.TestCase):
-    bundle = ROOT.parent/'FscLawGalaxy-Stage2/output/tax-universe/bundle.json'
+    bundle = Path(os.environ.get('LAW_ORBIT_TAX_ANNEX_TEST_BUNDLE',
+        str(ROOT.parent/'FscLawGalaxy-Stage2/output/tax-universe/bundle.json')))
     folder = DEFAULT_OUTPUT
 
     @classmethod

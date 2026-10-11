@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 from core.fsc_collection import (CollectionError, LawTransport, atomic_json, collect_sources,
                                  discover, FSC_ORG, FSC_AUTHORITY, ORG_SOURCE)
 from core.fsc_credentials import law_api_key
-from core.law_universe import ROOT, GRAPH, SOURCES, norm
+from core.law_universe import ROOT, GRAPH, SOURCES
 
 STATE_DIR = ROOT / 'output/law-updates'
 TAX_BUNDLE = ROOT / 'output/tax-universe/bundle.json'
@@ -35,6 +35,43 @@ def current_bundle(domain: str) -> dict:
 
 def source_documents(source: dict) -> list[dict]:
     return source['laws'] + source.get('administrative_rules', [])
+
+
+def document_identity(domain: str, doc: dict) -> str:
+    """Use the provider's stable document ID, never its title or edition serial."""
+    if domain == 'fsc':
+        provider, document_id = doc.get('provider'), doc.get('document_id')
+        if (provider not in ('eflaw', 'admrul') or not isinstance(document_id, str)
+                or not document_id.isdigit() or doc.get('uid') != f'{provider}:{document_id}'
+                or (provider == 'eflaw' and str(doc.get('law_id', '')) != document_id)):
+            raise CollectionError('invalid-document-identity')
+        return doc['uid']
+    law_id = doc.get('law_id')
+    if isinstance(law_id, bool) or not isinstance(law_id, (str, int)) or not str(law_id).isdigit():
+        raise CollectionError('invalid-document-identity')
+    uid = f'eflaw:{law_id}'
+    if ((doc.get('provider') is not None and doc['provider'] != 'eflaw')
+            or (doc.get('document_id') is not None and str(doc['document_id']) != str(law_id))
+            or (doc.get('uid') is not None and doc['uid'] != uid)):
+        raise CollectionError('invalid-document-identity')
+    return uid
+
+
+def document_index(domain: str, source: dict) -> dict[str, dict]:
+    documents, names = {}, set()
+    for doc in source_documents(source):
+        identity = document_identity(domain, doc)
+        if identity in documents or not doc.get('name') or doc['name'] in names:
+            raise CollectionError('duplicate-document-identity-or-name')
+        documents[identity] = doc
+        names.add(doc['name'])
+    return documents
+
+
+def renamed_documents(domain: str, source: dict, previous: dict) -> list[dict]:
+    old, new = document_index(domain, previous), document_index(domain, source)
+    return [{'uid': uid, 'previous_name': old[uid]['name'], 'name': new[uid]['name']}
+            for uid in sorted(old.keys() & new.keys()) if old[uid]['name'] != new[uid]['name']]
 
 
 def current_signature(source: dict) -> list[tuple]:
@@ -76,7 +113,9 @@ def tax_inventory(source: dict, key: str, today: str) -> dict:
                 continue
             by_id[row['law_id']] = row
     records = sorted(by_id.values(), key=lambda r:r['name'])
-    if not records or {norm(l['name']) for l in source['laws']} - {norm(l['name']) for l in records}:
+    previous_ids = set(document_index('tax', source))
+    discovered_ids = {document_identity('tax', record) for record in records}
+    if not records or previous_ids - discovered_ids:
         raise CollectionError('tax-scope-shrank-review-required')
     return {'as_of':today, 'records':records}
 
@@ -121,10 +160,11 @@ def collect_candidate(domain: str, inventory: dict, key: str, staging: Path) -> 
 
 def validate_candidate(domain: str, candidate: dict, previous: dict, today: str) -> None:
     source, graph = candidate['source'], candidate['graph']
-    old_docs = {d['name']:d for d in source_documents(previous['source'])}
-    docs = {d['name']:d for d in source_documents(source)}
-    if len(docs) != len(source_documents(source)) or old_docs.keys() - docs.keys():
+    old_docs = document_index(domain, previous['source'])
+    indexed_docs = document_index(domain, source)
+    if old_docs.keys() - indexed_docs.keys():
         raise CollectionError('document-scope-shrank-review-required')
+    docs = {doc['name']: doc for doc in indexed_docs.values()}
     if graph['built_at'] != source['built_at'] or not graph.get('edges'):
         raise CollectionError('graph-date-or-empty-edges')
     if domain == 'fsc':
@@ -134,11 +174,12 @@ def validate_candidate(domain: str, candidate: dict, previous: dict, today: str)
         if (set(graph['laws']) != set(docs) or any(d['category'] not in ('tax','external') for d in docs.values())
                 or set(graph['tax_laws']) != {d['name'] for d in docs.values() if d['category']=='tax'}):
             raise CollectionError('tax-source-graph-scope-mismatch')
-    for name, doc in docs.items():
+    for identity, doc in indexed_docs.items():
         effective = doc['effective'].replace('-', '')
-        if effective > today or (name in old_docs and effective < old_docs[name]['effective'].replace('-', '')):
+        prior = old_docs.get(identity)
+        if effective > today or (prior is not None and effective < prior['effective'].replace('-', '')):
             raise CollectionError('future-or-regressed-edition')
-        if name in old_docs and old_docs[name].get('articles') and not doc.get('articles'):
+        if prior is not None and prior.get('articles') and not doc.get('articles'):
             raise CollectionError('previously-indexed-document-lost-articles')
     texts = {(d['name'],a['jo']):a['text'] for d in docs.values() for a in d.get('articles',[])}
     for edge in graph['edges'] + graph.get('external_references',[]):
@@ -198,9 +239,12 @@ def run(*, mode: str = 'auto', check_only: bool = False) -> dict:
                           'weekly_refresh':weekly, 'documents':len(source_documents(previous['source']))}
                 if due and not check_only:
                     candidate = collect_candidate(domain,inventory,key,staging)
+                    renames = renamed_documents(domain, candidate['source'], previous['source'])
                     publish(domain,candidate,previous,destination,ymd,run_id)
                     result.update(status='updated',documents=len(source_documents(candidate['source'])),
                                   indexed_documents=len(candidate['graph']['laws']),edges=len(candidate['graph']['edges']))
+                    if renames:
+                        result['renamed_documents'] = renames
                     prior_state['last_update'] = today.isoformat()
                     if weekly: prior_state['last_full'] = today.isoformat()
                 if not check_only:

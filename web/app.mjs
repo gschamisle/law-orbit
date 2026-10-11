@@ -38,6 +38,29 @@ import {
 const $ = (id) => document.getElementById(id),
   stateKey = 'law-galaxy-state:' + new URL('.', location.href).pathname;
 mountPageviews($('pageviews'));
+// Reuse the same controls and counter on desktop and mobile.
+const utilityMenu = $('utility-menu'),
+  utilityToggle = $('utility-toggle'),
+  utilityViewport = window.matchMedia('(max-width: 860px)');
+function syncUtilityMenu() {
+  const active = document.activeElement;
+  if (utilityViewport.matches) {
+    utilityToggle.hidden = false;
+    if (active !== utilityToggle && utilityMenu.contains(active)) utilityToggle.focus();
+    utilityMenu.open = false;
+  } else {
+    utilityMenu.open = true;
+    if (active === utilityToggle) $('check-update').focus();
+    utilityToggle.hidden = true;
+  }
+}
+syncUtilityMenu();
+utilityViewport.addEventListener('change', syncUtilityMenu);
+for (const id of ['storage', 'feedback', 'about'])
+  $(id).addEventListener('close', () => {
+    if (utilityViewport.matches && !utilityMenu.open) utilityToggle.focus();
+  });
+
 let manifest,
   catalog,
   regional,
@@ -1121,6 +1144,8 @@ function evidenceCard(row, external = false) {
     card.append(text('p', '대상 법령은 수집했지만 해당 조문은 수집 판본에 없습니다.'));
   if (row.target_provision_status === 'deleted')
     card.append(text('p', '대상은 수집 판본의 삭제 조문입니다.'));
+  if (row.target_reference_note)
+    card.append(text('p', row.target_reference_note, 'muted small'));
   if (row.target_name_original)
     card.append(text('p', `${row.target_name_note} · 원문: ${row.target_name_original}`, 'muted small'));
   if (row.historical_edition_qualifier)
@@ -1347,6 +1372,11 @@ function renderReadingArticle(jo) {
   } else if (a) {
     $('reading-status').textContent = a.deleted ? '수집 판본에서 삭제된 조문입니다.' : '';
     body.append(text('h3', a.title));
+    const movementNotes = new Set(reading.evidence
+      .filter((r) => r.direction !== 'reverse' && r.neighbor_id === entry.id && r.neighbor_jo === jo)
+      .map((r) => r.target_reference_note).filter(Boolean));
+    if (movementNotes.size) $('reading-status').textContent = '조문 이동·판본 확인 필요';
+    for (const note of movementNotes) body.append(text('p', note, 'muted small'));
     const historicalNotes = new Set(reading.evidence
       .filter((r) => r.direction !== 'reverse' && r.neighbor_id === entry.id && r.neighbor_jo === jo)
       .map((r) => r.historical_edition_qualifier).filter(Boolean));

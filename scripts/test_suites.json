@@ -96,7 +96,8 @@
       "scripts/test_subsidy_profile.py",
       "scripts/test_candidate_collection.py",
       "scripts/test_candidate_site.py",
-      "scripts/test_candidate_evidence.py"
+      "scripts/test_candidate_evidence.py",
+      "scripts/test_healthcare_phase2.py"
     ],
     "collected": [
       "scripts/test_procurement_ui.py",
@@ -132,6 +133,8 @@
     "scripts/test_delegation_collected.mjs": "LAW_ORBIT_TEST_SITE must identify a validated public site; deployment CI supplies _site.",
     "scripts/test_tax_delegation_history.mjs": "output/tax-delegation-history-20260929/manifest.json and all referenced reviewed snapshots.",
     "scripts/test_llm_review_golden.py": "Local untracked expectations and draft plus ANTHROPIC_API_KEY; live external AI, manual authorization only.",
-    "scripts/test_tax_annex_catalog.py": "Synthetic canonical annex lookup and exact official-file container guards; no network or legal-data collection."
+    "scripts/test_tax_annex_catalog.py": "Synthetic canonical annex lookup and exact official-file container guards; no network or legal-data collection.",
+    "scripts/test_healthcare_phase2.py": "Synthetic ownership, article-movement and administrative-annex metadata guards; no API or clinical judgment.",
+    "scripts/test_tax_annex.py": "Synthetic tests plus optional pinned local corpus/artifacts. LAW_ORBIT_TAX_ANNEX_TEST_BUNDLE can explicitly select its matching historical corpus; edition mismatch still fails."
   }
 }

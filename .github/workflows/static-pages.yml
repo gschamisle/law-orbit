@@ -31,6 +31,8 @@ jobs:
         run: |
           uv run --frozen python -m scripts.test_web_security
           node --test scripts/test_sw.mjs
+      - name: Check healthcare ownership and historical article numbers
+        run: uv run --frozen python -m scripts.test_healthcare_phase2
       - name: Check static-reader engine parity
         run: uv run --frozen python -m scripts.test_static_galaxies
       - name: Check related-article reading isolation

@@ -128,6 +128,10 @@ def selected(domain,name,authority,provider):
             for suffix in ('',' 시행령',' 시행규칙')}:
         allowed={'보건복지부','질병관리청'}
         if '보건복지부' not in actual:return False
+    if domain=='medical':
+        from core.medical_profile import INFECTION,INFECTION_FACILITIES,INFECTION_DIAGNOSIS
+        if norm(name) in {norm(INFECTION+s) for s in ('',' 시행령',' 시행규칙')} | {norm(INFECTION_FACILITIES),norm(INFECTION_DIAGNOSIS)}:
+            allowed={'보건복지부','질병관리청'}
     if domain=='labor':
         from core.labor_profile import EQUALITY
         if norm(name) in {norm(EQUALITY+s) for s in ('',' 시행령',' 시행규칙')}:

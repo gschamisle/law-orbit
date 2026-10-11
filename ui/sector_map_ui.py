@@ -87,7 +87,7 @@ def render(profile, bundle_path):
             st.caption(entry['note'] if entry else '수집 조문 간 인용 근거를 확인한 질문입니다. 개정 필요성의 자동 판정은 아닙니다.')
             for case in work['cases']:
                 if not case['available']:continue
-                case_key=state_prefix+'_case_'+(case['law']+'_' if domain in ('labor','privacy','prices','subsidy') else '')+case['jo']
+                case_key=state_prefix+'_case_'+(case['law']+'_' if domain in ('labor','privacy','prices','subsidy','medical') else '')+case['jo']
                 if st.button(case['title'],key=case_key,width='content'):
                     remembered=st.session_state.setdefault(state_prefix+'_saved_widgets',{})
                     remembered.setdefault('all',{}).update(law=case['law'],ref=Provision(case['jo']).label)

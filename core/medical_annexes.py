@@ -14,10 +14,13 @@ def xml_digest(raw):
 
 def collect(request,item,as_of,**options):
     result=collect_document(request,item,as_of,**options)
-    if item['name'] in ('의료법 시행규칙',ACTS):
+    if item['name'] in ('의료법 시행규칙',ACTS) or item['provider']=='admrul':
         raw=safe_xml(request('lawService.do',body_params(item)))
         if hashlib.sha256(raw).hexdigest()!=result['body_sha256']:raise ValueError('별표 재조회 원문 불일치')
         result['annex_xml_structure_sha256']=xml_digest(raw)
+        if item['provider']=='admrul':
+            from core.annex_metadata import administrative_annexes
+            result['annexes']=administrative_annexes(ET.fromstring(raw), result['effective'])
     return result
 
 def attach(source,folder=SAMPLES):

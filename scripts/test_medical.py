@@ -7,7 +7,7 @@ from core.medical_annexes import attach,xml_digest
 from core.medical_universe import BUNDLE,load_bundle,validate_bundle
 from core.medical_profile import (
     PROFILE,BASES,PUBLIC_BASES,INSURANCE_BASES,STATUTES,LEGACY_STATUTES,
-    SUPPORT,ACTS,BENEFITS,document_tags,article_tags,
+    SUPPORT,ACTS,BENEFITS,PHASE_ONE_STATUTES,PHASE2_BASES,PHASE2_RULES,INFECTION,EMERGENCY,document_tags,article_tags,
 )
 TEST_BUNDLE=Path(os.environ.get('LAW_ORBIT_MEDICAL_TEST_BUNDLE',str(BUNDLE)))
 
@@ -26,11 +26,18 @@ class MedicalPolicy(unittest.TestCase):
         self.assertFalse(selected('medical','약사법','보건복지부','eflaw'))
         self.assertNotIn('medical',PROFILES)
     def test_exact_phase_one_scope_preserves_original_documents(self):
-        self.assertEqual(len(STATUTES),25)
-        self.assertEqual(len(set(STATUTES)),25)
+        self.assertEqual(len(STATUTES),31)
+        self.assertEqual(len(set(STATUTES)),31)
         self.assertEqual(set(PROFILE['required']),set(STATUTES))
-        self.assertEqual(set(PROFILE['rules']),{ACTS})
-        self.assertEqual(set(PROFILE['required_rules']),{ACTS})
+        self.assertEqual(set(PROFILE['rules']),{ACTS,*PHASE2_RULES})
+        self.assertEqual(set(PROFILE['required_rules']),{ACTS,*PHASE2_RULES})
+        self.assertEqual(len(PHASE_ONE_STATUTES),25)
+        self.assertTrue(set(PHASE_ONE_STATUTES).issubset(STATUTES))
+        self.assertEqual(document_tags(INFECTION),['infection'])
+        self.assertEqual(document_tags(EMERGENCY),['emergency'])
+        self.assertTrue(selected('medical',INFECTION,'질병관리청','eflaw'))
+        self.assertTrue(selected('medical',INFECTION,'보건복지부,질병관리청','eflaw'))
+        self.assertFalse(selected('medical',INFECTION,'질병관리청,식품의약품안전처','eflaw'))
         self.assertEqual(len(LEGACY_STATUTES),7)
         self.assertTrue(set(LEGACY_STATUTES).issubset(STATUTES))
         self.assertIn(SUPPORT,STATUTES)
@@ -40,7 +47,7 @@ class MedicalPolicy(unittest.TestCase):
         for name in STATUTES:
             self.assertTrue(selected('medical',name,'보건복지부','eflaw'),name)
     def test_unapproved_families_and_fee_notices_remain_outside_scope(self):
-        for base in ('감염병의 예방 및 관리에 관한 법률','응급의료에 관한 법률','약사법','의료기기법'):
+        for base in ('약사법','의료기기법'):
             for suffix in ('',' 시행령',' 시행규칙'):
                 self.assertFalse(selected('medical',base+suffix,'보건복지부','eflaw'))
         for name in ('건강보험 행위 급여·비급여 목록표 및 급여 상대가치점수','요양급여의 적용기준 및 방법에 관한 세부사항'):
@@ -49,7 +56,7 @@ class MedicalPolicy(unittest.TestCase):
     def test_every_declared_document_is_required_without_network(self):
         from core.mofe_collection import discover_inventory
         from core.fsc_collection import CollectionError
-        names=(*STATUTES,ACTS)
+        names=(*STATUTES,ACTS,*PHASE2_RULES)
         for missing in names:
             records=[dict(name=n,state='current-candidate',uid=str(i),edition_key=str(i))
                      for i,n in enumerate(names) if n!=missing]
@@ -59,7 +66,7 @@ class MedicalPolicy(unittest.TestCase):
                     discover_inventory(lambda *args:self.fail('Network request attempted'),'medical','20260929')
                 self.assertIn('required-documents-missing:'+missing,str(raised.exception))
     def test_three_axes_keep_legacy_links_and_multiple_topics(self):
-        self.assertEqual(list(PROFILE['sectors']),['all','institutions','public','insurance'])
+        self.assertEqual(list(PROFILE['sectors']),['all','institutions','public','insurance','infection','emergency'])
         self.assertEqual(PROFILE['sector_aliases'],dict(opening='institutions',staff='institutions',support='institutions'))
         self.assertEqual(PROFILE['default_laws']['public'],'지역보건법')
         self.assertEqual(PROFILE['default_refs']['insurance'],'제42조')
@@ -97,13 +104,29 @@ class MedicalCollected(unittest.TestCase):
     def test_scoped_complete_docs_and_real_reverse_annex_evidence(self):
         from core.galaxy_focus import analyze_focus
         docs=self.b['source']['laws']+self.b['source']['administrative_rules']
-        self.assertEqual({d['name'] for d in docs},set(STATUTES)|{ACTS})
-        self.assertEqual(len(docs),26);self.assertTrue(all(d['articles'] for d in docs))
+        self.assertEqual({d['name'] for d in docs},set(STATUTES)|{ACTS,*PHASE2_RULES})
+        self.assertEqual(len(docs),36);self.assertTrue(all(d['articles'] for d in docs if d['name']!='감염병 신고를 위한 진단기준 고시'))
         self.assertEqual(sum(bool(a.get('body_analysis')) for d in docs for a in d.get('annexes',[])),4)
         rows=analyze_focus('의료법','43',self.b['graph'])['rows']
         staff=[r for r in rows if r.get('source_layer')=='annex-body' and r['source_jo']=='별표 5']
         self.assertEqual(len(staff),9);self.assertTrue(all(r['neighbor_kind']=='annex' for r in staff))
         self.assertEqual(self.b['assessment']['decision'],'limited-release')
+    def test_phase_two_cases_link_real_facilities_and_preserve_old_number_warnings(self):
+        edges=self.b['graph']['edges']
+        for source,jo,target,ref in (
+            ('감염병의 예방 및 관리에 관한 법률 시행규칙','31',INFECTION,'제36조제3항'),
+            ('감염병의 예방 및 관리에 관한 법률 시행규칙','31','의료법 시행규칙','제34조'),
+            ('응급의료에 관한 법률 시행규칙','18',EMERGENCY,'제31조제2항')):
+            with self.subTest(source=source,ref=ref):
+                self.assertTrue(any(e['source_law']==source and e['source_jo']==jo and e['target_law']==target and e['target_ref']==ref for e in edges))
+        for owner,jo,ref in (('감염병의 예방 및 관리에 관한 법률 시행규칙','31','별표 4의2'),('응급의료에 관한 법률 시행규칙','18','별표 8')):
+            self.assertTrue(any(e['source_law']==owner and e['source_jo']==jo and e['target_ref']==ref and e['target_kind']=='annex' and e.get('annex_urls') for e in edges))
+        for rule in ('한국 응급환자 중증도 분류기준','한국 병원 전 응급환자 중증도 분류기준'):
+            rows=[e for e in edges if e['source_law']==rule and e['source_jo']=='1' and e['target_law']=='응급의료에 관한 법률 시행규칙']
+            self.assertTrue(rows,rule)
+            self.assertTrue(all(e['context_review'] and e['target_provision_status']=='renumbered-reference-review' and e['target_ref'].startswith('제18조의3') for e in rows))
+        self.assertTrue(any(e['source_law']=='공공보건의료에 관한 법률 시행규칙' and e['source_jo']=='2의2' and e['target_law']==INFECTION and e['target_ref']=='제36조' for e in edges))
+
     def test_real_public_and_insurance_connections_have_collected_endpoints(self):
         edges=self.b['graph']['edges']
         for source,jo,target,ref,kind in (
@@ -123,7 +146,7 @@ class MedicalCollected(unittest.TestCase):
     def test_all_healthcare_questions_have_real_collected_connections(self):
         from core.mofe_universe import assessment
         cases=assessment(self.b)['cases']
-        self.assertEqual(len(cases),7)
+        self.assertEqual(len(cases),10)
         self.assertEqual({(c['law'],c['jo']) for c in cases},{(c[0],c[1]) for c in PROFILE['cases']})
         self.assertTrue(all(c['available'] and c['connected_articles'] and c['evidence_ids'] for c in cases))
     def test_unnumbered_annex_is_linked_from_its_own_rule(self):
@@ -165,7 +188,7 @@ class MedicalCollected(unittest.TestCase):
     def test_local_three_sector_defaults_and_shared_reference_navigation(self):
         app=self.local_app()
         self.assertFalse(app.exception,str(app.exception))
-        for sector in ('institutions','public','insurance'):
+        for sector in ('institutions','public','insurance','infection','emergency'):
             with self.subTest(sector=sector):
                 app.radio(key='mofe_medical_sector').set_value(sector).run()
                 self.assertFalse(app.exception,str(app.exception))
