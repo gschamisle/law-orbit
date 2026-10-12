@@ -260,7 +260,7 @@ def shell(dest):
     html=html.replace('/* PUBLIC_MAP_INIT_START */', "window.addEventListener('message',function init(event){if(event.source!==parent||event.origin!==location.origin||event.data?.type!=='galaxy-data')return;window.removeEventListener('message',init);const WEB_DATA=event.data.data;",1)
     html=html.replace('__DATA__','WEB_DATA')
     html=html.replace('/* PUBLIC_MAP_SELECT */', "if(n?.web_law)parent.postMessage({type:'galaxy-select',law:n.web_law,jo:n.web_jo||'',region:n.web_region||'',mode:D.mode},location.origin);",1)
-    html=html.replace('/* PUBLIC_MAP_INIT_END */', '});',1)
+    html=html.replace('/* PUBLIC_MAP_INIT_END */', "});if(window.parent!==window)window.parent.postMessage({type:'galaxy-ready'},location.origin);",1)
     prefix="<!doctype html><html lang='ko'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>법의 궤도 — 연결 지도</title><link rel='stylesheet' href='fonts.css'><style>body{margin:0;background:#051e22}#galaxy-wrap{border:0!important;border-radius:0!important;height:100vh!important;min-height:0!important}</style>"
     (dest/'renderer.html').write_text(secure_html(prefix+html+'</html>'),encoding='utf-8')
 

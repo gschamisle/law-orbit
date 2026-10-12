@@ -92,6 +92,7 @@ class WebSecurityTests(unittest.TestCase):
             self.assertNotIn('PUBLIC_MAP_', html)
             self.assertIn('event.source!==parent||event.origin!==location.origin', html)
             self.assertIn("type:'galaxy-select'", html)
+            self.assertIn("window.parent.postMessage({type:'galaxy-ready'},location.origin)", html)
             self.check_scripts((Path(folder)/'introduction.html').read_text(encoding='utf-8'))
 
     def test_missing_charset_fails_closed(self):

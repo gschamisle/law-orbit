@@ -62,8 +62,9 @@ test('installation saves the shell including the annex-link module for offline u
  const w=worker();await w.lifecycle('install');
  assert.notEqual(w.shell,oldShell);
  assert(w.saved.get(w.shell).has(w.key('annex-links.mjs')));
+ assert(w.saved.get(w.shell).has(w.key('renderer-channel.mjs')));
  assert(w.saved.get(w.shell).has(w.key('./')));
- assert(w.saved.get(w.shell).has(w.key('renderer.html')));
+ assert(w.saved.get(w.shell).has(w.key(/frame\.src = '([^']+)'/.exec(readFileSync(new URL('../web/app.mjs',import.meta.url),'utf8'))[1])));
  assert(w.saved.get(w.shell).has(w.key('fonts/MaruBuri-LICENSE.txt')));
  assert(w.saved.get(w.shell).has(w.key('fonts/Pretendard-LICENSE.txt')));
 });

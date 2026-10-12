@@ -1,3 +1,4 @@
+import { createRendererChannel } from './renderer-channel.mjs';
 import { renderProcurementPdf } from './procurement-pdf.mjs';
 import { installFeedback } from './feedback.mjs';
 import { mountPublicScope } from './public-scope.mjs';
@@ -38,6 +39,7 @@ import {
 const $ = (id) => document.getElementById(id),
   stateKey = 'law-galaxy-state:' + new URL('.', location.href).pathname;
 mountPageviews($('pageviews'));
+const rendererChannel = createRendererChannel(location.origin);
 // Reuse the same controls and counter on desktop and mobile.
 const utilityMenu = $('utility-menu'),
   utilityToggle = $('utility-toggle'),
@@ -995,10 +997,9 @@ async function openArticle(reference, token = ++epoch) {
 function showMap(value) {
   const frame = document.createElement('iframe');
   frame.title = (value.galaxy_title || '법령').replace(/\s*은하/g, '') + ' · 3D 법령 지도';
-  frame.src = 'renderer.html';
+  frame.src = 'renderer.html?v=orbit-renderer-ready-v1';
   frame.allow = 'fullscreen';
-  frame.onload = () =>
-    frame.contentWindow.postMessage({ type: 'galaxy-data', data: value }, location.origin);
+  rendererChannel.use(frame, value);
   $('map-host').replaceChildren(frame);
 }
 function sectorMap() {
@@ -1695,6 +1696,7 @@ $('special-reset').onclick = () => {
 };
 window.addEventListener('message', (e) => {
   const frame = $('map-host').querySelector('iframe');
+  if (rendererChannel.ready(e, frame)) return;
   if (
     e.origin !== location.origin ||
     e.source !== frame?.contentWindow ||
