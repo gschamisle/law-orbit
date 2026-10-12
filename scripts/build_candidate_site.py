@@ -25,7 +25,7 @@ from scripts.compact_static_galaxies import convert
 from scripts.static_storage import Storage
 from scripts.validate_static_galaxies import validate
 
-CANDIDATES = ('privacy', 'prices', 'subsidy')
+CANDIDATES = ('privacy', 'prices', 'subsidy', 'integrity')
 
 
 def bundle_argument(value):

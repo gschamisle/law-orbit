@@ -10,6 +10,8 @@ export const bridgeNames = {
   fsc: '금융',
   procurement: '조달·계약',
   public_institutions: '공공기관',
+  integrity: '청렴·권익',
+  subsidy: '보조금·지원사업',
 };
 export function bridgeEditions(bridge) {
   return Object.entries(bridge.editions)
@@ -17,10 +19,15 @@ export function bridgeEditions(bridge) {
     .join(', ');
 }
 export function validateBridge(value, domain, manifest, catalog) {
-  const peer = bridgePeers[domain],
-    kind = ['forex', 'fsc'].includes(domain) ? 'forex-finance-bridge' : 'procurement-public-bridge';
+  const peer = value.peer;
+  const integrityPeer = domain === 'integrity' ? peer : peer === 'integrity' ? domain : '';
+  const kind = ['procurement', 'public_institutions', 'subsidy'].includes(integrityPeer)
+    ? `integrity-${integrityPeer}-bridge`
+    : peer === bridgePeers[domain]
+      ? (['forex', 'fsc'].includes(domain) ? 'forex-finance-bridge' : 'procurement-public-bridge')
+      : null;
   if (
-    !peer ||
+    !peer || !kind ||
     value.kind !== kind ||
     value.schema !== 1 ||
     value.domain !== domain ||
@@ -89,4 +96,38 @@ export function bridgeLabel(row) {
   };
   const tags = (row.neighbor_sectors || []).map((s) => sectors[s]).filter(Boolean);
   return '분야 밖 관련 조문 · 금융' + (tags.length ? ' / ' + tags.join('·') : '');
+}
+
+// Each pair retains its own source and target editions. The aggregate is only
+// a reading overlay; original catalogs and their selections are not modified.
+export async function loadBridgeGroup(value, domain, manifest, catalog, read) {
+  if (value.kind !== 'domain-bridge-set') return validateBridge(value, domain, manifest, catalog);
+  if (value.schema !== 1 || value.domain !== domain || !Array.isArray(value.bridges) || !value.bridges.length)
+    throw Error('분야 간 연결 묶음의 범위가 맞지 않습니다.');
+  const parts = await Promise.all(value.bridges.map(async ref => validateBridge(await read(ref), domain, manifest, catalog)));
+  if (new Set(parts.map(p => p.peer)).size !== parts.length) throw Error('분야 간 연결이 중복되었습니다.');
+  const out = { domain, bridgeRefs: [...value.bridges], peers: parts.map(p => p.peer), editions: {}, entries: [], laws: {}, broad: {}, coverage: parts.map(p => p.coverage || '').join(' ') };
+  const entries = new Map();
+  for (const part of parts) {
+    for (const [id, edition] of Object.entries(part.editions)) {
+      if (out.editions[id] && out.editions[id] !== edition) throw Error('연결 묶음의 판본이 서로 다릅니다.');
+      out.editions[id] = edition;
+    }
+    for (const entry of part.entries) {
+      if (entries.has(entry.id) && JSON.stringify(entries.get(entry.id)) !== JSON.stringify(entry))
+        throw Error('연결된 본문의 판본이 중복됩니다.');
+      entries.set(entry.id, entry);
+    }
+    for (const [id, articles] of Object.entries(part.laws)) {
+      out.laws[id] ||= {};
+      for (const [jo, detail] of Object.entries(articles)) {
+        const target = out.laws[id][jo] ||= { rows: [], suppressed: [], resolved_issues: [] };
+        target.rows.push(...detail.rows);
+        for (const key of ['suppressed', 'resolved_issues']) target[key] = [...new Set([...target[key], ...(detail[key] || [])])];
+      }
+    }
+    for (const [id, rows] of Object.entries(part.broad)) (out.broad[id] ||= []).push(...rows);
+  }
+  out.entries = [...entries.values()];
+  return out;
 }

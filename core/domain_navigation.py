@@ -18,6 +18,7 @@ DOMAINS = {
     'ftc': '공정거래',
     'privacy': '개인정보·공공데이터',
     'subsidy': '보조금·지원사업',
+    'integrity': '청렴·권익',
     'labor': '고용·노동',
     'medical': '보건·의료',
     'local_tax': '지방세',

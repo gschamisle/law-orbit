@@ -98,7 +98,8 @@
       "scripts/test_candidate_site.py",
       "scripts/test_candidate_evidence.py",
       "scripts/test_healthcare_phase2.py",
-      "scripts/test_renderer_channel.mjs"
+      "scripts/test_renderer_channel.mjs",
+      "scripts/test_integrity_profile.py"
     ],
     "collected": [
       "scripts/test_procurement_ui.py",
@@ -137,6 +138,7 @@
     "scripts/test_tax_annex_catalog.py": "Synthetic canonical annex lookup and exact official-file container guards; no network or legal-data collection.",
     "scripts/test_healthcare_phase2.py": "Synthetic ownership, article-movement and administrative-annex metadata guards; no API or clinical judgment.",
     "scripts/test_tax_annex.py": "Synthetic tests plus optional pinned local corpus/artifacts. LAW_ORBIT_TAX_ANNEX_TEST_BUNDLE can explicitly select its matching historical corpus; edition mismatch still fails.",
-    "scripts/test_renderer_channel.mjs": "Pure renderer-ready handshake, exact origin/window identity and stale frame guards; no browser or API."
+    "scripts/test_renderer_channel.mjs": "Pure renderer-ready handshake, exact origin/window identity and stale frame guards; no browser or API.",
+    "scripts/test_integrity_profile.py": "Frozen official source excerpts and fail-closed ownership; optional pinned local 20261012 corpus reports skip when absent. No API."
   }
 }

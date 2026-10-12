@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {combineConnections,bridgeLookup,validateBridge,bridgeLabel,bridgeEditions} from '../web/cross-domain.mjs';
+import {combineConnections,bridgeLookup,validateBridge,bridgeLabel,bridgeEditions,loadBridgeGroup} from '../web/cross-domain.mjs';
 import {loadReading} from '../web/reading.mjs';
 import {target,refine,focusMap} from '../web/query.mjs';
 const row={cross_domain:true,neighbor_domain:'fsc',neighbor_id:'fi',neighbor_law:'금융규정',neighbor_kind:'article',neighbor_jo:'2',neighbor_ref:'제2조',direction:'forward',source_id:'fx',target_id:'fi',source_ref:'제1조제2항',source_granularity:'block',source_scope:{scopes:[[['1','2','',''],['1','2','',''],-1]]},kind:'article',neighbor_sectors:['banking'],status:'exact'};
@@ -49,3 +49,24 @@ assert.equal(combineConnections(detail,[],contract,'fx','1',false).rows.length,0
 const isolated=await loadReading({id:'fi',jo:'2'},{catalog,lookup:bridgeLookup(ownLookup,contract),currentDoc,read:async()=>({meta:contractEntry,articles:[{jo:'2',text:'공공기관 수집 본문'}]})});
 assert.equal(isolated.article.text,'공공기관 수집 본문');
 assert.equal(currentDoc.meta.id,'fx');assert.equal(JSON.stringify(state),stateBefore);
+
+// Multiple peers coexist without replacing an existing procurement/public overlay.
+const integEntry={...entry,id:'ig',domain:'integrity',name:'청탁금지법'};
+const integRow={...contractRow,neighbor_id:'ig',target_id:'ig',neighbor_domain:'integrity'};
+const integ={...contract,kind:'integrity-procurement-bridge',peer:'integrity',editions:{procurement:'20260919',integrity:'20261012'},entries:[integEntry],laws:{fx:{'1':{rows:[integRow],suppressed:['external-report'],resolved_issues:[]}}}};
+const multiManifest={domains:[...contractManifest.domains,{id:'integrity',built_at:'20261012'}]};
+const multiCatalog={...catalog,built_at:'20260919'};
+const group={kind:'domain-bridge-set',schema:1,domain:'procurement',bridges:['old','new']};
+const read=async ref=>ref==='old'?contract:integ;
+const merged=await loadBridgeGroup(group,'procurement',multiManifest,multiCatalog,read);
+assert.equal(merged.laws.fx['1'].rows.length,2);
+assert.deepEqual(merged.bridgeRefs,['old','new']);
+assert.deepEqual(new Set(merged.peers),new Set(['public_institutions','integrity']));
+assert.equal(bridgeLookup(ownLookup,merged).size,3);
+assert.match(bridgeLabel(integRow),/청렴·권익/);
+assert.equal(combineConnections(detail,[],merged,'fx','1',false).rows.length,0);
+assert.equal(merged.laws.fx['1'].rows[0],contractRow);
+await assert.rejects(loadBridgeGroup({...group,domain:'tax'},'procurement',multiManifest,multiCatalog,read));
+await assert.rejects(loadBridgeGroup({...group,bridges:['new','new']},'procurement',multiManifest,multiCatalog,read));
+await assert.rejects(loadBridgeGroup(group,'procurement',multiManifest,multiCatalog,async ref=>ref==='old'?contract:{...integ,editions:{procurement:'20260919',integrity:'20250101'}}));
+assert.equal(await loadBridgeGroup(contract,'procurement',multiManifest,multiCatalog,read),contract);

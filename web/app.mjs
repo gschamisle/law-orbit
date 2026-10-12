@@ -17,7 +17,7 @@ import {
   provisionOptions,
 } from './reading.mjs';
 import {
-  validateBridge,
+  loadBridgeGroup,
   combineConnections,
   bridgeLookup,
   bridgeLabel,
@@ -182,7 +182,7 @@ function usesArticleTags() {
 function readableUnstructured(document) {
   const raw = document.unstructured_text || '';
   if (
-    !['public_institutions', 'customs', 'treasury', 'ftc', 'procurement', 'labor', 'privacy', 'prices', 'subsidy'].includes(
+    !['public_institutions', 'customs', 'treasury', 'ftc', 'procurement', 'labor', 'privacy', 'prices', 'subsidy', 'integrity'].includes(
       document.meta?.domain,
     )
   )
@@ -591,7 +591,9 @@ async function navigate(id, overrides = {}) {
       try {
         const linked = await data(manifest.cross_domain[id]);
         if (token !== epoch) return;
-        cross = validateBridge(linked, id, manifest, catalog);
+        cross = await loadBridgeGroup(linked, id, manifest, catalog, data);
+        if (token !== epoch) return;
+        $('cross-text').textContent = (cross.peers?.length > 1 ? '관련 분야' : bridgeNames[cross.peer] || '관련 분야') + ' 연결 포함';
         $('cross').disabled = false;
       } catch (err) {
         if (token !== epoch) return;
@@ -997,7 +999,7 @@ async function openArticle(reference, token = ++epoch) {
 function showMap(value) {
   const frame = document.createElement('iframe');
   frame.title = (value.galaxy_title || '법령').replace(/\s*은하/g, '') + ' · 3D 법령 지도';
-  frame.src = 'renderer.html?v=orbit-renderer-ready-v1';
+  frame.src = 'renderer.html?v=orbit-integrity-v1';
   frame.allow = 'fullscreen';
   rendererChannel.use(frame, value);
   $('map-host').replaceChildren(frame);
@@ -1724,7 +1726,7 @@ $('save-law').onclick = async () => {
       ...entry.parts,
     ];
   if (state.region) refs.push(catalog.regions.find((r) => r.id === state.region).catalog);
-  if (cross && manifest.cross_domain?.[domain]) refs.push(manifest.cross_domain[domain]);
+  if (cross && manifest.cross_domain?.[domain]) refs.push(manifest.cross_domain[domain], ...(cross.bridgeRefs || []));
   if (catalog.special_cases) refs.push(catalog.special_cases);
   if (catalog.delegation_review?.baselines?.[id])
     refs.push(catalog.delegation_review.baselines[id].file);

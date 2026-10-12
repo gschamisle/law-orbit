@@ -13,9 +13,13 @@ from core.fsc_administrative import adapter, aliases_from, provision_blocks
 from core.universe_builder import block_at, QUALIFIER
 
 PAIR = ('forex', 'fsc')
-PAIRS = (PAIR, ('procurement', 'public_institutions'))
+INTEGRITY_PAIRS = tuple(('integrity', peer) for peer in ('procurement', 'public_institutions', 'subsidy'))
+PAIRS = (PAIR, ('procurement', 'public_institutions')) + INTEGRITY_PAIRS
 BRIDGE_KINDS = {PAIR: 'forex-finance-bridge', PAIRS[1]: 'procurement-public-bridge'}
 PAIR_LABELS = {PAIR: '외환·금융', PAIRS[1]: '조달·계약·공공기관'}
+for pair, label in zip(INTEGRITY_PAIRS, ('조달·계약', '공공기관', '보조금·지원사업')):
+    BRIDGE_KINDS[pair] = 'integrity-' + pair[1] + '-bridge'
+    PAIR_LABELS[pair] = '청렴·권익·' + label
 
 
 def norm(value):

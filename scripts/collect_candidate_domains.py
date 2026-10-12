@@ -20,7 +20,7 @@ from core.mofe_universe import assessment, build_graph, report, validate_bundle
 from core.procurement_collection import authorities, collect_document
 
 ROOT = Path(__file__).resolve().parents[1]
-DOMAINS = ('privacy', 'prices', 'subsidy')
+DOMAINS = ('privacy', 'prices', 'subsidy', 'integrity')
 STAGES = ('inventory', 'bodies', 'build')
 IDENTITY_FIELDS = ('name', 'provider', 'document_id', 'version_id', 'uid', 'edition_key',
                    'effective', 'promulgated', 'kind', 'managing_authority', 'category')

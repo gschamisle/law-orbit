@@ -12,7 +12,7 @@ def validate(root, *, allow_legacy_menu=False):
     storage=Storage(root,manifest)
     legacy=['tax','procurement','fsc','local_tax','housing','environment']
     ids=[d['id'] for d in manifest['domains']]
-    optional=['state_property','forex','public_institutions','customs','treasury','ftc','labor','constitution','medical','privacy','prices','subsidy']
+    optional=['state_property','forex','public_institutions','customs','treasury','ftc','labor','constitution','medical','privacy','prices','subsidy','integrity']
     supported=set(legacy+optional)
     current=[domain for domain in DOMAINS if domain in ids]
     old=[domain for domain in legacy+optional if domain in ids]
@@ -135,12 +135,27 @@ def validate(root, *, allow_legacy_menu=False):
         elif row['status']=='matched':raise ValueError('Matched annex target missing')
     cross_domains=set(manifest.get('cross_domain',{}))
     if cross_domains-set(d for pair in PAIRS for d in pair):raise ValueError('Invalid cross-domain scope')
-    if any(cross_domains & set(pair) and not set(pair)<=cross_domains for pair in PAIRS):raise ValueError('Incomplete domain pair')
-    if len(bridges)!=len(manifest.get('cross_domain',{})):raise ValueError('Missing cross-domain assets')
+    declared_bridges=[]
+    for domain, ref in manifest.get('cross_domain',{}).items():
+        value=storage.read(ref)
+        if value.get('kind')=='domain-bridge-set':
+            if value.get('schema')!=1 or value.get('domain')!=domain or not value.get('bridges'):
+                raise ValueError('Invalid bridge set')
+            values=[storage.read(child) for child in value['bridges']]
+        else:values=[value]
+        if any(v.get('domain')!=domain or v.get('kind') not in BRIDGE_KINDS.values() for v in values):
+            raise ValueError('Bridge set domain mismatch')
+        declared_bridges.extend(values)
+    identities=[(v['domain'],v['peer']) for v in declared_bridges]
+    if len(set(identities))!=len(identities):raise ValueError('Duplicate bridge peer')
+    if any((peer,domain) not in identities for domain,peer in identities):raise ValueError('Incomplete domain pair')
+    if len(bridges)!=len(declared_bridges) or any(v not in bridges for v in declared_bridges):
+        raise ValueError('Missing cross-domain assets')
     for bridge in bridges:
         domain=bridge['domain'];peer=bridge['peer']
         pair=next((p for p in PAIRS if set(p)=={domain,peer}),None)
         if not pair or bridge['schema']!=1 or bridge['kind']!=BRIDGE_KINDS[pair]:raise ValueError('Mixed bridge domains')
+        if set(bridge['editions'])!=set(pair):raise ValueError('Missing bridge edition')
         for d,edition in bridge['editions'].items():
             if next(e['built_at'] for e in manifest['domains'] if e['id']==d)!=edition:raise ValueError('Bridge edition mismatch')
         neighbors={e['id']:e for e in bridge['entries']}

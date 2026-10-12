@@ -5,7 +5,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from core import procurement_universe, housing_universe, environment_universe, state_property_universe, forex_universe
 from core import public_institutions_universe, customs_universe, treasury_universe, ftc_universe
-from core import labor_universe, constitution_universe, medical_universe, privacy_universe, prices_universe, subsidy_universe
+from core import labor_universe, constitution_universe, medical_universe, privacy_universe, prices_universe, subsidy_universe, integrity_universe
 from core.procurement_universe import documents, sector_graph, mark_sector, article_for, external_evidence
 APIS={'procurement':procurement_universe,'housing':housing_universe,'environment':environment_universe,'state_property':state_property_universe,'forex':forex_universe}
 APIS.update(public_institutions=public_institutions_universe,customs=customs_universe,treasury=treasury_universe)
@@ -13,7 +13,7 @@ APIS['ftc']=ftc_universe
 APIS['labor']=labor_universe
 APIS['constitution']=constitution_universe
 APIS['medical']=medical_universe
-APIS.update(privacy=privacy_universe,prices=prices_universe,subsidy=subsidy_universe)
+APIS.update(privacy=privacy_universe,prices=prices_universe,subsidy=subsidy_universe,integrity=integrity_universe)
 from ui.law_library_ui import render as render_library
 from core.ftc_text_citations import TEXT_DOMAINS
 from core.citation_scope import Provision
@@ -28,7 +28,7 @@ def snapshot(path, stamp, domain):
 def overview(path, stamp, sector, domain, palette_version='families-v4-domain-labels'):
     from core.law_galaxy import build
     bundle=snapshot(path,stamp,domain)
-    graph=APIS[domain].overview_graph(bundle) if domain in ('ftc','privacy','prices','subsidy') else bundle['graph']
+    graph=APIS[domain].overview_graph(bundle) if domain in ('ftc','privacy','prices','subsidy','integrity') else bundle['graph']
     data=build(2,160,include_external=False,graph=sector_graph(graph,sector))
     if domain=='ftc':data['dust']=[d for d in data['dust'] if d.get('jo') and d['jo']!='제조']
     return APIS[domain].present(data,graph,sector)
@@ -87,7 +87,7 @@ def render(profile, bundle_path):
             st.caption(entry['note'] if entry else '수집 조문 간 인용 근거를 확인한 질문입니다. 개정 필요성의 자동 판정은 아닙니다.')
             for case in work['cases']:
                 if not case['available']:continue
-                case_key=state_prefix+'_case_'+(case['law']+'_' if domain in ('labor','privacy','prices','subsidy','medical') else '')+case['jo']
+                case_key=state_prefix+'_case_'+(case['law']+'_' if domain in ('labor','privacy','prices','subsidy','integrity','medical') else '')+case['jo']
                 if st.button(case['title'],key=case_key,width='content'):
                     remembered=st.session_state.setdefault(state_prefix+'_saved_widgets',{})
                     remembered.setdefault('all',{}).update(law=case['law'],ref=Provision(case['jo']).label)
