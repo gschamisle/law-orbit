@@ -33,6 +33,10 @@ jobs:
           node --test scripts/test_sw.mjs scripts/test_renderer_channel.mjs
       - name: Check healthcare ownership and historical article numbers
         run: uv run --frozen python -m scripts.test_healthcare_phase2
+      - name: Check citation context and edition-check failure boundaries
+        run: |
+          uv run --frozen python -m scripts.test_citation_ownership
+          uv run --frozen python -m scripts.test_edition_watch
       - name: Check static-reader engine parity
         run: uv run --frozen python -m scripts.test_static_galaxies
       - name: Check related-article reading isolation
@@ -45,6 +49,8 @@ jobs:
         run: node --test scripts/test_delegation.mjs scripts/test_public_scope.mjs
       - name: Download and validate pinned public data and browser shell
         run: uv run --frozen python -m scripts.fetch_static_release --destination _site
+      - name: Verify corrected citation ownership in both directions
+        run: uv run --frozen python -m scripts.verify_citation_context_release --site _site --report output/citation-context-audit.json
       - name: Check ACRC ownership and official-source excerpts
         run: uv run --frozen python -m scripts.test_integrity_profile
       - name: Verify published ACRC cross-domain source chains

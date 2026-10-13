@@ -155,6 +155,10 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
     declaration = r'(?:\s*\(이하\s*["“][^"”]+["”](?:\s*이?\s*라\s*(?:한다|함))?\s*\))?' if strict else ''
     prefix = re.compile(r'(?<![가-힣A-Za-z])('+'|'.join(r'\s*'.join(map(re.escape,a)) for a in alternatives)+r')'+declaration+r'\s*$')
     outputs, occupied, previous_owner, previous_end = [], [], '', 0
+    from core.citation_ownership import scopes
+    annotation_scopes = scopes(text) if strict else []
+    owners_by_scope = {}
+    last_named_owner, last_named_end = '', 0
     issues = article.setdefault('citation_issues', [])
     for match in START.finditer(text):
         if any(a<=match.start()<b for a,b in occupied): continue
@@ -167,6 +171,8 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
             if embedded_quote(text,match.start()):
                 issues.append(dict(raw=match[0],start=match.start(),end=match.end(),reason='따옴표 속 인용 문구의 대상 법령 · 문맥 확인 필요'))
                 continue
+            scope = annotation_scopes[match.start()]
+            previous_owner, previous_end = owners_by_scope.get(scope, ('', 0))
         end = match.end()
         child = re.match(SUB,text[end:]); end += child.end()
         while tail := TAIL.match(text,end): end = tail.end()
@@ -193,8 +199,11 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
         elif same:
             owner, start, review = previous_owner, same.start(), True
             if strict:
+                # Explicit 'same law' may refer to a law named in a closed
+                # explanatory bracket. This differs from a bare enumeration.
+                owner = last_named_owner
                 anchors=list(QUOTED.finditer(before[:same.start()]))
-                if anchors and anchors[-1].start()>previous_end:owner=anchors[-1][1]
+                if anchors and anchors[-1].start()>last_named_end:owner=anchors[-1][1]
             derivative_token=norm(same[1])
             if derivative_token in ('영','시행령','규칙','시행규칙','법시행령','법시행규칙') and owner:
                 owner = re.sub(r'\s*시행(?:령|규칙)$','',owner) + (' 시행령' if derivative_token in ('영','시행령','법시행령') else ' 시행규칙')
@@ -220,6 +229,7 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
         occupied.append((start,end))
         if not owner:
             previous_owner, previous_end = '', end
+            if strict: owners_by_scope[scope] = (previous_owner, previous_end)
             issues.append(dict(raw=raw,start=start,end=end,reason='인용 법령·규정의 별칭 또는 상대 참조 미해결'))
             continue
         if quote or derivative or named or same or continuation:
@@ -227,6 +237,9 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
         elif strict:
             previous_owner = ""
         previous_end = end
+        if strict: owners_by_scope[scope] = (previous_owner, previous_end)
+        if quote or derivative or named or same:
+            last_named_owner, last_named_end = owner, end
         scope_text=text[match.start():end]
         if strict:scope_text=re.sub(r'\([^()]*\)','',scope_text)
         parsed = parse_scope(scope_text, allow_hyphen=True)

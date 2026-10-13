@@ -81,6 +81,14 @@
 | **표 안 줄바꿈·절단 인용**: 법인세법 시행규칙49의 국세기본법47조의2~47조의5 | 선정한 전문·시행일·정확한 원문 구간이 맞는 경우에만 연결을 복원한다. | [test_tax_citation_context.py](../scripts/test_tax_citation_context.py): `TaxArticleContextTests.test_reviewed_table_positive_has_exact_source_and_full_skip_span`, `test_table_override_rejects_changed_body_even_outside_citation`, `test_table_override_rejects_wrong_law_article_or_edition` | **선정 사례 보완**. 일반적인 표 모든 행·열·산식·칸 위치 해석으로 소개하지 않는다. |
 | **하이픈 조 번호**: `제7-1조` | 외환·금융의 허용 번호 체계에서 제7조의1과 구분한다. | [test_forex.py](../scripts/test_forex.py): `ForexTests.test_hyphen_and_branch_distinct` | 해당 분야 번호 체계에 한정. 국세의 조 번호나 임의 `제32조2`로 확대하지 않는다. |
 
+## 2026-10-13 추가: 괄호·정의 문장과 조문 열거 구분
+
+- **정의 문장 뒤 소속 전파 중단**: 지방세기본법 제93조의2의 `…외국법인을 말하며, 제153조에 따라…`에서 제153조는 앞의 법인세법을 따라가지 않고 지방세기본법 소속으로 연결한다.
+- **괄호 밖의 열거 복원**: `「A법」 제3조(「B법」 제4조에 따른 …) 및 제5조`처럼 원래 열거가 이어지면 제5조의 소속은 A법으로 유지한다. 이 문구는 구조를 설명하기 위한 시험 예시다.
+- **‘같은 법’과 단순 열거 구분**: 명시적인 상대 지시는 선행 법령명과 대조하되 문맥 확인 상태를 유지한다. 괄호를 넘는 모든 참조를 무조건 삭제하거나 확정하지 않는다.
+
+엄격 인용 분석 경로의 보완이며, 모든 자연어 문맥 해석을 보장하지 않는다. [실제 공개 자료 교정과 검증 기록](qa/citation-context-weekly-20261013.md), [회귀 시험](../scripts/test_citation_ownership.py)을 함께 참고한다.
+
 ## 부록 C — 지원했다고 말하지 않을 표현
 
 | 표현·상황 | 현재 제한과 확인 근거 |
