@@ -107,9 +107,10 @@ from core.privacy_profile import PROFILE as PRIVACY_PROFILE
 from core.prices_profile import PROFILE as PRICES_PROFILE
 from core.subsidy_profile import PROFILE as SUBSIDY_PROFILE
 from core.integrity_profile import PROFILE as INTEGRITY_PROFILE
-CANDIDATE_DOMAINS=('privacy','prices','subsidy','integrity')
+from core.remedy_profile import PROFILE as REMEDY_PROFILE
+CANDIDATE_DOMAINS=('privacy','prices','subsidy','integrity','remedy')
 WORK_PROFILES={**PROFILES,'labor':LABOR_PROFILE,'constitution':CONSTITUTION_PROFILE,'medical':MEDICAL_PROFILE,
-               'privacy':PRIVACY_PROFILE,'prices':PRICES_PROFILE,'subsidy':SUBSIDY_PROFILE,'integrity':INTEGRITY_PROFILE}
+               'privacy':PRIVACY_PROFILE,'prices':PRICES_PROFILE,'subsidy':SUBSIDY_PROFILE,'integrity':INTEGRITY_PROFILE,'remedy':REMEDY_PROFILE}
 
 def selected(domain,name,authority,provider):
     if domain in CANDIDATE_DOMAINS:

@@ -12,13 +12,14 @@ def validate(root, *, allow_legacy_menu=False):
     storage=Storage(root,manifest)
     legacy=['tax','procurement','fsc','local_tax','housing','environment']
     ids=[d['id'] for d in manifest['domains']]
-    optional=['state_property','forex','public_institutions','customs','treasury','ftc','labor','constitution','medical','privacy','prices','subsidy','integrity']
+    optional=['state_property','forex','public_institutions','customs','treasury','ftc','labor','constitution','medical','privacy','prices','subsidy','integrity','remedy']
     supported=set(legacy+optional)
     current=[domain for domain in DOMAINS if domain in ids]
     old=[domain for domain in legacy+optional if domain in ids]
     valid_order=ids==current or (allow_legacy_menu and ids==old)
     if not set(legacy).issubset(ids) or set(ids)-supported or len(ids)!=len(set(ids)) or not valid_order:
         raise ValueError('Missing or mixed galaxy menu')
+    remedy_documents=[]
     pending=[];seen=set();total=0;documents=set();articles=0;by_id={};special_rows=[];workbenches=[];bridges=[];text_rows=[];text_bodies={};constitution_bodies={};annex_bodies={};annex_rows=[];pdf_bodies={}
     def references(item):
         if isinstance(item,dict):
@@ -45,6 +46,7 @@ def validate(root, *, allow_legacy_menu=False):
             if any(not isinstance(a.get('text'),str) for a in data['articles']):raise ValueError('Missing baseline text')
         elif isinstance(data,dict) and 'meta' in data:
             meta=data['meta'];documents.add(meta['id']);articles+=len(data['articles'])
+            if meta['domain']=='remedy':remedy_documents.append(dict(name=meta['name'],effective=meta['effective'],source_url=meta['url'],articles=data['articles']))
             by_id[meta['id']]=(meta,{a['jo'] for a in data['articles']})
             if meta['domain']=='constitution':constitution_bodies[meta['id']]={a['jo']:a for a in data['articles']}
             for annex in data.get('annexes',[]):
@@ -173,6 +175,13 @@ def validate(root, *, allow_legacy_menu=False):
                     if row['direction']=='forward':source_id,target_id=law_id,neighbor['id']
                     else:source_id,target_id=neighbor['id'],law_id
                     if row['source_id']!=source_id or row['target_id']!=target_id:raise ValueError('Bridge direction mismatch')
+    if manifest.get('remedy_guide'):
+        from core.remedy_relations import validate_guide
+        validate_guide(manifest['remedy_guide'],remedy_documents)
+        for row in manifest['remedy_guide']['entries']:
+            meta,numbers=by_id[row['law_id']]
+            if meta['domain']!='remedy' or meta['name']!=row['law'] or row['jo'] not in numbers:
+                raise ValueError('Invalid remedy guide endpoint')
     actual=list(root.rglob('*'));files=[p for p in actual if p.is_file()]
     if len(files)>20000:raise ValueError('Cloudflare free file limit exceeded')
     if sum(p.stat().st_size for p in files)>1024**3:raise ValueError('GitHub Pages site limit exceeded')

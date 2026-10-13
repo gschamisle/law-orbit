@@ -12,16 +12,30 @@ def case_proof(graph, expected, *, known_articles=None):
     matches=[]
     for requirement in expected:
         found=[]
+        kind = requirement.get('target_kind', 'article')
+        if kind not in ('article', 'law'):
+            raise ValueError('Unsupported expected citation kind')
         for edge in graph['edges']+graph.get('text_citations',[]):
-            if edge.get('target_kind')!='article' or edge.get('context_review'):continue
+            if edge.get('target_kind')!=kind:continue
+            # Explicit exceptions remain context-review rows in the product.
+            # A task may demonstrate one only against separately reviewed exact
+            # context, never by accepting every candidate or clearing its flag.
+            checked_context = requirement.get('reviewed_context')
+            if checked_context and edge.get('context') != checked_context:continue
+            if edge.get('context_review') and (
+                not checked_context or edge.get('type') not in ('direct', 'law_reference')
+                or edge.get('target_provision_status') not in (None, 'collected')
+            ):continue
             if edge.get('type') in ('context','context-review'):continue
             if any(norm(edge.get(k,''))!=norm(requirement[k]) for k in ('source_law','target_law')):continue
             if str(edge.get('source_jo',''))!=str(requirement.get('source_jo','')):continue
-            try:target=parse_target(edge.get('target_ref','')).jo
-            except ValueError:continue
-            if target!=requirement['target_jo']:continue
+            if kind == 'article':
+                try:target=parse_target(edge.get('target_ref','')).jo
+                except ValueError:continue
+                if target!=requirement['target_jo']:continue
             if known is not None:
-                if (norm(edge['target_law']),target) not in known:continue
+                if kind == 'article' and (norm(edge['target_law']),target) not in known:continue
+                if kind == 'law' and not any(n == norm(edge['target_law']) for n, _ in known):continue
                 if edge.get('source_jo') and (norm(edge['source_law']),str(edge['source_jo'])) not in known:continue
             if requirement.get('quote_contains') and norm(requirement['quote_contains']) not in norm(edge.get('cite_raw') or edge.get('raw','')):continue
             found.append(edge['evidence_id'])

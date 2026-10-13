@@ -14,12 +14,19 @@ from core.universe_builder import block_at, QUALIFIER
 
 PAIR = ('forex', 'fsc')
 INTEGRITY_PAIRS = tuple(('integrity', peer) for peer in ('procurement', 'public_institutions', 'subsidy'))
-PAIRS = (PAIR, ('procurement', 'public_institutions')) + INTEGRITY_PAIRS
+from core.remedy_profile import PEERS as REMEDY_PEERS
+from core.domain_navigation import DOMAINS as DOMAIN_TITLES
+REMEDY_PAIRS = tuple(('remedy', peer) for peer in REMEDY_PEERS)
+PAIRS = (PAIR, ('procurement', 'public_institutions')) + INTEGRITY_PAIRS + REMEDY_PAIRS
 BRIDGE_KINDS = {PAIR: 'forex-finance-bridge', PAIRS[1]: 'procurement-public-bridge'}
 PAIR_LABELS = {PAIR: '외환·금융', PAIRS[1]: '조달·계약·공공기관'}
 for pair, label in zip(INTEGRITY_PAIRS, ('조달·계약', '공공기관', '보조금·지원사업')):
     BRIDGE_KINDS[pair] = 'integrity-' + pair[1] + '-bridge'
     PAIR_LABELS[pair] = '청렴·권익·' + label
+
+for pair in REMEDY_PAIRS:
+    BRIDGE_KINDS[pair] = 'remedy-' + pair[1] + '-bridge'
+    PAIR_LABELS[pair] = '행정구제·' + DOMAIN_TITLES[pair[1]]
 
 
 def norm(value):
@@ -77,6 +84,9 @@ def bridge(snapshots, *, pair=PAIR):
     seen = set()
 
     def add(domain, entry, article, edge, origin=None):
+        if pair in REMEDY_PAIRS:
+            from core.remedy_relations import procedural_edge
+            if not procedural_edge(edge): return False
         peer = pair[1] if domain == pair[0] else pair[0]
         name = norm(edge.get('target_law', ''))
         # A shared document already available in this domain stays in that domain.
@@ -145,6 +155,20 @@ def bridge(snapshots, *, pair=PAIR):
                         suppressed[domain][entry['id']][article['jo']].add(e['evidence_id'])
                     else:
                         add(domain, entry, article, e, e)
+                if pair in REMEDY_PAIRS and detail.get('analysis_error'):
+                    from core.remedy_relations import procedural_article
+                    # Some property documents expose full bodies but originally
+                    # analyzed only their property clauses. Reanalyze only the
+                    # newly selected procedural articles, against exact titles.
+                    if procedural_article(doc['name'], article['jo']):
+                        checked = {**doc, 'citation_policy': 'mofe-explicit'}
+                        parsed = deepcopy(article); parsed['citation_issues'] = []
+                        for c in adapter(checked, parsed, corpus):
+                            if norm(c['target_name']) not in norm(c['raw']):
+                                continue
+                            if add(domain, entry, article, make_edge(doc, article, c)):
+                                recovered.append(dict(source=entry['name'], jo=article['jo'], raw=c['raw'],
+                                    target_ref=c['target_ref'], reason='선정 불복 조문의 기존 미분석 본문 대조'))
                 issues = [i for i in detail.get('issues', []) if '별칭' in i.get('reason', '')]
                 if not issues:
                     continue

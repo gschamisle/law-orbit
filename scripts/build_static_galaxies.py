@@ -22,7 +22,7 @@ from core.law_galaxy import build as build_map
 from core.domain_navigation import DOMAINS
 
 ROOT=Path(__file__).resolve().parents[1]
-WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical','privacy','prices','subsidy','integrity')
+WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical','privacy','prices','subsidy','integrity','remedy')
 PALETTE=['#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed','#cedc80','#ffa58e','#91a1ff']
 LIMIT=24*1024*1024
 from core.annex_metadata import annex_index, annotate_annex
@@ -305,7 +305,7 @@ def build(source,dest,previous_site=None):
             # Keep the same no-unconnected-external-law overview as the tax app.
             entries,ids=export_documents(writer,domain,'',docs,graph)
             map_graph=graph
-            if domain in ('ftc','privacy','prices','subsidy','integrity'):
+            if domain in ('ftc','privacy','prices','subsidy','integrity','remedy'):
                 from core.ftc_universe import overview_graph
                 map_graph=overview_graph(bundle)
             catalog=dict(laws=entries,overview=writer.data(overview(map_graph,domain,ids,entries)),coverage=graph.get('coverage_note','수집한 명시적 인용 범위입니다.'),built_at=graph['built_at'],sectors={'all':'전체 연결',**sectors})
@@ -315,7 +315,7 @@ def build(source,dest,previous_site=None):
             if domain in WORK_DOMAINS:
                 catalog['workbench']=workbench(bundle,ids)
                 from core.mofe_profiles import WORK_PROFILES
-                if domain in ('privacy','prices','subsidy','integrity'):
+                if domain in ('privacy','prices','subsidy','integrity','remedy'):
                     catalog['default_laws']=WORK_PROFILES[domain]['default_laws']
                     catalog['default_refs']=WORK_PROFILES[domain]['default_refs']
                 from core.mofe_profiles import WORK_PROFILES
@@ -332,6 +332,10 @@ def build(source,dest,previous_site=None):
     if any(d['id']=='integrity' for d in manifest['domains']):
         from scripts.build_integrity_links_site import attach_integrity_links
         bridge_report['integrity']=attach_integrity_links(dest,manifest,writer)
+    if any(d['id']=='remedy' for d in manifest['domains']):
+        from scripts.build_integrity_links_site import attach_selected_links
+        from core.forex_finance_links import REMEDY_PAIRS
+        bridge_report['remedy']=attach_selected_links(dest,manifest,REMEDY_PAIRS,'remedy',writer)
     manifest['version']=hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()[:20]
     (dest/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     report=dict(version=manifest['version'],data_files=len(writer.assets),data_bytes=sum(writer.assets.values()),largest_asset=max(writer.assets.values()),domains=manifest['domains'],cross_domain=bridge_report)

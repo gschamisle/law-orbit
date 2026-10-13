@@ -11,7 +11,17 @@ export const bridgeNames = {
   procurement: '조달·계약',
   public_institutions: '공공기관',
   integrity: '청렴·권익',
+  remedy: '행정구제',
+  tax: '국세',
+  customs: '관세·통관',
+  local_tax: '지방세',
+  labor: '고용·노동',
+  medical: '보건·의료',
   subsidy: '보조금·지원사업',
+  privacy: '개인정보·공공데이터',
+  ftc: '공정거래',
+  housing: '국토·건축·주택',
+  state_property: '국유재산',
 };
 export function bridgeEditions(bridge) {
   return Object.entries(bridge.editions)
@@ -21,7 +31,10 @@ export function bridgeEditions(bridge) {
 export function validateBridge(value, domain, manifest, catalog) {
   const peer = value.peer;
   const integrityPeer = domain === 'integrity' ? peer : peer === 'integrity' ? domain : '';
-  const kind = ['procurement', 'public_institutions', 'subsidy'].includes(integrityPeer)
+  const remedyPeer = domain === 'remedy' ? peer : peer === 'remedy' ? domain : '';
+  const kind = ['tax', 'customs', 'local_tax', 'labor', 'medical', 'privacy', 'public_institutions', 'ftc', 'housing', 'state_property'].includes(remedyPeer)
+    ? `remedy-${remedyPeer}-bridge`
+    : ['procurement', 'public_institutions', 'subsidy'].includes(integrityPeer)
     ? `integrity-${integrityPeer}-bridge`
     : peer === bridgePeers[domain]
       ? (['forex', 'fsc'].includes(domain) ? 'forex-finance-bridge' : 'procurement-public-bridge')

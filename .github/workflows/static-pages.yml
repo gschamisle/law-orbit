@@ -49,6 +49,12 @@ jobs:
         run: uv run --frozen python -m scripts.test_integrity_profile
       - name: Verify published ACRC cross-domain source chains
         run: uv run --frozen python -m scripts.verify_integrity_release --site _site --report output/integrity-source-audit.json
+      - name: Check administrative remedy scope and source-bound guidance
+        run: |
+          uv run --frozen python -m scripts.test_remedy_profile
+          node --test scripts/test_remedy.mjs
+      - name: Verify published administrative remedy source chains
+        run: uv run --frozen python -m scripts.verify_remedy_release --site _site --report output/remedy-source-audit.json
       - name: Verify collected statutes and actual historical comparisons
         env:
           LAW_ORBIT_TEST_SITE: _site

@@ -25,7 +25,7 @@ from scripts.compact_static_galaxies import convert
 from scripts.static_storage import Storage
 from scripts.validate_static_galaxies import validate
 
-CANDIDATES = ('privacy', 'prices', 'subsidy', 'integrity')
+CANDIDATES = ('privacy', 'prices', 'subsidy', 'integrity', 'remedy')
 
 
 def bundle_argument(value):
@@ -34,7 +34,7 @@ def bundle_argument(value):
         raise argparse.ArgumentTypeError('Use --bundle domain=path')
     domain, name = value.split('=', 1)
     if domain not in CANDIDATES or not name.strip():
-        raise argparse.ArgumentTypeError('Only privacy, prices or subsidy bundle paths are supported')
+        raise argparse.ArgumentTypeError('Only registered candidate bundle paths are supported')
     return domain, Path(name)
 
 

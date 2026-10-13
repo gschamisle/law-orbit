@@ -1,3 +1,4 @@
+import { mountRemedyNotes } from './remedy.mjs';
 import { createRendererChannel } from './renderer-channel.mjs';
 import { renderProcurementPdf } from './procurement-pdf.mjs';
 import { installFeedback } from './feedback.mjs';
@@ -394,6 +395,15 @@ async function downloadReview(format) {
 $('export-html').onclick = () => downloadReview('html');
 $('export-csv').onclick = () => downloadReview('csv');
 
+function showRemedyNotes(container, law, article) {
+  mountRemedyNotes(container, manifest?.remedy_guide, law, article, { text, link,
+    explore: domain === 'remedy' ? null : (id, reference) => {
+      closeReading();
+      navigate('remedy', { sector: 'all', law: id, reference, query: '' });
+    },
+  });
+}
+
 function renderWorkbench() {
   const box = $('workbench'),
     work = catalog.workbench;
@@ -415,7 +425,7 @@ function renderWorkbench() {
       'muted small',
     ),
   );
-  box.append(head, text('p', work.purpose, 'muted small'));
+  box.append(head, text('p', entry?.subtitle || work.purpose, 'muted small'));
   if (entry?.note) box.append(text('p', entry.note, 'muted small'));
   const cases = document.createElement('div');
   cases.className = 'work-cases';
@@ -423,12 +433,14 @@ function renderWorkbench() {
     const b = text('button', c.title, 'work-case');
     b.type = 'button';
     b.append(
-      text('small', `${c.law} ${c.reference || `제${c.jo}조`} · 다른 문서의 연결 조문 ${c.connected_articles}개`),
+      text('small', `${c.law} ${c.reference || `제${c.jo}조`} · ${c.connected_articles ? `다른 문서의 연결 조문 ${c.connected_articles}개` : '법령 참조 원문 확인'}`),
     );
     if (entry) b.append(text('span', c.description, 'work-description'));
     b.title = c.description;
     b.onclick = () =>
-      navigate(domain, { sector: 'all', law: c.law_id, reference: c.reference || `제${c.jo}조`, query: '' });
+      navigate(domain, { sector: 'all', law: c.law_id, reference: c.reference || `제${c.jo}조`, query: '',
+        ...(domain === 'remedy' ? { broad: true, review: true, direction: 'both' } : {}),
+      });
     cases.append(b);
   }
   box.append(cases);
@@ -939,6 +951,7 @@ async function openArticle(reference, token = ++epoch) {
     box.append(meta);
     for (const referenceNote of a.reference_notes || [])
       box.append(text('p', referenceNote, 'muted small'));
+    showRemedyNotes(box, doc.meta.name, a);
     const mainBody = text('div', a.text, 'article-body');
     box.append(mainBody);
     if (wanted.narrow) {
@@ -999,7 +1012,7 @@ async function openArticle(reference, token = ++epoch) {
 function showMap(value) {
   const frame = document.createElement('iframe');
   frame.title = (value.galaxy_title || '법령').replace(/\s*은하/g, '') + ' · 3D 법령 지도';
-  frame.src = 'renderer.html?v=orbit-integrity-v1';
+  frame.src = 'renderer.html?v=orbit-remedy-v1';
   frame.allow = 'fullscreen';
   rendererChannel.use(frame, value);
   $('map-host').replaceChildren(frame);
@@ -1392,6 +1405,7 @@ function renderReadingArticle(jo) {
       body.append(text('p', '인용 출처의 참고자료 · ' + referenceNote, 'muted small'));
     for (const referenceNote of a.reference_notes || [])
       body.append(text('p', referenceNote, 'muted small'));
+    showRemedyNotes(body, entry.name, a);
     const content = text('div', a.text, 'reading-text');
     body.append(content);
     markBody(

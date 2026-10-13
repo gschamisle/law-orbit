@@ -99,7 +99,9 @@
       "scripts/test_candidate_evidence.py",
       "scripts/test_healthcare_phase2.py",
       "scripts/test_renderer_channel.mjs",
-      "scripts/test_integrity_profile.py"
+      "scripts/test_integrity_profile.py",
+      "scripts/test_remedy_profile.py",
+      "scripts/test_remedy.mjs"
     ],
     "collected": [
       "scripts/test_procurement_ui.py",
