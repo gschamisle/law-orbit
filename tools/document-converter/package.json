@@ -1,0 +1,9 @@
+{
+  "name": "law-orbit-document-converter",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Pinned local PDF converter; not included in the public website",
+  "dependencies": {
+    "kordoc": "4.19.0"
+  }
+}

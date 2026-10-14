@@ -16,4 +16,5 @@ secondaryBackgroundColor = "#164139"
 textColor = "#f4eedf"
 
 [server]
+address = "127.0.0.1"
 maxUploadSize = 50

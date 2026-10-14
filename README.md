@@ -79,11 +79,13 @@
 Python 3.13 이상과 [uv](https://github.com/astral-sh/uv)를 사용합니다. 공개 웹은 설치 없이 열람할 수 있습니다.
 
 ```bash
-uv sync
-uv run streamlit run app.py --server.port 8503
+uv sync --locked
+uv run python -m scripts.run_fsc_preview --port 8503
 ```
 
 로컬 후속 개정 비교에는 Node.js 22 이상이 필요합니다. 수집 자료가 없는 분야에는 미수집 안내가 표시됩니다. 인증·수집·갱신·검증 방법은 [상세 프로젝트 안내](docs/project-guide.md)에 있습니다.
+
+로컬 PDF 검토를 사용하려면 `npm ci --prefix tools/document-converter --ignore-scripts`로 고정된 변환기를 한 번 설치합니다. 파일을 열 때 자동으로 패키지를 내려받지 않으며, 업로드는 앱이 만든 이름으로 로컬에만 저장합니다. [보안 운영 안내](docs/security-operations.md)
 
 ## 더 알아보기
 

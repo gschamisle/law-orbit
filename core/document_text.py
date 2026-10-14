@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import shutil
 import subprocess
-import sys
+import json
+import tempfile
 from pathlib import Path
 
 PLAIN_SUFFIXES = frozenset({".md", ".txt"})
@@ -25,6 +26,9 @@ PDF_SUFFIXES = frozenset({".pdf"})
 SUPPORTED = PLAIN_SUFFIXES | HWP_SUFFIXES | PDF_SUFFIXES
 
 _CACHE_SUFFIX = ".kordoc.md"
+_KORDOC_VERSION = "4.19.0"
+_KORDOC_DIR = Path(__file__).resolve().parents[1] / "tools/document-converter/node_modules/kordoc"
+_PDF_TIMEOUT = 180
 
 
 class ExtractError(RuntimeError):
@@ -32,7 +36,22 @@ class ExtractError(RuntimeError):
 
 
 def kordoc_available() -> bool:
-    return shutil.which("kordoc") is not None or shutil.which("npx") is not None
+    return _converter_command() is not None
+
+
+def _converter_command() -> list[str] | None:
+    """Use a locked, already installed JS entrypoint; never run npm/npx on input."""
+    node = shutil.which("node")
+    if not node or Path(node).suffix.lower() in ('.cmd', '.bat', '.ps1'):
+        return None
+    try:
+        package = json.loads((_KORDOC_DIR / 'package.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    entry = _KORDOC_DIR / 'dist/cli.js'
+    if package.get('version') != _KORDOC_VERSION or not entry.is_file():
+        return None
+    return [str(Path(node).resolve()), str(entry.resolve())]
 
 
 def pdf_to_markdown(path: Path, *, force: bool = False) -> Path:
@@ -43,16 +62,28 @@ def pdf_to_markdown(path: Path, *, force: bool = False) -> Path:
 
     if not kordoc_available():
         raise ExtractError(
-            "PDF를 읽으려면 kordoc이 필요합니다 (Node.js). "
-            "`npm i -g kordoc` 후 다시 시도하거나, HWPX 파일을 올려 주세요."
+            "고정 버전 PDF 변환기 kordoc이 필요합니다 (Node.js). 프로젝트 폴더에서 "
+            "`npm ci --prefix tools/document-converter --ignore-scripts`를 실행하거나 HWPX 파일을 올려 주세요."
         )
-    cmd = ["npx", "-y", "kordoc@^4", str(path), "-o", str(cache), "--silent"]
-    done = subprocess.run(
-        cmd, capture_output=True, text=True, shell=(sys.platform == "win32"),
-    )
-    if done.returncode != 0 or not cache.is_file():
-        detail = (done.stderr or done.stdout or "").strip()[:300]
-        raise ExtractError(f"PDF 변환에 실패했습니다: {detail or '원인 불명'}")
+    command = _converter_command()
+    if command is None:
+        raise ExtractError('PDF 변환기 설치 상태가 바뀌었습니다. 다시 확인해 주세요.')
+    # Never expose a partially written conversion as a valid cache after a
+    # timeout/failure. Absolute paths cannot be interpreted as CLI options.
+    try:
+        with tempfile.TemporaryDirectory(prefix='.pdf-convert-', dir=path.resolve().parent) as folder:
+            output = Path(folder) / 'converted.md'
+            done = subprocess.run(
+                [*command, str(path.resolve()), '-o', str(output), '--silent'],
+                capture_output=True, text=True, encoding='utf-8', errors='replace',
+                shell=False, timeout=_PDF_TIMEOUT,
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+            )
+            if done.returncode != 0 or not output.is_file():
+                raise ExtractError('PDF 변환에 실패했습니다. 파일 형식·암호 보호 여부를 확인해 주세요.')
+            output.replace(cache)
+    except subprocess.TimeoutExpired as exc:
+        raise ExtractError('PDF 변환 제한 시간(180초)을 넘었습니다.') from exc
     return cache
 
 
