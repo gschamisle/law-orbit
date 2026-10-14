@@ -1,4 +1,5 @@
 import { mountRemedyNotes } from './remedy.mjs';
+import { lawNeighbors, lawOverview, loadLawPair } from './law-overview.mjs';
 import { createRendererChannel } from './renderer-channel.mjs';
 import { renderProcurementPdf } from './procurement-pdf.mjs';
 import { installFeedback } from './feedback.mjs';
@@ -523,11 +524,17 @@ function renderArticles() {
   );
   const matches = matchingArticles(candidates, $('body-query').value);
   $('article').replaceChildren(
+    option('', '법령 전체 연결'),
     ...matches.map((a) => option(a.jo, a.label + (a.title ? ' · ' + a.title : ''))),
   );
   if (wanted && matches.some((a) => a.jo === wanted.jo)) $('article').value = wanted.jo;
-  else if (matches.length) $('article').selectedIndex = -1;
-  if (!matches.length) $('article').append(option('', '검색 결과 없음'));
+  else if (wanted) $('article').selectedIndex = -1;
+  else $('article').value = '';
+  if (!matches.length) {
+    const empty = option('__empty', '검색 결과 없음');
+    empty.disabled = true;
+    $('article').append(empty);
+  }
 }
 function domainButtons() {
   const nav = $('domains');
@@ -683,7 +690,7 @@ async function navigate(id, overrides = {}) {
     if (chosen) {
       await openLaw(
         chosen.id,
-        state.reference || (chosen.name === configuredLaw ? configuredRef : '') ||
+        state.view === 'law' && !state.reference ? '' : state.reference || (chosen.name === configuredLaw ? configuredRef : '') ||
           (id === 'ftc' && chosen.name === defaults.ftc
             ? '제45조'
             : id === 'labor' && chosen.name === defaults.labor
@@ -736,6 +743,9 @@ async function openLaw(id, reference = '', token = ++epoch) {
   $('evidence').replaceChildren();
   $('outside').replaceChildren();
   detail = wanted = null;
+  currentRows = [];
+  setLawOverviewMode(false);
+  $('map-host').replaceChildren(text('p', '법령 연결을 불러오고 있습니다.', 'muted'));
   try {
     const loaded = await data(entry.file);
     if (token !== epoch) return;
@@ -804,7 +814,8 @@ async function openLaw(id, reference = '', token = ++epoch) {
       const t = target(reference, ['fsc', 'forex'].includes(domain));
       a = doc.articles.find((a) => a.jo === t.jo) || a;
     } catch {}
-    if (a)
+    if (a && !reference) showLawOverview();
+    else if (a)
       await openArticle(
         reference &&
           doc.articles.some((a) => {
@@ -820,6 +831,7 @@ async function openLaw(id, reference = '', token = ++epoch) {
       );
     else {
       detail = wanted = null;
+      state.view = 'document';
       state.reference = '';
       $('reference').replaceChildren();
       $('article-content').replaceChildren(
@@ -923,6 +935,9 @@ async function openArticle(reference, token = ++epoch) {
     if (!group[a.jo]) throw Error('조문 연결 자료를 찾지 못했습니다.');
     wanted = parsed;
     detail = group[a.jo];
+    state.view = 'article';
+    setLawOverviewMode(false);
+    $('reference-form').hidden = false;
     state.reference = wanted.label;
     $('reference').replaceChildren(
       ...provisionOptions(a, wanted.label).map((p) => option(p.value, p.label)),
@@ -1017,6 +1032,74 @@ function showMap(value) {
   rendererChannel.use(frame, value);
   $('map-host').replaceChildren(frame);
 }
+function setLawOverviewMode(active) {
+  document.querySelector('.connection-header .filters').hidden = active;
+  $('cross-label').hidden = active || !manifest?.cross_domain?.[domain];
+  document.querySelector('.review-toolbar').hidden = active;
+  $('connection-title').textContent = active ? '이어지는 법령 ' : '이어지는 조문 ';
+}
+function showLawOverview() {
+  resetReview();
+  closeReading();
+  detail = wanted = null;
+  currentRows = [];
+  state.reference = '';
+  state.view = 'law';
+  $('article').value = '';
+  $('reference').replaceChildren();
+  $('reference-form').hidden = true;
+  setLawOverviewMode(true);
+  const peers = lawNeighbors(overview, doc.meta.name);
+  $('article-content').replaceChildren(
+    text('h3', '법령 전체 연결', 'article-title'),
+    text('p', `수집 범위 안에서 ${peers.length}개 법령과 이어집니다.`, 'muted'),
+    text('p', '지도나 아래 목록에서 법령을 누르면 연결 조문과 인용 문구가 펼쳐집니다. 위에서 조문을 고르면 해당 조문의 연결로 좁혀 볼 수 있습니다.', 'muted small'),
+  );
+  $('evidence-count').textContent = `${peers.length}개`;
+  $('connection-note').textContent = `${catalog.built_at} 수집 자료 · 현재 분야에서 선택한 법령에 들어오고 나가는 연결입니다. 조문 직접 인용과 법령 전체·문맥 참조를 함께 포함합니다. 미수집 법령까지의 전체 관계를 뜻하지 않습니다.`;
+  $('outside').replaceChildren();
+  const anchor = epoch, currentDoc = doc;
+  $('evidence').replaceChildren(...peers.map(({ node, forward, reverse }) => {
+    const section = document.createElement('details');
+    section.className = 'law-peer';
+    section.dataset.law = node.web_law || '';
+    const summary = text('summary', node.full_name || node.id);
+    summary.append(text('small', forward && reverse ? '인용 · 역인용' : forward ? '인용하는 법령 →' : '← 인용해 오는 법령'));
+    const content = text('div', '', 'law-peer-body');
+    section.append(summary, content);
+    let loaded = false, loading = false;
+    section.addEventListener('toggle', async () => {
+      if (!section.open || loaded || loading) return;
+      loading = true;
+      content.replaceChildren(text('p', '두 법령 사이의 연결 조문을 불러오고 있습니다.', 'muted small'));
+      try {
+        const rows = await loadLawPair(currentDoc, node.id, data);
+        if (anchor !== epoch || !section.isConnected) return;
+        loaded = true;
+        content.replaceChildren(text('p', `인용 근거 ${rows.length}건 · 항·호 및 범위 인용은 여러 근거로 표시될 수 있습니다. 법령 전체 참조와 문맥 확인 후보는 조문 직접 인용과 구분해 읽어 주세요.`, 'muted small'));
+        if (!rows.length) content.append(text('p', '집계된 법령 연결은 있으나 현재 자료에서 조문별 근거를 펼치지 못했습니다. 공식 원문을 확인해 주세요.', 'muted'));
+        let shown = 0;
+        const more = text('button', '근거 더 보기');
+        const append = () => {
+          more.remove();
+          content.append(...rows.slice(shown, shown + 30).map((r) => evidenceCard(r, false, false)));
+          shown += 30;
+          if (shown < rows.length) content.append(more);
+        };
+        more.onclick = append;
+        append();
+      } catch (err) {
+        if (anchor === epoch && section.isConnected)
+          content.replaceChildren(text('p', `${err.message || '연결 자료를 불러오지 못했습니다.'} 목록을 닫았다 다시 열면 재시도합니다.`, 'error'));
+      } finally { loading = false; }
+    });
+    return section;
+  }));
+  if (!peers.length) $('evidence').append(text('p', '수집한 법령 집계에서 연결을 찾지 못했습니다. 다른 법령과 관계가 없다는 뜻은 아닙니다.', 'empty'));
+  showMap(lawOverview(overview, doc.meta));
+  delegation.update();
+  persist();
+}
 function sectorMap() {
   if (state.sector === 'all') return overview;
   const names = new Set(allowedLaws().map((d) => d.name));
@@ -1044,7 +1127,7 @@ function outsideSector(row) {
     return !(d?.article_sectors?.[row.neighbor_jo] || []).includes(state.sector);
   return state.sector !== 'all' && (!d || (d.sectors || []).indexOf(state.sector) < 0);
 }
-function evidenceCard(row, external = false) {
+function evidenceCard(row, external = false, selectable = true) {
   const annex = annexReference(row, { currentDoc: doc, external });
   const card = document.createElement('article');
   card.className = 'evidence-card';
@@ -1124,7 +1207,7 @@ function evidenceCard(row, external = false) {
     updateExportControls();
   };
   pick.append(check, document.createTextNode('검토자료에 담기'));
-  actions.append(pick);
+  if (selectable) actions.append(pick);
   const sourceId = row.source_id || (row.source_law === doc?.meta.name ? doc.meta.id : '');
   if (
     row.direction === 'forward' &&
@@ -1580,6 +1663,11 @@ $('body-query').oninput = () => {
   persist();
 };
 $('article').onchange = () => {
+  if (!$('article').value) {
+    epoch++;
+    showLawOverview();
+    return;
+  }
   const a = doc.articles.find((a) => a.jo === $('article').value);
   if (a) openArticle(a.label);
 };
@@ -1719,7 +1807,14 @@ window.addEventListener('message', (e) => {
     e.data?.type !== 'galaxy-select'
   )
     return;
-  if (e.data.mode === 'spotlight' || e.data.jo)
+  if (e.data.mode === 'law-overview') {
+    const section = [...$('evidence').querySelectorAll('.law-peer')].find((s) => s.dataset.law === e.data.law);
+    if (section) {
+      section.open = true;
+      section.querySelector('summary').focus({ preventScroll: true });
+      section.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  } else if (e.data.mode === 'spotlight' || e.data.jo)
     openReading(e.data.law, e.data.jo, e.data.region || '');
   else follow(e.data.law, e.data.jo, e.data.region || '');
 });
