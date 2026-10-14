@@ -638,6 +638,7 @@
     const $ = (id) => document.getElementById(id),
       boundary = D.mode === 'boundary',
       spotlight = D.mode === 'spotlight',
+      lawOverview = D.mode === 'law-overview',
       impact = D.mode === 'impact' || boundary || spotlight,
       byId = new Map(D.nodes.map((n) => [n.id, n]));
     const allLinks = D.all_links || D.links,
@@ -754,7 +755,7 @@
         ? `${D.target} · ${D.direction}`
         : impact
           ? D.target
-          : '법령과 조문의 직접 인용·역인용을 살펴보세요.';
+          : D.overview_subtitle || '법령과 조문의 직접 인용·역인용을 살펴보세요.';
     $('g-mode').textContent = boundary
       ? 'CITATION SCOPE / REVIEW'
       : spotlight
@@ -785,7 +786,10 @@
       $('g-footnote').textContent =
         `${D.built_at} 기준 · 작은 점은 조문 · 색상은 업무 태그 · 인용선은 개정 의무가 아닙니다`;
     if (spotlight) $('g-reset').setAttribute('aria-label', '연결 전체 보기');
-    const legends = spotlight
+    if (lawOverview) $('g-footnote').textContent = `${D.built_at || '수집 자료'} 기준 · 법령 전체·문맥 참조 포함 · 화살표는 인용 방향`;
+    const legends = lawOverview
+      ? [['#66e5ed', '인용하는 법령 →'], ['#ffc77a', '← 인용해 오는 법령'], ['#b5a1ff', '양방향 연결']]
+      : spotlight
       ? [
           ['#66e5ed', '인용하는 곳 →'],
           ['#ffc77a', '← 인용해 오는 곳'],
@@ -829,7 +833,7 @@
                         ['#2dd4bf', '국제조세'],
                       ];
     $('g-legend').innerHTML = (
-      D.work_domain_label && !impact
+      lawOverview ? legends : D.work_domain_label && !impact
         ? [['#80b4ff', '법령·규정 묶음별 색상']]
         : forex && !impact
           ? [
@@ -879,7 +883,7 @@
       });
       if (!n) {
         $('g-details').innerHTML =
-          `<h3>${spotlight ? '이 조문의 연결' : impact ? '개정 영향 검토' : '법은 서로를 참조합니다.'}</h3><p>${spotlight ? '가운데가 선택한 조문입니다. 민트색은 이 조문이 인용하는 곳, 금색은 이 조문을 인용하는 곳입니다. 점을 선택해 근거를 확인하세요.' : boundary ? '가운데는 변경된 조문입니다. 점선은 신설 항의 적용 취지를 확인할 연결입니다.' : impact ? '가운데가 개정 대상입니다. 연결된 조문을 선택하면 저장된 인용 근거가 나타납니다.' : D.overview_note ? esc(D.overview_note) + ' 법령 주위의 작은 점은 조문입니다.' : '법령을 선택하면 같은 법령군과 드문 연결까지 펼쳐집니다. 법령 주위의 작은 점은 조문입니다.'}</p><div class="g-divider"></div><div class="g-stat">${esc(D.article_count || D.nodes.length)}</div><div class="g-small">${impact ? '지도에 표시된 조문' : '탐색 가능한 법령'}</div><p>${spotlight ? '화살표는 인용 방향입니다. 점선은 선택한 범위에 속하는지 원문 확인이 필요합니다.' : impact ? '개정 필요성의 확정이 아닌 영향 검토 후보입니다.' : '점의 크기는 인용량, 선은 인용하는 법령에서 인용받는 법령으로 향합니다.'}</p>`;
+          `<h3>${spotlight ? '이 조문의 연결' : impact ? '개정 영향 검토' : '법은 서로를 참조합니다.'}</h3><p>${spotlight ? '가운데가 선택한 조문입니다. 민트색은 이 조문이 인용하는 곳, 금색은 이 조문을 인용하는 곳입니다. 점을 선택해 근거를 확인하세요.' : boundary ? '가운데는 변경된 조문입니다. 점선은 신설 항의 적용 취지를 확인할 연결입니다.' : impact ? '가운데가 개정 대상입니다. 연결된 조문을 선택하면 저장된 인용 근거가 나타납니다.' : D.overview_note ? esc(D.overview_note) + (lawOverview ? '' : ' 법령 주위의 작은 점은 조문입니다.') : '법령을 선택하면 같은 법령군과 드문 연결까지 펼쳐집니다. 법령 주위의 작은 점은 조문입니다.'}</p><div class="g-divider"></div><div class="g-stat">${esc(D.article_count || D.nodes.length)}</div><div class="g-small">${impact ? '지도에 표시된 조문' : '탐색 가능한 법령'}</div><p>${spotlight ? '화살표는 인용 방향입니다. 점선은 선택한 범위에 속하는지 원문 확인이 필요합니다.' : impact ? '개정 필요성의 확정이 아닌 영향 검토 후보입니다.' : '점의 크기는 인용량, 선은 인용하는 법령에서 인용받는 법령으로 향합니다.'}</p>`;
         return;
       }
       let html = `<h3>${esc(label(n))}</h3>${n.full_name && n.full_name !== n.label ? `<p class="g-full-name">${esc(n.full_name)}</p>` : ''}<p>${esc(n.title || n.family)}</p>${n.status ? `<span class="g-badge">${esc(n.status)}</span>` : ''}<div class="g-divider"></div>`;

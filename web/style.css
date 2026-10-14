@@ -59,3 +59,5 @@
 .remedy-notes{margin:1rem 0 1.5rem;padding:.7rem 0 .7rem 1rem;border-left:2px solid var(--muted,#75bcb0)}
 .remedy-notes h4{margin:0 0 .6rem;color:var(--gold,#e5c77f)}
 .remedy-notes details{margin:.45rem 0}.remedy-notes summary{cursor:pointer;font-size:.94rem}.remedy-notes blockquote{margin:.65rem 0;padding-left:.8rem;border-left:1px solid #365c55;white-space:pre-wrap;overflow-wrap:anywhere}.remedy-notes p{line-height:1.65}
+
+.law-peer{border-bottom:1px solid #294b42;padding:12px 0}.law-peer>summary{cursor:pointer;font-size:16px;color:#ecdbac;line-height:1.7;overflow-wrap:anywhere}.law-peer>summary small{display:block;padding-left:18px;font-family:Pretendard,sans-serif;font-size:11px;font-weight:400}.law-peer>summary:focus-visible{outline:2px solid #e4c47c;outline-offset:4px}.law-peer-body{padding-top:14px}.law-peer-body .evidence-card h3{font-size:16px}
