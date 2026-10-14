@@ -103,7 +103,8 @@
       "scripts/test_renderer_channel.mjs",
       "scripts/test_integrity_profile.py",
       "scripts/test_remedy_profile.py",
-      "scripts/test_remedy.mjs"
+      "scripts/test_remedy.mjs",
+      "scripts/test_upload_security.py"
     ],
     "collected": [
       "scripts/test_procurement_ui.py",

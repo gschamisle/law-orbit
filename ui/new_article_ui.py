@@ -38,10 +38,9 @@ def _ingest_upload(uploaded) -> dict | None:
     """업로드 파일 저장(data/uploads, git 제외) 후 개정문 본문 파싱."""
     from core.document_text import extract
     from core.pdf_bill_text import unwrap
+    from core.upload_storage import save_upload
 
-    _UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    dest = _UPLOAD_DIR / uploaded.name
-    dest.write_bytes(uploaded.getbuffer())
+    dest = save_upload(uploaded, _UPLOAD_DIR)
     text = extract(dest)
     if len(text) < 100:
         return None

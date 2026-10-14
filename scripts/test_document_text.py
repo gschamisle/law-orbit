@@ -20,6 +20,24 @@ def test_plain_text() -> None:
     print("  md/txt 추출 OK")
 
 
+def test_hwpx_report_roundtrip() -> None:
+    """Keep report generation and extraction compatible with dependency upgrades."""
+    from core.review_report import build_compare_report_hwpx, build_review_report_hwpx
+
+    comparison = {"law_name": "보안검증용 법률", "jo_list": [(16, "")], "file": "검증용.hwpx"}
+    review = {"구조": {"제도명": "회귀 검증"}, "검토": {"종합의견": "생성한 문서의 한글 본문을 확인합니다.", "항목": []}}
+    with tempfile.TemporaryDirectory() as folder:
+        plain = Path(folder) / "comparison.hwpx"
+        build_compare_report_hwpx(comparison, str(plain))
+        text = dt.extract(plain)
+        assert "보안검증용 법률" in text and "제16조" in text
+        detailed = Path(folder) / "review.hwpx"
+        build_review_report_hwpx("보안검증용 법률", comparison, review, str(detailed))
+        text = dt.extract(detailed)
+        assert "회귀 검증" in text and "생성한 문서의 한글 본문을 확인합니다." in text
+    print("  HWPX 검토보고서 생성·추출 왕복 OK")
+
+
 def test_missing_file_is_loud() -> None:
     """조용히 빈 문자열을 돌려주면 '개정문을 못 찾았다'로만 보여 원인을 못 찾는다."""
     try:

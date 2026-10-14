@@ -23,11 +23,10 @@ _SUPPORTED = ("pdf", "hwpx", "hwp", "md", "txt")
 def _read_upload(uploaded) -> tuple[str, str]:
     """업로드 파일을 data/uploads(gitignore)에 저장하고 텍스트를 뽑는다."""
     from core.document_text import extract
+    from core.upload_storage import save_upload
 
-    _UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    dest = _UPLOAD_DIR / uploaded.name
-    dest.write_bytes(uploaded.getbuffer())
-    return extract(dest), str(dest)
+    dest = save_upload(uploaded, _UPLOAD_DIR)
+    return extract(dest), uploaded.name
 
 
 def _renumber_block(texts: list[tuple[str, str]]) -> None:
