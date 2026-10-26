@@ -37,6 +37,8 @@ jobs:
         run: |
           uv run --frozen python -m scripts.test_citation_ownership
           uv run --frozen python -m scripts.test_edition_watch
+          uv run --frozen python -m scripts.test_edition_refresh
+          uv run --frozen python -m scripts.test_edition_refresh_bridges
       - name: Check static-reader engine parity
         run: uv run --frozen python -m scripts.test_static_galaxies
       - name: Check related-article reading isolation

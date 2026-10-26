@@ -32,12 +32,42 @@ API 인증은 기존 환경변수·로컬 설정을 재사용하며 요청 URL·
 | unchanged | 고유번호·판본번호·시행일·명칭이 일치 |
 | changed | 새 판본 또는 명칭 변경. `edition_changed`와 `renamed`로 구분 |
 | repealed / scheduled | 목록상 폐지 또는 시행 예정. 현행 일치로 처리하지 않음 |
-| missing-current / ambiguous-current | 현행 목록에 없거나 복수 판본이어서 추가 확인 필요 |
+| missing-current / ambiguous-current | 현행 목록에 없거나 현행 복수·상태 충돌이어서 추가 확인 필요 |
+| date-unverified / baseline-date-unverified | 시행일이 없거나 `99991231` 같은 미확인 표시. 실제 시행 예정일로 확정하지 않음 |
 | identity-unverified / provider-failed | 구판 식별 또는 제공처 목록 확인 실패. 변화 없음으로 처리하지 않음 |
 | manual-source-check | 법제처 외 별도 출처 자료로 수동 확인 필요 |
 
 공식 목록은 모든 페이지의 수·식별번호와 첫 페이지 재조회를 확인한다. 부분 조회 성공을 전체 성공으로 보고하지 않는다. 구판이 현행 목록에 없으면 구판 원문 메타데이터로 고유번호를 확인하며, 제목 유사도만으로 이름 변경을 확정하지 않는다.
 
+같은 고유번호에 현행 1개와 시행 예정 판본이 함께 조회되면 **현행과 예정 목록을 구분**한다. 현행 판본은 `current`에 두고 공개 자료와 대조하며, 예정판본은 `scheduled_editions`에 따로 기록한다. 현행이 `unchanged`여도 예정판본이 있으면 `actionable`에 포함해 새 예정판본·예정일 변경을 알리고, 같은 결과는 반복 알리지 않는다. 현행이 여러 개이거나 날짜 미확인·폐지 상태가 함께 충돌하면 임의로 하나를 고르지 않는다. 예정판본만 조회된 경우에도 이를 현재 시행판으로 승격하지 않는다.
+
+이 구분은 법제처 목록의 메타데이터에 따른 것이다. 원발령문·부칙 등 다른 공식 자료의 시행일과 충돌하면 별도 확인사항으로 남기며, 점검기가 본문 교체를 승인하지 않는다.
+
 `notification_needed`는 미반영 목록의 변화 여부를 나타낸다. 같은 변경 후보·같은 접근 장애를 반복 알리지 않는다. 공개 자료를 자동 덮어쓰거나 커밋·푸시·배포하지 않으며, 검토 후 별도 반영한다. 공공 GitLab의 읽기 전용 비교와 미반영 변경 알림도 기존 주간 예약에서 유지한다.
 
 공식 규격: [법령 목록 API](https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=lsEfYdListGuide), [자치법규 목록 API](https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=ordinListGuide).
+
+
+## 검토한 판본을 공개 자료에 반영하기
+
+점검·예약 실행은 계속 읽기 전용이다. 공개 반영은 사용자가 요청한 경우 별도로 실행한다.
+
+`collect_edition_refresh_sources`는 지정한 점검 차이 목록에서 고유 식별번호·판본·시행일·소관기관을 대조한 원문만 별도 폴더에 수집한다. 현행 여부가 모호하거나 시행일이 확정되지 않은 자료는 교체 목록에 넣지 않는다. 법령 이름만 달라진 경우에는 기존 본문을 보존한다.
+
+`build_edition_refresh_site`는 공개 고정 자료와 검토한 원문 묶음을 입력으로 받는다. 기존 출력 폴더를 덮어쓰지 않고 새 사이트를 생성하며, 다음 범위를 함께 갱신한다.
+
+- 변경 출처의 인용, 대상 조문의 역인용, 법령 전체 연결 지도
+- 지역 조례의 중앙 법령 전국 역인용과 명칭 표시
+- 이미 공개된 분야 간 연결의 판본과 본문 참조
+- 국세·공공기관에서 판본이 바뀐 법령의 비교 기준
+
+변경 없는 원문·별표 분석·PDF 분석·과거 판본은 보존한다. 공식 명칭이 바뀌어도 기존 독자 링크의 내부 ID는 유지하고 구명칭을 메타데이터에 남긴다. 새 판본의 별표 내용 분석을 기존 판본에서 자동 승계하지 않는다.
+
+```powershell
+python -m scripts.build_edition_refresh_site --base-site <고정공개자료> --sources <검토완료-sources.json> --destination <새출력폴더>
+python -m scripts.verify_edition_refresh_release --base-site <고정공개자료> --site <새출력폴더> --sources <검토완료-sources.json> --report <검증보고서.json>
+```
+
+최종 정적 자료 검증·분야별 근거 대조와 테스트를 통과한 뒤 새 Release에 자료 묶음을 올리고 `static-web-release.json`을 갱신한다. PR 검증과 Pages 배포 성공을 확인해야 공개 반영 완료로 본다. 전체 미반영 목록 중 일부만 반영했다면 그 범위를 명시한다.
+
+2026-10-26 추가 확인 근거와 교체 보류 판단은 [수동 확인 기록](qa/edition-manual-review-20261026.md)에 남겼다.

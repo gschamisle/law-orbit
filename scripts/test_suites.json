@@ -105,7 +105,9 @@
       "scripts/test_remedy_profile.py",
       "scripts/test_remedy.mjs",
       "scripts/test_upload_security.py",
-      "scripts/test_law_overview.mjs"
+      "scripts/test_law_overview.mjs",
+      "scripts/test_edition_refresh.py",
+      "scripts/test_edition_refresh_bridges.py"
     ],
     "collected": [
       "scripts/test_procurement_ui.py",

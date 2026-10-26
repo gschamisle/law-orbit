@@ -1,0 +1,92 @@
+{
+  "checked_on": "2026-10-26",
+  "scope": "This week only: 25 changed editions, 2 title corrections, 10 punctuation-only names. Earlier edition backlog is not fully refreshed.",
+  "release": {
+    "url": "https://github.com/gschamisle/law-orbit/releases/download/static-web-2026-10-26-editions/law-orbit-editions-20261026.tar.gz",
+    "sha256": "64f3072ebfea9f53c02c6124939f04722b8ab2d14c134129c99213ea4f7a0d75",
+    "data_version": "9f45cab306ad9d0e1843"
+  },
+  "independent_audit": {
+    "ok": true,
+    "base_version": "14e03b8d78d2892d185d",
+    "data_version": "9f45cab306ad9d0e1843",
+    "base_manifest_sha256": "47f2b15e99c8f50b646948685d097ade9e220b76b8ba4f50b45d7ed1ab3ee05a",
+    "sources_sha256": "22542452d21823538e4e4450bc53b6f7f85583cab9733e6a179a62f4c9677cbf",
+    "approved_sources": 37,
+    "approved_occurrences": 38,
+    "checks": {
+      "documents": 11699,
+      "unchanged_documents": 11661,
+      "preserved_annexes": 7014,
+      "preserved_annex_analyses": 7,
+      "preserved_pdf_analyses": 2,
+      "changed_source_row_occurrences": 6925,
+      "updated_annex_metadata": 24,
+      "edition_occurrences": 26,
+      "expected_incoming_evidence": 804,
+      "retained_incoming_evidence": 804,
+      "missing_incoming_evidence": 0,
+      "changed_annex_title_row_occurrences": 5,
+      "renamed_row_metadata": 628,
+      "title_occurrences": 12,
+      "regional_national_counterparts": 27,
+      "preserved_historical_baselines": 93
+    },
+    "row_errors": {},
+    "errors": [],
+    "scope": "Public document identities, edition bodies, unchanged attachments and histories, current changed-source evidence"
+  },
+  "release_checks": [
+    {
+      "check": "citation-context",
+      "exit_code": 0
+    },
+    {
+      "check": "integrity",
+      "exit_code": 0
+    },
+    {
+      "check": "remedy",
+      "exit_code": 0
+    },
+    {
+      "check": "tax-citation",
+      "exit_code": 0
+    },
+    {
+      "check": "tax-blind",
+      "exit_code": 0
+    },
+    {
+      "check": "tax-reverse",
+      "exit_code": 0
+    },
+    {
+      "check": "delegation-collected",
+      "exit_code": 0
+    }
+  ],
+  "offline_python_modules": 91,
+  "offline_node_modules": 15,
+  "edition_refresh_regressions": 17,
+  "collection_verification_binding": {
+    "status": "passed",
+    "verified_source_rows": 37,
+    "data_version": "9f45cab306ad9d0e1843",
+    "sources_sha256": "22542452d21823538e4e4450bc53b6f7f85583cab9733e6a179a62f4c9677cbf",
+    "checks": [
+      "Fresh document JSON matches the SHA recorded during collection.",
+      "Provider, stable ID, serial and effective date match the independent-list identity, approved finding and collection record.",
+      "The source JSON hash matches the existing v4 artifact build report.",
+      "Re-running the collector refuses to overwrite previously reviewed sources.json."
+    ],
+    "input_and_artifact_unchanged": true,
+    "artifact_rebuild_required": false
+  },
+  "limitations": [
+    "FTC prepaid-installment consumer guideline held due to conflicting official effective dates.",
+    "New annex bodies are not automatically analyzed.",
+    "Medical diagnostic criteria preserve unstructured text; article-level analysis is not complete.",
+    "Private TaxDrafting-Lab files are not included."
+  ]
+}
