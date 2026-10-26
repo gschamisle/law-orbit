@@ -6,10 +6,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from core.edition_watch import compare, historical_identity, inventory, published_documents, check
+from core.edition_watch import compare, historical_identity, inventory, published_documents, check, record, valid_day
 from core.fsc_collection import CollectionError
 from scripts.build_static_galaxies import Writer
 from scripts.check_all_editions import lock, run
+from xml.etree.ElementTree import fromstring
 
 
 class EditionWatchTests(unittest.TestCase):
@@ -36,6 +37,72 @@ class EditionWatchTests(unittest.TestCase):
             self.assertEqual(compare(self.item(), rows, '000001')['status'], status)
         item = self.item(); item['effective'] = 'unknown'
         self.assertEqual(compare(item, [self.current()], '000001')['status'], 'baseline-date-unverified')
+
+    def test_current_and_scheduled_editions_are_separate(self):
+        current = self.current()
+        future = self.current(serial='456', effective='20261029', state='scheduled')
+        result = compare(self.item(), [future, current], '000001')
+        self.assertEqual(result['status'], 'unchanged')
+        self.assertEqual(result['current'], current)
+        self.assertEqual(result['scheduled_editions'], [future])
+        self.assertEqual(result, compare(self.item(), [current, future], '000001'))
+        changed = self.current(serial='234', effective='20261020')
+        result = compare(self.item(), [future, changed], '000001')
+        self.assertEqual(result['status'], 'changed')
+        self.assertEqual(result['current']['serial'], '234')
+        self.assertEqual(result['scheduled_editions'], [future])
+
+    def test_scheduled_rows_do_not_resolve_conflicting_or_unknown_current(self):
+        future = self.current(serial='456', effective='20261029', state='scheduled')
+        for other in (self.current(serial='222'),
+                      self.current(serial='222', effective='99991231', state='scheduled'),
+                      self.current(serial='222', state='repealed')):
+            result = compare(self.item(), [self.current(), other, future], '000001')
+            self.assertEqual(result['status'], 'ambiguous-current')
+            self.assertNotIn('current', result)
+        self.assertEqual(compare(self.item(), [future], '000001')['status'], 'scheduled')
+        self.assertEqual(compare(self.item(), [future, dict(future, serial='457')], '000001')['status'],
+                         'ambiguous-current')
+
+    def test_unknown_effective_marker_is_not_a_confirmed_future_date(self):
+        self.assertFalse(valid_day('99991231'))
+        self.assertTrue(valid_day('20270101'))
+        row = fromstring('<admrul><행정규칙ID>1</행정규칙ID><행정규칙일련번호>2</행정규칙일련번호>'
+                         '<행정규칙명>합성 지침</행정규칙명><시행일자>99991231</시행일자></admrul>')
+        self.assertEqual(record(row, 'admrul', '20261026')['state'], 'date-unverified')
+        result = compare(self.item(), [self.current(effective='99991231', state='scheduled')], '000001')
+        self.assertEqual(result['status'], 'date-unverified')
+        self.assertNotIn('scheduled_editions', result)
+
+    def test_ordinance_inventory_rechecks_unknown_effective_marker(self):
+        rows = [dict(law_id='1', mst='2', name='지역 조례', effective='99991231', state='scheduled'),
+                dict(law_id='3', mst='4', name='다른 조례', effective='20270101', state='scheduled')]
+        with patch('core.edition_watch.ordinance_inventory', return_value={'records': rows}):
+            result = inventory(lambda *_: b'', 'ordin', '20261026', Path('.'))
+        self.assertEqual(result[0]['state'], 'date-unverified')
+        self.assertEqual(result[1]['state'], 'scheduled')
+
+    def test_future_changes_notify_even_when_current_edition_matches(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder); self.site(root)
+            future = self.current(serial='456', effective='20261029', state='scheduled')
+            def inventories(request, provider, *args):
+                if provider == 'eflaw': return [self.current(), deepcopy(future)]
+                if provider == 'ordin':
+                    return [self.current(provider='ordin', stable_id='99', serial='99', name='지역 조례')]
+                return []
+            with patch('core.edition_watch.inventory', inventories):
+                first = check(root, lambda *_: b'', root/'reports', as_of='20261026', progress=lambda _: None)
+                same = check(root, lambda *_: b'', root/'reports', as_of='20261026', progress=lambda _: None)
+                future['effective'] = '20261030'
+                changed = check(root, lambda *_: b'', root/'reports', as_of='20261026', progress=lambda _: None)
+            self.assertEqual(first['counts'], {'unchanged': 2})
+            self.assertEqual(len(first['actionable']), 1)
+            self.assertEqual(first['actionable'][0]['scheduled_editions'][0]['effective'], '20261029')
+            self.assertTrue(first['notification_needed'])
+            self.assertFalse(same['notification_needed'])
+            self.assertTrue(changed['notification_needed'])
+            self.assertNotEqual(first['fingerprint'], changed['fingerprint'])
 
     def test_old_mst_uses_bound_title_and_date_not_key_as_serial(self):
         raw = '<법령 법령키="0000012025100121000"><기본정보><법령ID>000001</법령ID><법령명_한글>옛 법률</법령명_한글><시행일자>20260101</시행일자></기본정보></법령>'.encode()

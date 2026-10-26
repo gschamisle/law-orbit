@@ -20,6 +20,7 @@ ROOTS = {'eflaw': 'LawSearch', 'admrul': 'AdmRulSearch'}
 IDENTITY_TAGS = {'eflaw': ('기본정보', '법령ID', '법령일련번호'),
                  'admrul': ('행정규칙기본정보', '행정규칙ID', '행정규칙일련번호'),
                  'ordin': ('자치법규기본정보', '자치법규ID', '자치법규일련번호')}
+UNKNOWN_EFFECTIVE_DATES = {'99991231'}
 
 
 def save(path, value):
@@ -32,7 +33,9 @@ def save(path, value):
 
 def valid_day(value):
     try:
-        return len(value) == 8 and date.fromisoformat(f'{value[:4]}-{value[4:6]}-{value[6:]}') is not None
+        return (isinstance(value, str) and len(value) == 8 and value.isdigit()
+                and value not in UNKNOWN_EFFECTIVE_DATES
+                and date.fromisoformat(f'{value[:4]}-{value[4:6]}-{value[6:]}') is not None)
     except (ValueError, TypeError):
         return False
 
@@ -58,7 +61,8 @@ def inventory(request, provider, as_of, folder, workers=3, progress=lambda x: No
                                       progress=lambda message, **_: progress(message))
         return [dict(provider=provider, stable_id=r['law_id'], serial=r['mst'],
                      name=r['name'], effective=r['effective'],
-                     state='current' if r['state'] == 'current-candidate' else r['state'])
+                     state=('date-unverified' if not valid_day(r['effective']) and r['state'] != 'repealed'
+                            else 'current' if r['state'] == 'current-candidate' else r['state']))
                 for r in result['records']]
     params = dict(target=provider, nw=3 if provider == 'eflaw' else 1,
                   query='*', search=1, display=100, sort='lasc')
@@ -160,13 +164,29 @@ def historical_identity(request, item):
 
 
 def compare(item, current, stable_id):
-    candidates = {json.dumps(r, sort_keys=True): r for r in current if r['stable_id'] == stable_id}
+    # Recheck dates here as callers may reuse inventories made by an older
+    # checker. Do not silently turn an unknown-date marker into a future law.
+    normalized = [dict(r, state='date-unverified')
+                  if not valid_day(r.get('effective')) and r['state'] != 'repealed' else r
+                  for r in current if r['stable_id'] == stable_id]
+    candidates = {json.dumps(r, sort_keys=True): r for r in normalized}
     if not candidates:
         return dict(status='missing-current', stable_id=stable_id)
-    if len(candidates) != 1:
-        return dict(status='ambiguous-current', stable_id=stable_id)
-    latest = next(iter(candidates.values()))
+    ordered = [candidates[key] for key in sorted(candidates)]
+    active = [r for r in ordered if r['state'] == 'current']
+    scheduled = [r for r in ordered if r['state'] == 'scheduled']
+    conflicts = [r for r in ordered if r['state'] not in ('current', 'scheduled')]
+    if len(active) == 1 and not conflicts:
+        latest = active[0]
+    elif len(ordered) == 1:
+        latest = ordered[0]
+    else:
+        return dict(status='ambiguous-current', stable_id=stable_id, candidates=ordered)
     result = dict(stable_id=stable_id, current=latest)
+    if latest['state'] == 'current' and scheduled:
+        # Future editions are evidence about planned changes, not competing
+        # current texts. Preserve every one for review and repeat detection.
+        result['scheduled_editions'] = scheduled
     if latest['state'] != 'current':
         return dict(result, status=latest['state'])
     if not valid_day(item['effective']):
@@ -231,7 +251,7 @@ def check(site, request, output, *, as_of=None, workers=3, progress=print):
     counts = Counter(r['status'] for r in results)
     domains = {d: dict(catalog_entries=n, statuses=dict(Counter(r['status'] for r in results if d in r['domains'])))
                for d, n in domain_counts.items()}
-    actionable = [r for r in results if r['status'] != 'unchanged']
+    actionable = [r for r in results if r['status'] != 'unchanged' or r.get('scheduled_editions')]
     fingerprint = sha256(json.dumps(actionable, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
     previous_path = output / 'latest.json'
     previous = json.loads(previous_path.read_text(encoding='utf-8')) if previous_path.exists() else {}

@@ -68,7 +68,7 @@ def verify(site, plan_path):
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--site', type=Path, required=True)
-    p.add_argument('--plan', type=Path, default=Path('docs/qa/citation-context-corrections-20261013.json'))
+    p.add_argument('--plan', type=Path, default=Path('docs/qa/citation-context-corrections-20261026.json'))
     p.add_argument('--report', type=Path, required=True); a = p.parse_args()
     result = verify(a.site, a.plan)
     a.report.parent.mkdir(parents=True, exist_ok=True)
