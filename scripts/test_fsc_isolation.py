@@ -115,7 +115,7 @@ class UiTests(unittest.TestCase):
             bundle = Path(directory)/'bundle.json'
             atomic_json(bundle, fixture())
             with patch.object(fsc_map_ui, 'BUNDLE', bundle):
-                app = AppTest.from_file('app.py', default_timeout=45).run()
+                app = AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py', default_timeout=45).run()
                 self.assertFalse(app.exception, str(app.exception))
                 self.assertTrue(any(t.label == '금융' for t in app.tabs))
                 self.assertTrue(app.get('file_uploader'))

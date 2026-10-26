@@ -30,7 +30,7 @@ class HousingUI(unittest.TestCase):
         self.assertNotIn('개발행위허가운영지침',g['laws'])
 
     def test_five_galaxies_and_sector_states_stay_independent(self):
-        app=AppTest.from_file('app.py',default_timeout=60).run()
+        app=AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py',default_timeout=60).run()
         self.assertFalse(app.exception,str(app.exception))
         uploader=app.get('file_uploader')[0].proto.id
         self.assertIn('국토·건축·주택',[t.label for t in app.tabs])

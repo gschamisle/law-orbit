@@ -1,6 +1,7 @@
 """Citation direction, precision, and main-galaxy integration regressions."""
 from __future__ import annotations
 
+from pathlib import Path
 import unittest
 
 from core.galaxy_focus import analyze_focus, build, visible_rows
@@ -95,7 +96,7 @@ class FocusTests(unittest.TestCase):
 
     def test_main_galaxy_form_clear_and_invalid(self):
         from streamlit.testing.v1 import AppTest
-        app = AppTest.from_file('app.py', default_timeout=30).run()
+        app = AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py', default_timeout=30).run()
         self.assertFalse(app.exception, str(app.exception))
         self.assertTrue(app.get('file_uploader'))
         self.assertNotIn('입법예고', ' '.join(t.label for t in app.tabs))

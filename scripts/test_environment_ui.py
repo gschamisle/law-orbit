@@ -27,7 +27,7 @@ class EnvironmentUI(unittest.TestCase):
         self.assertEqual(len({r['uid'] for r in s['laws']+s['administrative_rules']}),len(s['laws'])+len(s['administrative_rules']))
 
     def test_six_galaxies_and_sector_state_isolation(self):
-        app=AppTest.from_file('app.py',default_timeout=60).run()
+        app=AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py',default_timeout=60).run()
         self.assertFalse(app.exception,str(app.exception))
         self.assertIn('환경·화학·안전',[t.label for t in app.tabs])
         upload_id=app.get('file_uploader')[0].proto.id

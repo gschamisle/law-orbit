@@ -1,0 +1,145 @@
+{
+  "checked_on": "2026-10-26",
+  "status": "supported_updates_verified_one_upstream_advisory_remaining",
+  "github_open_before": {
+    "total": 58,
+    "critical": 6,
+    "high": 30,
+    "medium": 18,
+    "low": 4
+  },
+  "python_audit": {
+    "packages": 63,
+    "known_vulnerabilities": 0,
+    "tool": "pip-audit",
+    "all_extras": true
+  },
+  "npm": {
+    "status": "patched-supported-dependencies-with-one-unresolved-advisory",
+    "checked_on": "2026-10-26",
+    "versions": {
+      "kordoc": "4.19.0",
+      "body-parser": "2.4.0",
+      "fast-uri": "3.1.9",
+      "markdown-it": "14.3.3",
+      "zod": "3.25.76",
+      "@modelcontextprotocol/sdk": "1.32.1"
+    },
+    "changes": {
+      "body-parser": [
+        "2.3.0",
+        "2.4.0"
+      ],
+      "fast-uri": [
+        "3.1.8",
+        "3.1.9"
+      ],
+      "markdown-it": [
+        "14.3.2",
+        "14.3.3"
+      ]
+    },
+    "npm_audit_before": {
+      "info": 0,
+      "low": 0,
+      "moderate": 1,
+      "high": 4,
+      "critical": 0,
+      "total": 5
+    },
+    "npm_audit_after": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 2,
+      "critical": 0,
+      "total": 2
+    },
+    "remaining_distinct_advisories": [
+      "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5"
+    ],
+    "remaining_direct_or_transitive_nodes": [
+      "zod",
+      "kordoc (affected dependency chain)"
+    ],
+    "install_scripts_executed": false,
+    "zod_override_applied": false,
+    "third_party_source_modified": false,
+    "kordoc_version_unchanged": true,
+    "pdf_smoke": {
+      "status": "passed",
+      "cli_version": "4.19.0",
+      "application_entrypoint": "core.document_text.extract",
+      "real_node_cli": true,
+      "test_fixture": "synthetic, ASCII text PDF, no confidential data",
+      "conversion_seconds": 0.76,
+      "output_chars": 226,
+      "text_and_numeric_tokens_preserved": true,
+      "cache_reused_without_reconversion": true,
+      "input_sha256": "f6fb977c93cd90b1e9b7ec6d2065122a43df9b9008e0a26201d0784b1791d326",
+      "output_sha256": "4627574f0bd0fa6042158fa7f103cc3e4ae5572dd2b98c508922760f2c0cf77f",
+      "no_external_model_calls": true
+    },
+    "profile_smoke": {
+      "status": "passed",
+      "kordoc_version": "4.19.0",
+      "valid_record_keys_preserved": true,
+      "invalid_cell_rejected": true,
+      "reason": "Retain supported Zod 3 behavior; this does not resolve the outstanding advisory."
+    },
+    "remaining_exposure": {
+      "public_browser": "Not packaged in the static public site.",
+      "application_pdf_path": "core.document_text invokes only the pinned local PDF CLI, without --profile and without starting the MCP server.",
+      "other_kordoc_paths": "The HWPX generate --profile JSON and the optional MCP server use Zod collection schemas. Current v3 parsing continues through invalid array entries.",
+      "mitigation_limits": "Current 180-second child-process timeout does not impose a memory limit; no claim of complete sandboxing."
+    },
+    "resolution_reason": "Official latest Kordoc 4.24.7 still requires Zod ^3.23.0. Zod 4 overrides would break the single-argument z.record(schema) calls in format profiles. The v3 compatibility implementation shipped in official Zod 4.6.7 still traverses arrays after size errors, unlike the v4 capSize patch. No version-number-only override or ignored warning was used.",
+    "sources": [
+      "https://registry.npmjs.org/kordoc/4.24.7",
+      "https://registry.npmjs.org/zod/4.6.7",
+      "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5",
+      "https://github.com/colinhacks/zod/commit/a0ebf97",
+      "https://zod.dev/v4/changelog"
+    ],
+    "lock_sha256": "03c46f87fc535b4a383300686a3a060e3177b8555ce1ab12d71dba11d2c0fd80"
+  },
+  "python_validation": {
+    "offline_modules": 91,
+    "initial_successful_modules": 86,
+    "retested_ui_modules": 5,
+    "ui_retest_passed_cases": 23,
+    "ui_retest_existing_collected_skip": 1,
+    "assertions_weakened": false
+  },
+  "browser_offline_modules": 15,
+  "dependency_smoke": {
+    "ok": true,
+    "checks": {
+      "pypdf_layout_text": true,
+      "pdfplumber_text": true,
+      "pdfplumber_crop": true,
+      "pdfplumber_render": true,
+      "pillow_RGB": true,
+      "pillow_RGBA": true,
+      "streamlit_image_widgets": true,
+      "requests_default_tls": true
+    },
+    "scope": "Synthetic local PDF and images; real default TLS verification; no private files or law data changed."
+  },
+  "public_data": {
+    "validation": "passed",
+    "version": "9f45cab306ad9d0e1843",
+    "documents": 11699,
+    "articles": 271593,
+    "dataset_and_shell_changed": false
+  },
+  "lock_sha256": {
+    "uv.lock": "d35af98c7796b23fba4131d29a2f22f3ad2dba91e51e24fa5f154ed02defbb6d",
+    "tools/document-converter/package-lock.json": "03c46f87fc535b4a383300686a3a060e3177b8555ce1ab12d71dba11d2c0fd80"
+  },
+  "limitations": [
+    "Zod advisory remains open; no dismissal or incompatible major-version override.",
+    "Checks cover known advisories at this date and exercised paths, not a guarantee against all vulnerabilities.",
+    "Other checkout environments and private TaxDrafting-Lab runtimes were not modified."
+  ]
+}

@@ -1,6 +1,7 @@
 """Renderer data integrity and integration through Streamlit's app test harness."""
 from __future__ import annotations
 
+from pathlib import Path
 import unittest
 
 from core.impact_explorer import analyze
@@ -33,7 +34,7 @@ class GalaxyTests(unittest.TestCase):
 
     def test_new_view_and_upload_flow(self):
         from streamlit.testing.v1 import AppTest
-        app = AppTest.from_file('app.py', default_timeout=30).run()
+        app = AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py', default_timeout=30).run()
         self.assertFalse(app.exception, str(app.exception))
         labels = ' '.join(t.label for t in app.tabs)
         self.assertEqual(app.radio(key='app_section').options[:2], ['법령 탐색', '개정안 검토 (국세)'])
@@ -51,7 +52,7 @@ class GalaxyTests(unittest.TestCase):
     def test_boundary_example_real_form_and_stale_result(self):
         from streamlit.testing.v1 import AppTest
         from scripts.test_boundary_review import article
-        app = AppTest.from_file('app.py', default_timeout=30).run()
+        app = AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py', default_timeout=30).run()
         next(r for r in app.radio if r.key == 'lm_view').set_value('조문 영향 탐색').run()
         app.radio(key='impact_mode').set_value('신설 항 범위 재검토').run()
         app.button(key='boundary_demo').click().run()
