@@ -6,7 +6,7 @@ from streamlit.testing.v1 import AppTest
 
 class NavigationTests(unittest.TestCase):
     def test_primary_menu_order_domains_and_simplified_controls(self):
-        app=AppTest.from_file('app.py',default_timeout=60).run()
+        app=AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py',default_timeout=60).run()
         self.assertFalse(app.exception,str(app.exception))
         self.assertEqual(app.radio(key='app_section').options[:2],['법령 탐색','개정안 검토 (국세)'])
         self.assertEqual(app.radio(key='app_section').value,'galaxy')
@@ -18,7 +18,7 @@ class NavigationTests(unittest.TestCase):
 
     @unittest.skipUnless((Path(__file__).resolve().parents[1]/"output/fsc-universe/bundle.json").is_file(), "Requires locally collected FSC snapshot")
     def test_sidebar_switch_preserves_galaxy_choices_and_uploader_identity(self):
-        app=AppTest.from_file('app.py',default_timeout=60).run()
+        app=AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py',default_timeout=60).run()
         upload_id=app.get('file_uploader')[0].proto.id
         app.text_input(key='lm_library_query').set_value('배당금').run()
         app.text_input(key='lm_focus_ref').set_value('제16조제2항')

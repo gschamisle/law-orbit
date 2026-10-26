@@ -43,3 +43,43 @@ Dependabot 활성화 후 기존 `uv.lock`에서 81개 경고가 확인됐다(cri
 직접 의존성의 최소 버전과 uv의 간접 의존성 하한을 올렸다. XML 라이브러리 호환성을 위해 python-hwpx도 6.8.0으로 갱신했다. 잠금 파일로 설치한 71개 패키지를 `pip-audit`로 점검해 알려진 취약점 0건을 확인했다. 로컬 PDF 변환기 npm 의존성도 0건이었다. 이는 검사 당시 알려진 취약점 기준이다.
 
 기존 설치 환경은 코드만 내려받아서는 갱신되지 않는다. 각 실행 폴더에서 `uv sync --locked`를 실행하고 로컬 앱을 다시 시작해야 한다. 저장소의 권장 실행법 `uv run python -m scripts.run_fsc_preview`는 해당 폴더의 갱신된 환경을 사용한다. 다른 체크아웃의 가상환경을 대신 참조하지 않는다.
+
+## 2026-10-26 의존성 보강
+
+기본 브랜치의 Dependabot 경고 58건(critical 6, high 30, medium 18, low 4)을 확인했다. 경고 건수는 서로 다른 공격 경로의 수가 아니다. 같은 패키지의 여러 권고 및 간접 의존성이 포함된다.
+
+| 패키지 | 변경 |
+| --- | --- |
+| Pillow | 12.3.0 → 13.0.0 |
+| Streamlit | 1.57.0 → 1.66.1. Pillow 13을 공식 지원하는 최소 버전으로 함께 갱신 |
+| certifi | 2026.4.22 → 2026.10.23 |
+| pypdf | 6.20.1 → 6.21.2 |
+| GitPython | Streamlit의 의존성 변경으로 잠금 파일에서 제거. 재유입 시 보안 하한 3.2.1 적용 |
+| body-parser / fast-uri / markdown-it | 2.4.0 / 3.1.9 / 14.3.3으로 갱신 |
+| qs | body-parser의 요구 버전 6.16.1로 갱신 |
+
+Pillow의 상한만 강제로 무시하지 않았다. [Streamlit 1.66.1 공식 메타데이터](https://pypi.org/pypi/streamlit/1.66.1/json)에 따라 호환 버전을 선택했다. 새 환경의 Python 패키지 63개를 `pip-audit`로 대조해 알려진 취약점 0건을 확인했고, `uv pip check`도 통과했다.
+
+Streamlit의 테스트 경로 해석 변경에 맞춰 `AppTest.from_file`을 호출 파일 기준 절대경로로 바꿨다. 기존 검사 기대값·선택 상태·건너뛰기 조건은 바꾸지 않았다. 공개 자료와 브라우저 소스는 그대로 유지하며 갱신한 빌드 환경으로 다시 검증·배포한다.
+
+### 남아 있는 Zod 경고
+
+**[GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)는 미해결 상태로 남긴다.** Kordoc 4.19.0의 Zod 3.25.76 간접 의존성이다. npm은 Zod와 영향을 받는 Kordoc을 합쳐 높은 등급 노드 2개로 표시하지만, 서로 다른 권고는 1개다. 경고를 무시·기각하거나 해결 완료로 표시하지 않았다.
+
+- 확인 시점의 [최신 Kordoc 4.24.7](https://registry.npmjs.org/kordoc/4.24.7)도 Zod 3을 요구한다. [Zod 4의 단일 인자 `z.record` 제거](https://zod.dev/v4/changelog)는 Kordoc의 HWPX 서식 프로필과 호환되지 않는다.
+- Zod 4 패키지의 v3 호환 경로에도 해당 배열 검증 수정이 적용되지 않아, 버전 번호만 올리는 대체는 사용하지 않았다.
+- 현재 앱은 고정된 PDF 변환 명령만 실행한다. 외부 프로필 JSON을 전달하는 `--profile`이나 Kordoc MCP 서버를 사용하지 않는다. 이 경로 구분은 모든 Kordoc 사용이 안전하다는 보장이 아니다.
+- 이 의존성은 공개 정적 웹에 포함되지 않는다. 로컬에서 신뢰할 수 없는 프로필을 받거나 별도 MCP 서버를 운영하는 경우에는 이 잔존 위험을 다시 검토해야 한다. 현재 자식 프로세스 제한 시간은 메모리 격리를 제공하지 않는다.
+
+Kordoc이 호환되는 수정 버전을 제공하면 프로필 검증과 실제 PDF 변환을 다시 확인한 뒤 갱신한다. Dependabot의 주간 점검과 경고는 유지한다. 이번에는 지원되는 버전으로 고칠 수 있는 57건에 해당하는 의존성을 갱신·제거했다.
+
+### 검증 및 적용
+
+실제 PDF CLI 변환·숫자와 날짜 보존·캐시 재사용, HWPX 프로필의 정상 입력 및 잘못된 입력 거절을 확인했다. 별도의 합성 PDF로 pypdf·pdfplumber 추출/잘라보기/렌더링, Pillow RGB/RGBA 처리, Streamlit 이미지 표시, Requests의 기본 TLS 검증도 확인했다. 요약은 [검증 기록](qa/security-dependencies-20261026.json)에 남긴다.
+
+각 실행 폴더에서 최신 코드를 받은 뒤 아래 명령으로 설치하고 앱을 다시 시작한다. 다른 체크아웃이나 별도 TaxDrafting-Lab 환경에 자동 전파되는 변경은 아니다.
+
+```powershell
+uv sync --locked
+npm ci --prefix tools/document-converter --ignore-scripts
+```

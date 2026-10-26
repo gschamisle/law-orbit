@@ -69,7 +69,7 @@ class LibraryTests(unittest.TestCase):
             p=Path(directory)/'bundle.json'
             p.write_text(json.dumps(sector_fixture(),ensure_ascii=False),encoding='utf-8')
             with patch.object(fsc_map_ui,'BUNDLE',p):
-                app=AppTest.from_file('app.py',default_timeout=45).run()
+                app=AppTest.from_file(Path(__file__).resolve().parents[1] / 'app.py',default_timeout=45).run()
                 app.text_input(key='lm_library_query').set_value('배당금').run()
                 app.radio(key='fsc_sector').set_value('insurance').run()
                 app.selectbox(key='fsc_insurance_focus_law').set_value('보험업감독규정').run()
