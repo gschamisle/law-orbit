@@ -75,7 +75,7 @@ jobs:
         run: uv run --frozen python -B -X utf8 -m scripts.verify_tax_citation_samples --site _site --golden docs/qa/tax-blind-samples-20261004.json --report output/tax-blind-citation-audit-report.json
       - name: Check reverse citation recall against frozen source annotations
         run: uv run --frozen python -B -X utf8 -m scripts.verify_tax_reverse_sources --site _site --golden docs/qa/tax-reverse-source-samples-20261004.json --report output/tax-reverse-source-audit-report.json
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: _site
