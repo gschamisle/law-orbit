@@ -4,6 +4,6 @@
   "version": "1.0.0",
   "description": "Pinned local PDF converter; not included in the public website",
   "dependencies": {
-    "kordoc": "4.19.0"
+    "kordoc": "4.24.11"
   }
 }
