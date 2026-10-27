@@ -18,7 +18,7 @@
 <meta name="twitter:description" content="한 조문에서 시작하는 법령 연결 지도. 조문 본문과 직접 인용·역인용 근거를 함께 살펴보세요.">
 <meta name="twitter:image" content="https://gschamisle.github.io/law-orbit/law-orbit-social-20260928.jpg">
 <meta name="twitter:image:alt" content="법의 궤도 — 한 조문에서 시작하는 법령 연결 지도. 청록색 우주에 금빛으로 이어진 별.">
-<link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css?v=orbit-remedy-v1"><link rel="stylesheet" href="delegation.css?v=orbit-remedy-v1"><link rel="manifest" href="app.webmanifest?v=orbit-1"></head>
+<link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css?v=orbit-remedy-v1"><link rel="stylesheet" href="delegation.css?v=orbit-remedy-v1"><link rel="stylesheet" href="finance-guide.css"><link rel="manifest" href="app.webmanifest?v=orbit-1"></head>
 <body><a class="skip" href="#reader">조문 본문으로 건너뛰기</a>
 <aside class="sidebar">
   <a class="brand" href="./"><span class="orbit">✦</span><span class="eyebrow">A LAW RELATION ATLAS</span><strong>법의 <em>궤도</em></strong><span class="beta-badge">BETA</span><small>한 조문에서 시작하는<br>법령 연결 지도.</small></a>
@@ -39,6 +39,8 @@
 </aside>
 <main><header class="page-head"><div><span class="eyebrow">EXPLORE THE CONNECTIONS</span><h1 id="heading">법령 탐색</h1><p class="muted">조문을 불러오면, 함께 살펴볼 법이 보입니다.</p></div><button id="coverage-open" class="quiet">자료 안내 ↗</button></header>
 <div id="notice" role="status" aria-live="polite" hidden></div>
+<div id="finance-menu" class="finance-menu" role="group" aria-label="금융 탐색 방법" hidden><button id="finance-guide-open" type="button" aria-pressed="true" aria-controls="finance-guide">업무·제도 길잡이</button><button id="finance-explore-open" type="button" aria-pressed="false">법령·인용 탐색</button></div>
+<section id="finance-guide" hidden aria-label="금융 업무·제도 길잡이"></section>
 <section class="controls" aria-label="법령 찾기"><div class="scope-row"><label id="sector-label">세부 분야<select id="sector" aria-label="세부 분야"></select></label><label id="region-label" hidden>지역<select id="region" aria-label="지방세 지역"></select></label><button id="overview" class="quiet">전체 지도 보기</button></div><div class="law-row"><label class="law-select">법령·규정<select id="law" aria-label="법령·규정"></select></label><button id="save-law">이 법령 오프라인 저장</button></div><div class="muted small" id="download-state" role="status"></div></section>
 <div class="special-entry"><button id="special-open" class="quiet" hidden>국유재산 특례 목록 ↗</button></div>
 <section id="workbench" class="workbench" hidden aria-label="실무 질문"></section>
@@ -66,4 +68,4 @@
 <div class="special-results"><p id="special-count" role="status" class="muted small"></p><button id="special-reset" class="quiet" hidden>조문 제한 해제</button></div><div id="special-list"></div></div></dialog>
 <dialog id="review-export" aria-labelledby="export-title"><button class="dialog-close quiet" aria-label="검토자료 내려받기 닫기">닫기</button><span class="eyebrow">TAKE THE EVIDENCE</span><h2 id="export-title">검토자료 내려받기</h2><p id="export-summary"></p><p class="muted small">HTML에는 검토 기준과 선택한 연결 조문의 본문을 담습니다. CSV는 엑셀에서 열 수 있는 인용 근거표입니다. 수집일·시행일·출처와 미확인 사항도 함께 기록합니다.</p><p class="muted small">선택하지 않은 연결은 본문 묶음에서 제외됩니다. 미수집·미해석 확인 목록은 선택 여부와 관계없이 함께 담으며, 자료는 이 기기에서 생성합니다.</p><div class="export-actions"><button id="export-html">본문 포함 HTML</button><button id="export-csv" class="quiet">인용 근거 CSV</button></div><p id="export-status" role="status" aria-live="polite" class="muted small"></p></dialog>
 <dialog id="followup" class="delegation-dialog" aria-labelledby="followup-title"><header class="delegation-header"><div><span class="eyebrow">FOLLOW THE AMENDMENT</span><h2 id="followup-title">후속 개정 점검</h2></div><button class="dialog-close quiet" aria-label="후속 개정 점검 닫기">닫기</button></header><div class="delegation-content"></div></dialog>
-<script type="module" src="app.mjs?v=orbit-remedy-v1"></script></body></html>
+<script type="module" src="app.mjs?v=orbit-finance-guide-v1"></script></body></html>
