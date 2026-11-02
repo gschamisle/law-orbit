@@ -7,6 +7,7 @@
       "scripts/test_citation_parser.py",
       "scripts/test_citation_ownership.py",
       "scripts/test_edition_watch.py",
+      "scripts/test_edition_refresh_text.py",
       "scripts/test_byeolpyo.py",
       "scripts/test_annex_analysis.py",
       "scripts/test_annex_references.py",

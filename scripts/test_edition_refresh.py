@@ -468,6 +468,77 @@ class EditionRefreshTests(unittest.TestCase):
         self.assertEqual(row['raw'], old_row['raw'])
         self.assertEqual(row['evidence_id'], old_row['evidence_id'])
 
+    def coverage_plan(self, replacements, *, rows=None, notices=None):
+        sources = self.root/'coverage-sources.json'
+        sources.write_text(json.dumps(dict(base_data_version='fixed-public-version',
+            base_manifest_sha256=digest(self.base_bytes['manifest.json']), as_of='20261026',
+            rows=rows or [], coverage_replacements=replacements,
+            public_notices=notices or {}), ensure_ascii=False), encoding='utf-8')
+        return sources
+
+    def test_coverage_replacement_keeps_refreshed_catalog_and_appends_new_notice(self):
+        from scripts.build_edition_refresh_site import build
+        sources = self.coverage_plan({'tax':[dict(old='합성 회귀검증 범위', new='확인된 판본 범위')]},
+            rows=[self.change(text=f'「{NEW_TARGET}」 제1조를 따른다.')],
+            notices={'tax':' 새 안내'})
+        before = sources.read_bytes()
+        destination = self.root/'coverage-published'
+        build(self.base, sources, destination, validate_site=False)
+        self.assertEqual(catalog_at(destination)['coverage'], '확인된 판본 범위 새 안내')
+        entry, _, details = public_document(destination, SOURCE)
+        self.assertEqual(entry['effective'], '20261026')
+        self.assertEqual({r['target_law'] for r in details['1']['rows']
+                          if r['direction'] == 'forward'}, {NEW_TARGET})
+        self.assertEqual(catalog_at(destination, 'local_tax')['coverage'], '합성 지역 범위')
+        self.assertEqual(sources.read_bytes(), before)
+        self.assertEqual(snapshot(self.base), self.base_bytes)
+
+    def test_coverage_replacement_rejects_missing_old_before_creating_output(self):
+        from scripts.build_edition_refresh_site import build
+        sources = self.coverage_plan({'tax':[dict(old='없는 과거 안내', new='새 안내')]})
+        before = sources.read_bytes()
+        destination = self.root/'coverage-missing'
+        with self.assertRaisesRegex(ValueError, 'Coverage replacement must match exactly once'):
+            build(self.base, sources, destination, validate_site=False)
+        self.assertFalse(destination.exists())
+        self.assertFalse(destination.with_name(destination.name+'-unpacked').exists())
+        self.assertEqual(sources.read_bytes(), before)
+        self.assertEqual(snapshot(self.base), self.base_bytes)
+
+    def test_coverage_replacement_rejects_multiple_old_matches(self):
+        from scripts.build_edition_refresh_site import build
+        catalog = catalog_at(self.base)
+        catalog['coverage'] = '과거 안내 / 과거 안내'
+        manifest = json.loads((self.base/'manifest.json').read_text(encoding='utf-8'))
+        next(d for d in manifest['domains'] if d['id'] == 'tax')['catalog'] = Writer(self.base).data(catalog)
+        (self.base/'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False), encoding='utf-8')
+        self.base_bytes = snapshot(self.base)
+        sources = self.coverage_plan({'tax':[dict(old='과거 안내', new='새 안내')]})
+        before = sources.read_bytes()
+        destination = self.root/'coverage-ambiguous'
+        with self.assertRaisesRegex(ValueError, 'Coverage replacement must match exactly once'):
+            build(self.base, sources, destination, validate_site=False)
+        self.assertFalse(destination.exists())
+        self.assertFalse(destination.with_name(destination.name+'-unpacked').exists())
+        self.assertEqual(sources.read_bytes(), before)
+        self.assertEqual(snapshot(self.base), self.base_bytes)
+
+    def test_coverage_replacement_rejects_empty_old_and_unknown_domain(self):
+        from scripts.build_edition_refresh_site import build
+        for replacements in ({'tax':[dict(old='', new='새 안내')]},
+                             {'tax':[dict(old='  ', new='새 안내')]},
+                             {'missing-domain':[dict(old='합성 회귀검증 범위', new='새 안내')]}):
+            with self.subTest(replacements=replacements):
+                sources = self.coverage_plan(replacements)
+                before = sources.read_bytes()
+                destination = self.root/'coverage-invalid'
+                with self.assertRaisesRegex(ValueError, '(?i)coverage replacement'):
+                    build(self.base, sources, destination, validate_site=False)
+                self.assertFalse(destination.exists())
+                self.assertFalse(destination.with_name(destination.name+'-unpacked').exists())
+                self.assertEqual(sources.read_bytes(), before)
+                self.assertEqual(snapshot(self.base), self.base_bytes)
+
 
 if __name__ == '__main__':
     unittest.main()

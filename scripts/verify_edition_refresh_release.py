@@ -182,6 +182,12 @@ def verify(base, site, sources_path, report_path, *, output=None):
         source = change['fresh']
         article = change['article_by_number'].get(str(row.get('source_jo', '')))
         annex_title = None
+        if (article is None and row.get('source_granularity') == 'text'
+                and row.get('source_jo') == '' and not source.get('articles')
+                and source.get('provider') == 'admrul' and source.get('raw_body_blocks')):
+            from core.ftc_text_citations import main_text
+            article = dict(text=main_text(source), effective=source['effective'])
+            checks['changed_text_row_occurrences'] += 1
         if article is None and row.get('source_granularity') == 'annex' and row.get('source_layer') != 'annex-body':
             annex_title = change['annex_by_reference'].get(row.get('source_jo'))
             if annex_title:
