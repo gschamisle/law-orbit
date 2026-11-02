@@ -74,12 +74,13 @@ def paragraph_locator(headings, start, profile):
         if parent and parent!=locator:locator=parent+' / '+locator
     return locator
 
-def collect_text_citations(source, *, profile='ftc'):
+def collect_text_citations(source, *, profile='ftc', source_names=None):
     if profile not in TEXT_DOMAINS or source.get('domain', profile) != profile:
         raise ValueError('Unsupported guidance citation profile')
     docs=source['laws']+source['administrative_rules'];by_name=canonical_documents(docs)
     rows=[];issues=[]
     for d in docs:
+        if source_names is not None and d['name'] not in source_names:continue
         if d['provider']!='admrul' or d.get('articles'):continue
         if '조문번호 중복' in d.get('analysis_error','') or d.get('coverage',{}).get('provisions')=='blocked-duplicate-number':continue
         text=main_text(d);scan=normalized_quotes(text)

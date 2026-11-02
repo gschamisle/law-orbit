@@ -62,6 +62,11 @@ def prepare_fresh(fresh, old_source, domain):
         src=prepare_source(dict(domain=domain,laws=[d] if d['provider']!='admrul' else [],
                                 administrative_rules=[d] if d['provider']=='admrul' else []))
         d=(src['laws']+src['administrative_rules'])[0]
+    elif domain=='ftc':
+        from core.ftc_collection import prepare_source
+        src=prepare_source(dict(domain=domain,laws=[d] if d['provider']!='admrul' else [],
+                                administrative_rules=[d] if d['provider']=='admrul' else []))
+        d=(src['laws']+src['administrative_rules'])[0]
     elif domain=='local_tax':
         from core.local_tax_graph import prepare_document
         d=prepare_document(d)
@@ -213,7 +218,8 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
         else:
             sources[e['id']]['name']=fresh['name']
         report.append(dict(id=e['id'],name=fresh['name'],old_name=e['name'],kind=kind,
-                           previous=e['effective'],effective=fresh['effective']))
+                           previous=e['effective'],effective=fresh['effective'],
+                           change_reason=row.get('change_reason','edition-or-title-update')))
     ids={s['name']:i for i,s in sources.items()};edition_new={renames.get(n,n) for n in edition_old}
     changed_targets={sources[i]['name']:sources[i] for i in selected}
     corpus=list(sources.values())
@@ -221,6 +227,9 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
     if domain=='local_tax':
         from core.local_tax_graph import ordinance_adapter
         selected_adapter=ordinance_adapter
+    elif domain=='ftc':
+        from core.ftc_text_citations import ftc_adapter
+        selected_adapter=ftc_adapter
     elif domain=='constitution':
         from core.constitution_relations import adapter as selected_adapter
     if domain=='local_tax':
@@ -257,6 +266,8 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
                 incoming.setdefault(edge_key(r),edge_from_row(r))
     # Metadata-only title corrections retain quoted source text and prior statuses.
     fresh_index=EdgeIndex(graph,corpus)
+    from scripts.edition_refresh_text import refresh_text_evidence, merge_rows, summarize_text_entries
+    text_result=refresh_text_evidence(corpus,edition_new,domain,ids)
     incoming_graph={**graph,'edges':list(incoming.values())};incoming_index=EdgeIndex(incoming_graph,corpus)
     external=defaultdict(list);issues=defaultdict(list)
     for r in graph['external_references']:external[(r['source_law'],str(r['source_jo']))].append(tidy(r,ids,fresh_index.hyphen))
@@ -266,7 +277,7 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
             issues[(d['name'],a['jo'])].extend({k:x[k] for k in ('raw','reason','kind','status') if k in x} for x in a.get('citation_issues',[]))
     for x in graph.get('context_evidence',[]):
         issues[(x['source_law'],str(x['source_jo']))].append({k:x[k] for k in ('raw','reason','kind','status') if k in x})
-    context_reverse={};result=[]
+    context_reverse={};result=[];published_documents={}
     for e in all_entries:
         ident=e['id'];old=all_docs[ident];src=sources[ident];is_context=ident not in documents
         if is_context:
@@ -296,6 +307,11 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
             doc['annexes']=[dict(ref=a['ref'],title=a.get('title',''),effective=a.get('effective',''),urls=a.get('urls',[]),status='not-analyzed',connections=[],issues=[]) for a in src.get('annexes',[])]
             for key in ('pdf_analysis','text_analysis','text_connections','text_issues','internal_links'):
                 doc.pop(key,None);new_e.pop(key,None)
+            if src['name'] in text_result['documents']:
+                text_document=text_result['documents'][src['name']]
+                doc.update({k:deepcopy(text_document[k]) for k in ('text_connections','text_issues')})
+                new_e['text_analysis']=deepcopy(text_document['text_analysis'])
+                new_e['analysis_error']=text_document['analysis_error']
         for a in doc['articles']:
             jo=a['jo'];prior=details[ident].get(jo,{})
             parsed=fresh_index.focus(src['name'],a['label'])
@@ -319,6 +335,7 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
                 detail=deepcopy(prior)
                 detail['rows']=[mapped_row(r,renames,changed_targets,ids) for r in prior.get('rows',[]) if r.get('source_law') not in edition_old]+newrows
                 detail['external']=[mapped_row(r,renames,changed_targets,ids) for r in prior.get('external',[])]
+            detail['rows']=merge_rows(detail['rows'],text_result['reverse'].get((src['name'],jo),[]))
             new_details[jo]=detail
         parsed_broad=fresh_index.focus(src['name'],doc['articles'][0]['label'],broad=True)['broad_rows'] if doc['articles'] else []
         doc['broad']=[mapped_row(r,renames,changed_targets,ids) for r in old.get('broad',[]) if r.get('source_law') not in edition_old]+[tidy(r,ids,fresh_index.hyphen) for r in parsed_broad]
@@ -328,8 +345,12 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
             for annex in doc.get('annexes',[]):
                 if 'connections' in annex:annex['connections']=[mapped_row(r,renames,changed_targets,ids) for r in annex['connections'] if r.get('source_law') not in edition_old]
         result.append(store_document(writer,new_e,doc,new_details))
+        published_documents[ident]=doc
     value=deepcopy(catalog);value['laws']=result
-    value['overview']=writer.data(overview_overlay(old_overview,graph,edition_old,renames,result+list(context_entries),as_of))
+    overview_graph={**graph,'edges':graph['edges']+text_result['overview_edges']}
+    value['overview']=writer.data(overview_overlay(old_overview,overview_graph,edition_old,renames,result+list(context_entries),as_of))
+    if 'text_summary' in catalog or text_result['documents']:
+        value['text_summary']=summarize_text_entries(result,published_documents)
     value['edition_updates']=dict(checked_at=as_of,documents=report,
         note='표시된 법령의 판본·명칭을 개별 갱신했습니다. 다른 법령과 별표 본문은 기존 수집 자료를 유지합니다.')
     value['built_at']=as_of
@@ -373,6 +394,21 @@ def validate_approved_sources(plan):
     return checked
 
 
+def replace_coverage(coverage, replacements):
+    """Apply reviewed notice corrections only to an exact, unique prior text."""
+    if not isinstance(coverage, str) or not isinstance(replacements, list):
+        raise ValueError('Invalid coverage replacement shape')
+    for item in replacements:
+        if (not isinstance(item, dict) or set(item) != {'old', 'new'}
+                or not isinstance(item['old'], str) or not item['old'].strip()
+                or not isinstance(item['new'], str)):
+            raise ValueError('Invalid coverage replacement text')
+        if coverage.count(item['old']) != 1:
+            raise ValueError('Coverage replacement must match exactly once')
+        coverage = coverage.replace(item['old'], item['new'], 1)
+    return coverage
+
+
 def build(base,sources_path,destination,validate_site=True):
     base=Path(base).resolve();destination=Path(destination).resolve();sources_path=Path(sources_path)
     stage=destination.with_name(destination.name+'-unpacked')
@@ -383,6 +419,15 @@ def build(base,sources_path,destination,validate_site=True):
     validate_approved_sources(plan)
     as_of=plan['as_of'];as_of=as_of[:4]+'-'+as_of[4:6]+'-'+as_of[6:] if '-' not in as_of else as_of
     manifest=deepcopy(original);manifest.pop('data_packs',None);storage=Storage(base)
+    coverage_replacements=plan.get('coverage_replacements',{})
+    if (not isinstance(coverage_replacements,dict)
+            or not set(coverage_replacements).issubset(d['id'] for d in manifest['domains'])):
+        raise ValueError('Invalid coverage replacement domain')
+    # Reject stale/ambiguous approval text before creating any build output.
+    for domain in manifest['domains']:
+        if domain['id'] in coverage_replacements:
+            replace_coverage(storage.read(domain['catalog']).get('coverage',''),
+                             coverage_replacements[domain['id']])
     stage.mkdir(parents=True);shell(stage);writer=Writer(stage);changed_domains=set();applied=[]
     for domain in manifest['domains']:
         name=domain['id'];catalog=storage.read(domain['catalog']);rows=[r for r in plan['rows'] if name in r['finding']['domains']]
@@ -420,12 +465,13 @@ def build(base,sources_path,destination,validate_site=True):
             catalog['edition_updates']=dict(checked_at=as_of,documents=regional_reports,note='표시된 지역별 판본·명칭만 갱신했습니다. 전국의 모든 조례를 최신 판본으로 교체한 것은 아닙니다.')
         domain['catalog']=writer.data(catalog);domain['built_at']=as_of;changed_domains.add(name)
         print('Refreshed',name,flush=True)
-    # Surface unresolved official-source conflicts without replacing their bodies.
+    # Revise resolved notices in the refreshed catalog, then append new notices.
     notices=plan.get('public_notices',{})
     for domain in manifest['domains']:
-        if domain['id'] not in notices:continue
+        if domain['id'] not in notices and domain['id'] not in coverage_replacements:continue
         ref=domain['catalog'];cat=Storage(stage).read(ref) if (stage/ref['url']).exists() else storage.read(ref)
-        cat['coverage']=cat.get('coverage','')+notices[domain['id']]
+        cat['coverage']=replace_coverage(cat.get('coverage',''),coverage_replacements.get(domain['id'],[]))
+        cat['coverage']+=notices.get(domain['id'],'')
         domain['catalog']=writer.data(cat)
     expected={(r['finding']['key'],d) for r in plan['rows'] for d in r['finding']['domains']}
     if len(applied)!=len(expected):raise ValueError('Not every approved replacement was applied exactly once')
