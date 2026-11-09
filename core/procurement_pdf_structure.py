@@ -8,7 +8,7 @@ import re
 
 from core.fsc_collection import norm
 from core.ftc_text_citations import normalized_quotes
-from core.procurement_pdf import (ALLOWED, CHAPTER, SECTION, ITEM, BODY_SIZE_SECTIONS,
+from core.procurement_pdf import (approved_source, CHAPTER, SECTION, ITEM, BODY_SIZE_SECTIONS,
                                  digest)
 
 LIMITATION = ('일반 문단·별표 문단·표의 개별 셀에서 명시한 인용과 목적지가 확인된 내부 참조를 분석했습니다. '
@@ -31,7 +31,7 @@ def location_key(chapter='',annex='',section='',item=''):
 
 def extract_structured_pdf(path, record):
     import pdfplumber
-    if ALLOWED.get(record['document_id'])!=record['name']:raise ValueError('Unapproved PDF source')
+    if not approved_source(record):raise ValueError('Unapproved PDF source')
     raw=path.read_bytes()
     if not raw.startswith(b'%PDF-'):raise ValueError('Not a PDF')
     parts=[];units=[];pages=[];anchors=[];cells=[];offset=0

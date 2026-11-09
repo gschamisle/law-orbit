@@ -87,8 +87,9 @@ def current_signature(source: dict) -> list[tuple]:
 def inventory_signature(domain: str, inventory: dict) -> list[tuple]:
     if domain == 'tax':
         return sorted((str(r['law_id']), str(r['mst']), r['effective']) for r in inventory['records'])
+    from core.fsc_editions import effective_records
     return sorted((r['uid'], r['edition_key']) for layer in inventory['layers'].values()
-                  for r in layer['records'] if r['state'] != 'scheduled')
+                  for r in effective_records(layer, as_of=inventory['as_of']))
 
 
 def full_refresh_due(today: date, last_full: str) -> bool:
@@ -122,10 +123,11 @@ def tax_inventory(source: dict, key: str, today: str) -> dict:
 
 def fsc_inventory(request: LawTransport, today: str) -> dict:
     from core.fsc_bylaws import discover_bylaws
+    from core.fsc_editions import resolve_inventory
     layers = {target:discover(request, target, as_of=today) for target in ('eflaw', 'admrul')}
     layers['fss_admrul'] = discover_bylaws(request, as_of=today)
-    return dict(schema_version=1, as_of=today, org=FSC_ORG,
-                managing_authority=FSC_AUTHORITY, org_source=ORG_SOURCE, layers=layers)
+    return resolve_inventory(request, dict(schema_version=1, as_of=today, org=FSC_ORG,
+                managing_authority=FSC_AUTHORITY, org_source=ORG_SOURCE, layers=layers))
 
 
 def collect_candidate(domain: str, inventory: dict, key: str, staging: Path) -> dict:

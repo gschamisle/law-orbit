@@ -61,12 +61,12 @@ class UpdateTests(unittest.TestCase):
         self.assertTrue(updates.full_refresh_due(date(2026,9,22),'2026-09-14'))
 
     def test_future_fsc_editions_do_not_count_as_current(self):
-        inventory={'layers':{'eflaw':{'records':[
-            {'uid':'eflaw:1','edition_key':'old','state':'current-candidate'},
-            {'uid':'eflaw:2','edition_key':'future','state':'scheduled'}]}}}
-        self.assertEqual(updates.inventory_signature('fsc',inventory),[('eflaw:1','old')])
-        inventory['layers']['eflaw']['records'][1]['state']='current-candidate'
-        self.assertEqual(len(updates.inventory_signature('fsc',inventory)),2)
+        from scripts.test_fsc_collection import row
+        from core.fsc_collection import list_record
+        record = list_record(row(effective='20270101'), 'eflaw', '20261109')
+        inventory={'as_of':'20261109', 'layers':{'eflaw':{'records':[record]}}}
+        with self.assertRaisesRegex(CollectionError, 'unresolved-scheduled'):
+            updates.inventory_signature('fsc',inventory)
 
     def test_valid_publish_is_atomic_and_preserves_backup(self):
         old=tax_fixture();new=deepcopy(old)
