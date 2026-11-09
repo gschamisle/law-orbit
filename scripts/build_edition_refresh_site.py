@@ -268,6 +268,16 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
     fresh_index=EdgeIndex(graph,corpus)
     from scripts.edition_refresh_text import refresh_text_evidence, merge_rows, summarize_text_entries
     text_result=refresh_text_evidence(corpus,edition_new,domain,ids)
+    from scripts.edition_refresh_pdf import refresh_pdf_evidence
+    pdf_result=refresh_pdf_evidence(replacements,corpus,ids)
+    if set(text_result['documents']).intersection(pdf_result['documents']):
+        raise ValueError('Conflicting API and PDF text analyses')
+    for key in ('documents','forward'):
+        text_result[key].update(pdf_result[key])
+    for key,items in pdf_result['reverse'].items():
+        text_result['reverse'][key]=merge_rows(text_result['reverse'].get(key,[]),items)
+    for key in ('overview_edges','text_citations','text_issues'):
+        text_result[key]+=pdf_result[key]
     incoming_graph={**graph,'edges':list(incoming.values())};incoming_index=EdgeIndex(incoming_graph,corpus)
     external=defaultdict(list);issues=defaultdict(list)
     for r in graph['external_references']:external[(r['source_law'],str(r['source_jo']))].append(tidy(r,ids,fresh_index.hyphen))
@@ -305,13 +315,17 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
             from core.fsc_administrative import body_text
             doc['unstructured_text']=body_text(src.get('raw_body_blocks',[])) if not src['articles'] else ''
             doc['annexes']=[dict(ref=a['ref'],title=a.get('title',''),effective=a.get('effective',''),urls=a.get('urls',[]),status='not-analyzed',connections=[],issues=[]) for a in src.get('annexes',[])]
-            for key in ('pdf_analysis','text_analysis','text_connections','text_issues','internal_links'):
+            for key in ('pdf_analysis','pdf_url','text_analysis','text_connections','text_issues','internal_links','analysis_error','source_notes'):
                 doc.pop(key,None);new_e.pop(key,None)
             if src['name'] in text_result['documents']:
                 text_document=text_result['documents'][src['name']]
                 doc.update({k:deepcopy(text_document[k]) for k in ('text_connections','text_issues')})
                 new_e['text_analysis']=deepcopy(text_document['text_analysis'])
                 new_e['analysis_error']=text_document['analysis_error']
+                if text_document.get('pdf_analysis'):
+                    doc.update({k:deepcopy(text_document[k]) for k in ('unstructured_text','pdf_analysis')})
+                    new_e.update(pdf_url=text_document['pdf_url'],status='pdf-prose-citations',
+                                 source_notes=text_document['source_notes'])
         for a in doc['articles']:
             jo=a['jo'];prior=details[ident].get(jo,{})
             parsed=fresh_index.focus(src['name'],a['label'])
@@ -351,6 +365,9 @@ def refresh_catalog(storage, catalog, domain, replacements, writer, as_of, conte
     value['overview']=writer.data(overview_overlay(old_overview,overview_graph,edition_old,renames,result+list(context_entries),as_of))
     if 'text_summary' in catalog or text_result['documents']:
         value['text_summary']=summarize_text_entries(result,published_documents)
+    if 'pdf_summary' in catalog or pdf_result['documents']:
+        value['pdf_summary']=[dict(name=e['name'],**e['text_analysis']) for e in result
+                              if published_documents[e['id']].get('pdf_analysis')]
     value['edition_updates']=dict(checked_at=as_of,documents=report,
         note='표시된 법령의 판본·명칭을 개별 갱신했습니다. 다른 법령과 별표 본문은 기존 수집 자료를 유지합니다.')
     value['built_at']=as_of
@@ -390,6 +407,9 @@ def validate_approved_sources(plan):
                 or actual != pinned or actual[:2] != [finding.get('provider'), str(finding.get('stable_id', ''))]
                 or not valid_day(actual[3])):
             raise ValueError('Collected fresh document identity mismatch')
+        if row.get('pdf_extraction'):
+            from scripts.edition_refresh_pdf import load_pdf
+            load_pdf(row)
         checked += 1
     return checked
 

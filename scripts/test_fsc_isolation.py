@@ -79,6 +79,7 @@ class IsolationTests(unittest.TestCase):
 
     def test_cache_resume_checks_integrity_and_does_not_request_again(self):
         record = dict(name='은행법', provider='eflaw', edition_key='eflaw:1:2:20260101',
+                      document_id='1', version_id='2', uid='eflaw:1', effective='20260101', promulgated='20251201',
                       managing_authority='금융위원회', state='current-candidate')
         inventory = dict(as_of='20260916', layers={'eflaw':dict(list_status='complete', received=1, expected=1, records=[record])})
         body = {**record, 'fetched_at':'20260916', 'body_status':'indexed-statute-text'}

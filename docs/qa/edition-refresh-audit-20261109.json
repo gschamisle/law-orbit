@@ -1,0 +1,161 @@
+{
+  "ok": true,
+  "base_version": "e3fc10ebd21db4a66a97",
+  "data_version": "e80ce660b752ca44eafd",
+  "base_manifest_sha256": "78af1fff69117219a544cbf7fb59eca1e6041c4cb06ce766a419625feb2e18fe",
+  "sources_sha256": "ff3a5238f9e43510dfd3bd6d9a4b461b86bbb71f753ecb27207d43bbda5df691",
+  "approved_sources": 64,
+  "approved_occurrences": 64,
+  "checks": {
+    "documents": 11699,
+    "unchanged_documents": 11635,
+    "preserved_annexes": 6828,
+    "preserved_annex_analyses": 7,
+    "preserved_pdf_analyses": 0,
+    "changed_source_row_occurrences": 8376,
+    "updated_annex_metadata": 210,
+    "edition_occurrences": 63,
+    "expected_incoming_evidence": 131,
+    "retained_incoming_evidence": 131,
+    "missing_incoming_evidence": 0,
+    "changed_annex_title_row_occurrences": 66,
+    "title_occurrences": 1,
+    "renamed_row_metadata": 2055,
+    "changed_pdf_row_occurrences": 1838,
+    "updated_pdf_analyses": 2,
+    "bridge_row_occurrences": 1310,
+    "expanded_endpoint_counterparts": 2,
+    "regional_national_counterparts": 153,
+    "preserved_historical_baselines": 93
+  },
+  "row_errors": {},
+  "errors": [],
+  "scope": "Public document identities, edition bodies, unchanged attachments and histories, current changed-source evidence",
+  "release_checks": [
+    {
+      "check": "edition-audit",
+      "exit_code": 0,
+      "rechecked_after_verifier_correction": true
+    },
+    {
+      "check": "citation-context",
+      "exit_code": 0
+    },
+    {
+      "check": "integrity",
+      "exit_code": 0
+    },
+    {
+      "check": "remedy",
+      "exit_code": 0
+    },
+    {
+      "check": "tax-citation",
+      "exit_code": 0
+    },
+    {
+      "check": "tax-blind",
+      "exit_code": 0
+    },
+    {
+      "check": "tax-reverse",
+      "exit_code": 0
+    },
+    {
+      "check": "delegation-collected",
+      "exit_code": 0
+    },
+    {
+      "check": "finance-guide",
+      "exit_code": 0
+    }
+  ],
+  "package": {
+    "url": "https://github.com/gschamisle/law-orbit/releases/download/static-web-2026-11-09-editions/law-orbit-editions-20261109.tar.gz",
+    "sha256": "dae9049da3d1617ff6bf551eec67064564027eb1b0e6e5a547a56aa0cf68913a",
+    "data_version": "e80ce660b752ca44eafd",
+    "files": 6016,
+    "expanded_bytes": 192570785,
+    "archive_bytes": 191664046,
+    "all_members_verified": true,
+    "shell_matches": true
+  },
+  "pdf_pairs_audit": {
+    "status": "passed",
+    "pdf_documents": 2,
+    "forward_evidence": 1220,
+    "paired_collected_article_evidence": 618,
+    "missing": 0,
+    "extra": 0,
+    "internal_links": 337,
+    "no_internal_markers": true
+  },
+  "offline_tests": {
+    "status": "passed",
+    "python_commands": 94,
+    "node_commands": 16,
+    "resumed_commands": 61,
+    "interrupted_run_not_counted_as_complete": true,
+    "previous_timeouts_rechecked": [
+      "scripts/test_impact_ui.py",
+      "scripts/test_galaxy_focus.py"
+    ],
+    "optional_collected_data_cases": "skip conditions remain reported by individual tests",
+    "final_verifier_regression": {
+      "module": "scripts.test_edition_refresh_verifier",
+      "tests": 7,
+      "status": "passed"
+    }
+  },
+  "final_pdf_targeted_tests": {
+    "tests": 20,
+    "status": "passed"
+  },
+  "updater_recovery": {
+    "status": "passed",
+    "run_id": "20261109-140531-744241",
+    "active_documents": 280,
+    "scheduled_documents": 1,
+    "inventory_checkpoint_bundle_signatures_equal": true,
+    "current_rule": {
+      "uid": "admrul:36044",
+      "name": "증권의 발행 및 공시 등에 관한 규정",
+      "edition_key": "admrul:36044:2100000283270:20260728",
+      "effective": "20260728",
+      "fetched_at": "20261109",
+      "state": "current-body-verified",
+      "body_sha256": "e189c23d39e90e412000141b3d0c7b5a8b91a0b4425b9faf0b3d86f874a66e4a"
+    },
+    "scheduled_rule": {
+      "uid": "admrul:36044",
+      "edition_key": "admrul:36044:2100000287734:20261113",
+      "effective": "20261113",
+      "state": "scheduled"
+    },
+    "previous_bundle_backup_sha256": "242bba1d01b51c787629289d9f2daf3682526aff102369f1771f607e60e186d5",
+    "new_bundle_sha256": "fa9f451eb94b178e8420f1fb68efad740e281fc68c3720f006f4df3c20099916"
+  },
+  "pdf_ownership_review": {
+    "status": "passed",
+    "plan_unchanged": true,
+    "review_sha256": "6a09c1b2bc3e667fc12d77be44baf489e8ec3b4cf580d3eb475e582243e1e395",
+    "documents": [
+      {
+        "document_id": "29508",
+        "before": 878,
+        "after": 871,
+        "preserved": 871,
+        "all_offsets_and_hashes_verified": true,
+        "no_internal_marker": true
+      },
+      {
+        "document_id": "36201",
+        "before": 356,
+        "after": 349,
+        "preserved": 349,
+        "all_offsets_and_hashes_verified": true,
+        "no_internal_marker": true
+      }
+    ]
+  }
+}

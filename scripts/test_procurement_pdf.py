@@ -19,6 +19,13 @@ def fixture(text):
 
 
 class ProcurementPdfTests(unittest.TestCase):
+    def test_official_spacing_change_requires_same_approved_identity_and_words(self):
+        from core.procurement_pdf import approved_source
+        self.assertTrue(approved_source(dict(document_id='29508',name='지방자치단체 입찰 및 계약집행기준')))
+        self.assertFalse(approved_source(dict(document_id='36201',name=ALLOWED['29508'])))
+        self.assertFalse(approved_source(dict(document_id='29508',name='지방자치단체 입찰 및 계약 집행기준 별표')))
+        self.assertFalse(approved_source(dict(document_id='29508',name='지방자치단체 입찰 및 계약·집행기준')))
+
     def test_halfwidth_quotes_keep_original_offsets(self):
         body='｢국민기초생활 보장법｣ 제18조에 따른다.'
         rows,issues=analyze_pdf(fixture(body),[])
@@ -66,6 +73,50 @@ class ProcurementPdfTests(unittest.TestCase):
         self.assertEqual(row['source_url'],result['pdf_url']+'#page=1')
         self.assertEqual(body[row['source_start']:row['source_end']],row['raw'])
         self.assertTrue(issues) # Collective definition is not an invented law name.
+
+    def test_bare_full_law_owner_beats_chapter_derivative_alias(self):
+        declaration='「'+LOCAL_LAW+' ․ 시행령 ․ 시행규칙」(각각 "법", "시행령", "시행규칙"이라 한다)\n'
+        corpus=[dict(name=LOCAL_LAW+' 시행규칙',articles=[dict(jo='22')],effective='20260101',source_url='https://www.law.go.kr/local'),
+                dict(name='건설산업기본법',articles=[],effective='20260101',source_url='https://www.law.go.kr/construction')]
+        for spelling in ('건설산업기본법', '건설산업 기본법', '건설산업\n기본법'):
+            body=declaration+spelling+' 시행규칙 제22조제2항제1호바목 및 제23조를 따른다.'
+            rows,_=analyze_pdf(fixture(body),corpus)
+            article_rows=[r for r in rows if r['target_kind']=='article']
+            self.assertEqual({r['target_law'] for r in article_rows},{'건설산업기본법 시행규칙'})
+            self.assertEqual({r['target_ref'] for r in article_rows},{'제22조제2항제1호바목','제23조'})
+            self.assertTrue(all(r['target_status']=='not-collected' for r in article_rows))
+            self.assertTrue(all(body[r['source_start']:r['source_end']]==r['raw'] for r in rows))
+        corpus.append(dict(name='건설기술 진흥법 시행령',articles=[dict(jo='51')],effective='20260101',source_url='https://www.law.go.kr/technology'))
+        rows,_=analyze_pdf(fixture(declaration+'건설기술진흥법 시행령 제51조를 따른다.'),corpus)
+        self.assertTrue(any(r['target_law']=='건설기술 진흥법 시행령' and r['target_ref']=='제51조' for r in rows))
+
+    def test_unknown_explicit_owner_is_reviewed_not_mapped_to_local_alias(self):
+        declaration='「'+LOCAL_LAW+' ․ 시행령 ․ 시행규칙」(각각 "법", "시행령", "시행규칙"이라 한다)\n'
+        target=dict(name=LOCAL_LAW+' 시행규칙',articles=[dict(jo='22'),dict(jo='23')],effective='20260101',source_url='https://www.law.go.kr/local')
+        for spelling in ('미확인기본법', '미확인 기본법', '특별 업무에 관한 법률'):
+            body=declaration+spelling+' 시행규칙 제22조 및 제23조를 따른다.'
+            rows,issues=analyze_pdf(fixture(body),[target])
+            self.assertFalse(any(r['target_kind']=='article' for r in rows))
+            self.assertTrue(any('정식 명칭 확인 필요' in i['reason'] for i in issues))
+            self.assertFalse(any('__pdf_' in str(r) for r in rows+issues))
+            self.assertTrue(all(body[i['source_start']:i['source_end']]==i['raw'] for i in issues))
+        # A real local shorthand without an explicit other-law prefix remains usable.
+        rows,_=analyze_pdf(fixture(declaration+'시행규칙 제22조를 따른다.'),[target])
+        self.assertTrue(any(r['target_law']==target['name'] and r['target_ref']=='제22조' for r in rows))
+        body=declaration+'미확인법 시행규칙 제22조, 동 시행령 제23조 및 동 시행규칙 제24조를 따른다.'
+        rows,issues=analyze_pdf(fixture(body),[target])
+        self.assertFalse(any(r['target_kind']=='article' for r in rows))
+        self.assertFalse(any('__pdf_' in str(r) for r in rows+issues))
+
+    def test_explicitly_defined_full_law_alias_is_not_blocked(self):
+        body='「'+LOCAL_LAW+'」(이하 "지방계약법"이라 한다)\n지방계약법 시행령 제51조를 따른다.'
+        rows,_=analyze_pdf(fixture(body),[])
+        self.assertTrue(any(r['target_law']==LOCAL_LAW+' 시행령' and r['target_ref']=='제51조' for r in rows))
+        target=dict(name=LOCAL_LAW+' 시행령',short_name='지방계약법 시행령',articles=[dict(jo='51')],effective='20260101',source_url='https://www.law.go.kr/local')
+        rows,_=analyze_pdf(fixture('지방계약법 시행령 제51조를 따른다.'),[target])
+        self.assertTrue(any(r['target_law']==target['name'] and r['target_ref']=='제51조' for r in rows))
+        rows,_=analyze_pdf(fixture('「'+LOCAL_LAW+'」 제1조 및 동법 시행령 제51조를 따른다.'),[target])
+        self.assertTrue(any(r['target_law']==target['name'] and r['target_ref']=='제51조' for r in rows))
 
     def test_alias_not_inferred_from_title_and_missing_article_not_faked(self):
         target=dict(name=LOCAL_LAW+' 시행령',articles=[dict(jo='33')],effective='',source_url='https://www.law.go.kr/')

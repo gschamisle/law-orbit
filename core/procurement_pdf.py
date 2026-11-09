@@ -15,6 +15,13 @@ from core.fsc_collection import norm
 LOCAL_LAW = '지방자치단체를 당사자로 하는 계약에 관한 법률'
 ALLOWED = {'29508': '지방자치단체 입찰 및 계약 집행기준',
            '36201': '지방자치단체 입찰시 낙찰자 결정기준'}
+
+
+def approved_source(record):
+    """Allow official whitespace-only title changes for the same approved ID."""
+    expected = ALLOWED.get(str(record.get('document_id', '')))
+    return bool(expected and ''.join(expected.split()) == ''.join(record.get('name', '').split()))
+
 LIMITATION = ('PDF 일반 문단의 명시적 법령 인용을 분석했습니다. 표·도표·별표·서식·부칙과 '
               '지침 내부 장·절·항목 간 참조는 미분석입니다. 페이지 경계를 넘는 문장과 PDF 추출 오류로 '
               '인용이 누락될 수 있습니다. 금액·점수·산식의 적용을 판정하지 않습니다.')
@@ -40,7 +47,7 @@ def extract_pdf(path, record, *, include_structures=False):
         from core.procurement_pdf_structure import extract_structured_pdf
         return extract_structured_pdf(path,record)
     import pdfplumber
-    if ALLOWED.get(record['document_id']) != record['name']:
+    if not approved_source(record):
         raise ValueError('Unapproved PDF source')
     raw = path.read_bytes()
     if not raw.startswith(b'%PDF-'):
@@ -141,7 +148,7 @@ def extract_pdf(path, record, *, include_structures=False):
 def validate_extraction(result):
     if result.get('kind') != 'procurement-pdf-prose' or digest(result['text']) != result['text_sha256']:
         raise ValueError('PDF text integrity mismatch')
-    if ALLOWED.get(result['record']['document_id']) != result['record']['name']:
+    if not approved_source(result['record']):
         raise ValueError('Unapproved PDF source')
     if not result['units']:
         raise ValueError('PDF has no verified prose units')
@@ -158,6 +165,37 @@ def validate_extraction(result):
     for cell in result.get('cells',[]):
         p=result['pages'][cell['page']-1];x0,y0,x1,y1=cell['bbox']
         if not(p['start']<=cell['start']<cell['end']<=p['end'] and x0<x1 and y0<y1):raise ValueError('PDF cell bounds mismatch')
+
+
+def pdf_owner_aliases(text, corpus, declared_aliases):
+    """A bare full-law owner must beat chapter-wide 시행령/시행규칙 aliases.
+
+    PDF spacing is variable. Only corpus-backed statutory titles can supply a
+    canonical owner; other explicit 법/법률 prefixes receive a blocking owner
+    so subsequent relative references cannot inherit the unrelated local law.
+    """
+    aliases, blocked = {}, set()
+    derivative = r'\s*(시행령|시행규칙)\s*(?=제\s*\d+\s*조)'
+    unknown = re.compile(r'(?<![가-힣A-Za-z])([가-힣A-Za-z0-9ㆍ·․]+법(?:률)?|법률)' + derivative)
+    for match in unknown.finditer(text):
+        if norm(match[1]) in ('동법', '같은법', '이법', '본법'):
+            continue
+        label = norm(match[1] + match[2])
+        owner = '__pdf_unverified_owner__:' + label
+        aliases[label] = owner
+        blocked.add(owner)
+    bases = {re.sub(r'\s*시행(?:령|규칙)$', '', label):
+             re.sub(r'\s*시행(?:령|규칙)$', '', d['name'])
+             for label, d in canonical_documents(corpus).items()}
+    bases.update({label: owner for label, owner in declared_aliases.items()
+                  if owner.endswith(('법', '법률'))})
+    for label, base in bases.items():
+        if not label.endswith(('법', '법률')) or not base.endswith(('법', '법률')):
+            continue
+        pattern = re.compile(r'(?<![가-힣A-Za-z])' + r'\s*'.join(map(re.escape, norm(label))) + derivative)
+        for match in pattern.finditer(text):
+            aliases[norm(label + match[1])] = base + ' ' + match[1]
+    return aliases, blocked
 
 
 def analyze_pdf(result, corpus):
@@ -183,7 +221,15 @@ def analyze_pdf(result, corpus):
         row_begin=len(rows);issue_begin=len(issues)
         part = dict(text=normalized_quotes(unit['text']).translate(str.maketrans({'｢':'「','｣':'」'})), jo='')
         parsing = deepcopy(chapter_docs[unit['chapter']])
+        owners, blocked_owners = pdf_owner_aliases(part['text'], corpus, parsing['aliases'])
+        parsing['aliases'].update(owners)
         for citation in adapter(parsing, part, corpus):
+            if citation['target_name'].startswith('__pdf_unverified_owner__:'):
+                a, b = unit['start'] + citation['start'], unit['start'] + citation['end']
+                issues.append(dict(source_law=record['name'], source_ref=unit['locator']+f" · PDF {unit['page']}쪽",
+                    source_start=a, source_end=b, raw=result['text'][a:b],
+                    reason='명시된 법률명과 하위법령의 정식 명칭 확인 필요 · 지침의 시행령·시행규칙 약칭으로 연결하지 않았습니다.'))
+                continue
             canonical = {norm(k):v for k,v in parsing.get('aliases',{}).items()}.get(norm(citation['target_name']),citation['target_name'])
             target = names.get(norm(canonical))
             kind = citation.get('kind', 'article')

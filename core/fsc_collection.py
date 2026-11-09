@@ -146,6 +146,7 @@ def list_record(row: ET.Element, target: str, as_of: str, *, fss=False) -> dict:
         name=name, short_name=field(row, "법령약칭명") if target == "eflaw" else "", provider=target, document_id=stable, version_id=serial,
         uid=f"{target}:{stable}", edition_key=f"{target}:{stable}:{serial}:{effective}",
         effective=effective, promulgated=published, kind=kind,
+        amendment_type=field(row, "제개정구분명"),
         managing_authority=authority, requested_org="" if fss else FSC_ORG,
         collection_scope="fss-sector-bylaws" if fss else "fsc-authority",
         state="scheduled" if effective > as_of else "current-candidate",
@@ -261,20 +262,23 @@ def collect_body(request: Request, record: dict, *, as_of: str) -> dict:
 
 
 def collect_inventory(request: Request, *, as_of: str, include_rules: bool = True) -> dict:
+    from core.fsc_editions import resolve_inventory
     targets = ("eflaw", "admrul") if include_rules else ("eflaw",)
     layers = {target: discover(request, target, as_of=as_of) for target in targets}
-    return dict(schema_version=1, as_of=ymd(as_of), org=FSC_ORG,
+    return resolve_inventory(request, dict(schema_version=1, as_of=ymd(as_of), org=FSC_ORG,
                 managing_authority=FSC_AUTHORITY, org_source=ORG_SOURCE,
                 layers=layers, worldwide_coverage="not-claimed",
-                fss_rules="not-collected-separate-authority")
+                fss_rules="not-collected-separate-authority"))
 
 
 def collect_sources(request: Request, inventory: dict, *, cache_dir: Path | None = None,
                     progress: Callable | None = None, workers: int = 1) -> dict:
     """Keep validated editions resumable; publish a source only if all bodies pass."""
     from concurrent.futures import ThreadPoolExecutor, as_completed
+    from core.fsc_editions import effective_records, resolve_inventory
     if not 1 <= workers <= 4:
         raise CollectionError("invalid-worker-count")
+    inventory = resolve_inventory(request, inventory)
     statutes, rules, scheduled, jobs = [], [], [], []
     for target, layer in inventory["layers"].items():
         if layer["list_status"] != "complete":
@@ -286,8 +290,7 @@ def collect_sources(request: Request, inventory: dict, *, cache_dir: Path | None
                 raise CollectionError("inventory-provider-mismatch")
             if record["state"] == "scheduled":
                 scheduled.append(record)
-            else:
-                jobs.append(record)
+        jobs.extend(effective_records(layer, as_of=inventory['as_of']))
     def body(record):
         cache = None
         if cache_dir:
@@ -301,7 +304,7 @@ def collect_sources(request: Request, inventory: dict, *, cache_dir: Path | None
                     raise CollectionError('body-cache-integrity-mismatch')
                 if (data['edition_key'] == record['edition_key'] and data['fetched_at'] == inventory['as_of']
                         and data['name'] == record['name'] and data['managing_authority'] == record['managing_authority']):
-                    return {**data, **{k:record[k] for k in ('source_url', 'short_name') if k in record}}
+                    return {**data, **{k:record[k] for k in ('source_url', 'short_name', 'edition_resolution') if k in record}}
         data = collect_body(request, record, as_of=inventory['as_of'])
         if cache:
             digest = hashlib.sha256(json.dumps(data, ensure_ascii=False, sort_keys=True).encode()).hexdigest()

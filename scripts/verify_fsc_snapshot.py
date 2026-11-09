@@ -5,6 +5,7 @@ from core.fsc_collection import atomic_json
 from core.fsc_universe import BUNDLE, load_bundle
 from core.fsc_sectors import SECTORS, sector_graph, mark_sector
 from core.fsc_bylaws import BYLAWS
+from core.fsc_editions import effective_records
 from core.galaxy_focus import analyze_focus
 
 def verify() -> dict:
@@ -14,8 +15,7 @@ def verify() -> dict:
     assert all(d.get('body_sha256') and d.get('document_id') and d.get('version_id') for d in docs)
     assert all(d.get('sectors') and set(d['sectors']) <= set(SECTORS)-{'all'} for d in docs)
     layers=source['inventory']['layers']
-    assert len(source['laws'])+sum(r['provider']=='eflaw' for r in source['scheduled'])==layers['eflaw']['received']
-    assert len(rules)+sum(r['provider']=='admrul' for r in source['scheduled'])==sum(l['received'] for l in layers.values() if l['provider']=='admrul')
+    verify_inventory_editions(source)
     fss=[d for d in rules if d['managing_authority']=='금융감독원']
     assert {d['name'] for d in fss}==set(BYLAWS)
     assert all(d['body_status']=='indexed-administrative-text' and d['articles'] for d in fss)
@@ -47,6 +47,22 @@ def verify() -> dict:
                 scope='금융위 법령·행정규칙 + 명시한 금감원 시행세칙 28건',status='passed')
     atomic_json(BUNDLE.parent/'sector-verification.json',result)
     return result
+
+
+def verify_inventory_editions(source):
+    """Scheduled and effective editions can share one stable document identity."""
+    inventory = source['inventory']
+    expected, scheduled = [], []
+    for layer in inventory['layers'].values():
+        assert layer['list_status'] == 'complete'
+        assert layer['expected'] == layer['received'] == len(layer['records'])
+        expected.extend((r['uid'], r['edition_key']) for r in
+                        effective_records(layer, as_of=inventory['as_of']))
+        scheduled.extend((r['uid'], r['edition_key']) for r in layer['records'] if r['state'] == 'scheduled')
+    actual = [(r['uid'], r['edition_key']) for r in source['laws'] + source.get('administrative_rules', [])]
+    assert len({uid for uid, _ in actual}) == len(actual)
+    assert sorted(actual) == sorted(expected)
+    assert sorted((r['uid'], r['edition_key']) for r in source.get('scheduled', [])) == sorted(scheduled)
 
 if __name__=='__main__':
     print(json.dumps(verify(),ensure_ascii=False,indent=2))

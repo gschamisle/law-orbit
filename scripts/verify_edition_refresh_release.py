@@ -96,6 +96,57 @@ def evidence_projection(rows):
                               sort_keys=True, ensure_ascii=False) for r in rows))
 
 
+def citation_endpoint(row):
+    """Match expanded article endpoints while retaining the complete scope.
+
+    A reverse row can retain the first/canonical evidence ID of an enumeration,
+    even when that first endpoint is a hidden self-reference. Its target_ref is
+    the actual displayed destination; target_ref_recorded is not that endpoint.
+    """
+    if (row.get('target_kind') != 'article' or not row.get('source_id')
+            or not row.get('target_id') or not row.get('source_effective')
+            or not isinstance(row.get('raw_scope'), dict)
+            or not isinstance(row.get('source_scope'), dict)):
+        return None
+    try:
+        destination = _target(row.get('target_ref', ''), allow_hyphen=True).jo
+    except ValueError:
+        return None
+    raw = row.get('cite_raw') or row.get('raw')
+    start, end = row.get('source_start'), row.get('source_end')
+    if not raw or not isinstance(start, int) or not isinstance(end, int) or not 0 <= start < end:
+        return None
+    return (row['source_id'], str(row.get('source_jo', '')), start, end, raw,
+            row['source_effective'], row['target_id'], destination,
+            json.dumps(row['raw_scope'], sort_keys=True, ensure_ascii=False),
+            json.dumps(row['source_scope'], sort_keys=True, ensure_ascii=False),
+            row.get('source_file_sha256'), row.get('source_text_sha256'))
+
+
+def missing_reverse_evidence(forward, reverse):
+    ids = {r.get('evidence_id') for r in forward if r.get('evidence_id')}
+    endpoints = {key for r in forward if (key := citation_endpoint(r)) is not None}
+    return [r for r in reverse if r.get('evidence_id') not in ids
+            and (citation_endpoint(r) is None or citation_endpoint(r) not in endpoints)]
+
+
+def iter_bridge_rows(storage, ref, seen):
+    """Include both article rows and whole-law rows in version-bound bridges."""
+    if ref['url'] in seen:
+        return
+    seen.add(ref['url'])
+    value = storage.read(ref)
+    for child in value.get('bridges', []):
+        yield from iter_bridge_rows(storage, child, seen)
+    for source, sections in value.get('laws', {}).items():
+        for jo, section in sections.items():
+            for row in section.get('rows', []):
+                yield row, 'bridge/'+source+'/'+jo
+    for source, rows in value.get('broad', {}).items():
+        for row in rows:
+            yield row, 'bridge/'+source+'/broad'
+
+
 def verify(base, site, sources_path, report_path, *, output=None):
     base, site = Path(base).resolve(), Path(site).resolve()
     sources_path, report_path = Path(sources_path), Path(report_path)
@@ -123,13 +174,16 @@ def verify(base, site, sources_path, report_path, *, output=None):
     require(set(old_entries) == set(new_entries), 'Document/domain/region identity scope changed')
     require(set(old_catalogs) == set(new_catalogs), 'Regional catalog scope changed')
 
-    selected, changed_sources, fresh_by_key = {}, {}, {}
+    selected, changed_sources, fresh_by_key, pdf_by_key = {}, {}, {}, {}
     for row in plan['rows']:
         finding, fresh = row['finding'], deepcopy(row['fresh_document'])
         require(row.get('validation', {}).get('status') == 'verified', 'Unverified source in approved plan')
         if finding['provider'] == 'admrul':
             fresh = index_rule(fresh)
         fresh_by_key[finding['key']] = fresh
+        if row.get('pdf_extraction'):
+            from scripts.edition_refresh_pdf import load_pdf
+            pdf_by_key[finding['key']] = load_pdf(row)
         matches = [key for key, entry in old_entries.items()
                    if key[0] in finding['domains'] and entry['name'] == finding['name']
                    and entry['effective'] == finding['effective'] and entry['url'] == finding['url']]
@@ -140,14 +194,15 @@ def verify(base, site, sources_path, report_path, *, output=None):
             selected[key] = row
             if row['change_kind'] == 'edition':
                 changed_sources[key[2]] = dict(key=key, fresh=fresh,
+                    pdf=pdf_by_key.get(finding['key']),
                     article_by_number={str(a['jo']): a for a in fresh.get('articles', [])},
                     annex_by_reference={a['ref']: a for a in fresh.get('annexes', [])})
     applied = {(r['domain'], r['region'], r['id']): r for r in build_report['applied']}
     require(len(applied) == len(build_report['applied']) and set(applied) == set(selected),
             'Actual replacement occurrences differ from approved plan')
 
-    changed_forward = defaultdict(set)
-    changed_reverse = defaultdict(set)
+    changed_forward = defaultdict(list)
+    changed_reverse = defaultdict(list)
     renamed = {key[2]: row['fresh_document']['name'] for key, row in selected.items()
                if row['fresh_document']['name'] != old_entries[key]['name']}
     entry_by_id = {key[2]: (key, entry) for key, entry in new_entries.items()}
@@ -182,6 +237,21 @@ def verify(base, site, sources_path, report_path, *, output=None):
         source = change['fresh']
         article = change['article_by_number'].get(str(row.get('source_jo', '')))
         annex_title = None
+        if change.get('pdf') and row.get('source_layer','').startswith('procurement-pdf-'):
+            pdf = change['pdf']
+            article = dict(text=pdf['text'], effective=source['effective'])
+            require(row.get('source_file_sha256') == pdf['file_sha256'],
+                    'PDF citation points to previous attachment bytes', change['key'])
+            page = row.get('source_page')
+            valid_page = isinstance(page,int) and 1 <= page <= len(pdf['pages'])
+            require(valid_page, 'PDF citation page missing', change['key'])
+            if valid_page:
+                p = pdf['pages'][page-1]
+                require(p['start'] <= row.get('source_start',-1) < row.get('source_end',-1) <= p['end'],
+                        'PDF citation escapes recorded page', change['key'])
+                require(row.get('source_url') == pdf['pdf_url']+'#page='+str(page),
+                        'PDF citation page URL differs from current attachment', change['key'])
+            checks['changed_pdf_row_occurrences'] += 1
         if (article is None and row.get('source_granularity') == 'text'
                 and row.get('source_jo') == '' and not source.get('articles')
                 and source.get('provider') == 'admrul' and source.get('raw_body_blocks')):
@@ -222,14 +292,14 @@ def verify(base, site, sources_path, report_path, *, output=None):
         if annex_title:
             return
         if row.get('direction') == 'forward':
-            changed_forward[source_id].add(row.get('evidence_id'))
+            changed_forward[source_id].append(row)
             target_key = entry_by_id.get(row.get('target_id', ''), (None, None))[0]
             if (key[0] == 'local_tax' and key[1] and target_key
                     and target_key[0] == 'local_tax' and not target_key[1]
                     and row.get('target_kind') == 'article'):
                 regional_forward.append(row)
         elif row.get('direction') == 'reverse':
-            changed_reverse[source_id].add(row.get('evidence_id'))
+            changed_reverse[source_id].append(row)
             if row.get('national') and row.get('region') == key[1]:
                 national_reverse.add(regional_endpoint(row))
 
@@ -251,8 +321,19 @@ def verify(base, site, sources_path, report_path, *, output=None):
                                           for a in fresh.get('articles', [])])
                 require(body_projection(new_doc) == body_projection(expected), 'Published body differs from fresh source', key)
                 if not new_doc['articles']:
-                    require(new_doc.get('unstructured_text', '') == body_text(fresh.get('raw_body_blocks', [])),
+                    pdf = pdf_by_key.get(row['finding']['key'])
+                    expected_text = pdf['text'] if pdf else body_text(fresh.get('raw_body_blocks', []))
+                    require(new_doc.get('unstructured_text', '') == expected_text,
                             'Published unstructured text differs from fresh source', key)
+                    if pdf:
+                        for field in ('file_sha256','text_sha256','pdf_url','extraction','anchors','cells'):
+                            require(new_doc.get('pdf_analysis',{}).get(field) == pdf.get(field),
+                                    'Published PDF provenance mismatch: '+field, key)
+                        require(new_entry.get('pdf_url') == pdf['pdf_url'], 'Stale catalog PDF URL', key)
+                        checks['updated_pdf_analyses'] += 1
+                    else:
+                        require(not new_entry.get('pdf_url') and not new_doc.get('pdf_analysis'),
+                                'Old PDF attachment retained without fresh verification', key)
                 annex_fields = ('ref', 'title', 'effective', 'urls')
                 require([{k: a.get(k) for k in annex_fields} for a in new_doc.get('annexes', [])]
                         == [{k: a.get(k) for k in annex_fields} for a in fresh.get('annexes', [])],
@@ -305,21 +386,17 @@ def verify(base, site, sources_path, report_path, *, output=None):
     # Version-bound bridges contain a second reader payload. Inspect current
     # bridge rows as well; historical baseline JSON is intentionally excluded.
     seen_bridge_refs = set()
-    def bridge_rows(ref):
-        if ref['url'] in seen_bridge_refs:
-            return
-        seen_bridge_refs.add(ref['url'])
-        value = new_storage.read(ref)
-        for child in value.get('bridges', []):
-            bridge_rows(child)
-        for source, sections in value.get('laws', {}).items():
-            for jo, section in sections.items():
-                for row in section.get('rows', []):
-                    verify_row(row, 'bridge/'+source+'/'+jo)
     for ref in new_manifest.get('cross_domain', {}).values():
-        bridge_rows(ref)
-    for source_id, evidence_ids in changed_reverse.items():
-        require(not (evidence_ids - changed_forward[source_id]),
+        for row, location in iter_bridge_rows(new_storage, ref, seen_bridge_refs):
+            verify_row(row, location)
+            checks['bridge_row_occurrences'] += 1
+    for source_id, reverse_rows in changed_reverse.items():
+        forward = changed_forward[source_id]
+        missing = missing_reverse_evidence(forward, reverse_rows)
+        forward_ids = {r.get('evidence_id') for r in forward}
+        checks['expanded_endpoint_counterparts'] += sum(
+            r.get('evidence_id') not in forward_ids for r in reverse_rows) - len(missing)
+        require(not missing,
                 'Reverse citation from changed source has no current forward evidence', changed_sources[source_id]['key'])
     for row in regional_forward:
         if row.get('neighbor_jo') in article_numbers.get(row.get('target_id'), set()):
