@@ -35,6 +35,44 @@ class ForexTests(unittest.TestCase):
         doc=c.index_forex_rule(rule(body='제1조(목적) 「자본시장과 금융투자업에 관한 법률」 시행령 제10조를 따른다.'))
         refs=adapter(doc,doc['articles'][0],[doc])
         self.assertTrue(any(e['target_name']=='자본시장과 금융투자업에 관한 법률 시행령' for e in refs))
+    def test_quoted_derivative_law_level_and_offsets(self):
+        # 외국환거래규정 7-8(4)2 / 7-9(4)2 names the decree without an article.
+        # It must remain a broad law reference, now owned by the decree.
+        for raw in ('「대외경제협력기금법」시행령', '「대외경제협력기금법」 시행령',
+                    '『대외경제협력기금법』\n시행규칙', '「대외경제협력기금법 시행령」'):
+            with self.subTest(raw=raw):
+                doc=c.index_forex_rule(rule(body='제7-8조(대상) '+raw+'에 따른 지원.'))
+                article=doc['articles'][0]
+                refs=adapter(doc,article,[doc])
+                ref=next(e for e in refs if e.get('kind')=='law')
+                suffix='시행규칙' if '시행규칙' in raw else '시행령'
+                self.assertEqual(ref['target_name'],'대외경제협력기금법 '+suffix)
+                self.assertEqual(ref['target_ref'],'법령·정의 참조')
+                self.assertEqual(ref['raw'],raw)
+                self.assertEqual(article['text'][ref['start']:ref['end']],raw)
+                self.assertEqual(len(refs),1)
+    def test_derivative_does_not_cross_prose_or_match_title_prefix(self):
+        for tail in (' 및 시행령', '에 따른 시행령', '. 시행령', ' 시행령안', ' 시행령개정안'):
+            with self.subTest(tail=tail):
+                doc=c.index_forex_rule(rule(body='제1조(대상) 「대외경제협력기금법」'+tail+'을 검토한다.'))
+                refs=adapter(doc,doc['articles'][0],[doc])
+                self.assertEqual([(e['target_name'],e['raw']) for e in refs],
+                                 [('대외경제협력기금법','「대외경제협력기금법」')])
+        for raw in ('「대외경제협력기금법』시행령','『대외경제협력기금법」시행령'):
+            doc=c.index_forex_rule(rule(body='제1조(대상) '+raw+'에 따른다.'))
+            self.assertFalse(adapter(doc,doc['articles'][0],[doc]))
+    def test_derivative_alias_and_numbered_reference(self):
+        doc=c.index_forex_rule(rule(body='제1조(목적) 『대외경제협력기금법』 시행령(이하 “기금영”이라 한다)에 따른다.\n제2조(대상) 기금영 제4조제1항을 적용한다.'))
+        self.assertEqual(doc['aliases']['기금영'],'대외경제협력기금법 시행령')
+        refs=adapter(doc,doc['articles'][1],[doc])
+        self.assertEqual([(e['target_name'],e['target_ref']) for e in refs],
+                         [('대외경제협력기금법 시행령','제4조제1항')])
+        for marks in (('「','」'),('『','』')):
+            raw=marks[0]+'대외경제협력기금법'+marks[1]+' 시행령 제4조'
+            doc=c.index_forex_rule(rule(body='제2조(대상) '+raw+'에 따른다.'))
+            refs=adapter(doc,doc['articles'][0],[doc])
+            self.assertEqual([(e['target_name'],e['target_ref'],e['raw']) for e in refs],
+                             [('대외경제협력기금법 시행령','제4조',raw)])
     def test_ambiguous_number_not_merged_or_guessed(self):
         doc=c.index_forex_rule(rule(body='제32조(보고) 보고한다.\n제32조2(제재) 제8조에 따른다.\n제33조(공지) 알린다.'))
         self.assertEqual([a['jo'] for a in doc['articles']],['32','33'])

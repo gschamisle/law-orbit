@@ -10,8 +10,9 @@ from urllib.parse import quote
 from core.citation_parser import parse_citations, effective_law_name, resolve_deictic_law
 from core.citation_scope import Provision, parse_scope, scope_relation
 from core.law_universe import GRAPH, SOURCES, norm
+from core.quoted_law import QUOTED_RE, quoted_owner
 
-BRACKET = re.compile(r'「([^」]+)」')
+BRACKET = QUOTED_RE
 RELATIVE_LAW_ONLY = re.compile(r'같은\s*법(?=\s|[.,;()]|에|의|을|과|으로|상|$)'
                                r'(?!\s*(?:제\s*\d+\s*조|시행령|시행규칙|별표|별지))')
 ANNEX = re.compile(r'(별표|별지)\s*(?:제\s*)?(\d+)(?:\s*의\s*(\d+))?\s*(?:호\s*서식|호|서식)?')
@@ -36,7 +37,7 @@ def resolved_name(cite, text, citations, own_law):
     name = effective_law_name(cite, own_law)
     same = re.match(r'같은\s*(법|영|령|규칙)', text[cite.span[0]:cite.span[1]])
     if same:
-        anchors = [(m.start(), m[1]) for m in BRACKET.finditer(text, 0, cite.span[0])]
+        anchors = [(m.start(), quoted_owner(text, m)[0]) for m in BRACKET.finditer(text, 0, cite.span[0])]
         anchors += [(c.span[0],c.law_name) for c in citations if c.span[0] < cite.span[0] and c.law_name and not c.relative]
         if not anchors:
             return ''
@@ -209,20 +210,20 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
             for m in brackets:
                 if overridden(*m.span()):
                     continue
-                name = m[1]
+                name, owner_end = quoted_owner(text, m)
                 if norm(name) not in catalog and not preserve_external:
                     if law['category'] in focus_categories and name.endswith(('법','법률','시행령','시행규칙','규칙')):
                         outside[name] += 1
-                        samples.setdefault(name, law['name']+' '+block_at(article,m.start())['ref']+' · '+m[0])
+                        samples.setdefault(name, law['name']+' '+block_at(article,m.start())['ref']+' · '+text[m.start():owner_end])
                     continue
-                tail = text[m.end():m.end()+100]
+                tail = text[owner_end:owner_end+100]
                 if re.match(r'\s*제\s*\d+\s*조', tail) or re.match(r'\s*(?:별표|별지)',tail):
                     continue
                 if any(c.span[0] <= m.start() < c.span[1] for c in citations if c.jo):
                     continue
                 # Law-level wording does not prove a link to any particular article.
-                raw = m[0]
-                add(law,article,name,'법령·정의 참조',raw,m.start(),m.end(),kind='law',relation='law_reference')
+                raw = text[m.start():owner_end]
+                add(law,article,name,'법령·정의 참조',raw,m.start(),owner_end,kind='law',relation='law_reference')
             for m in RELATIVE_LAW_ONLY.finditer(text):
                 if overridden(*m.span()):
                     continue
@@ -233,7 +234,7 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                 # Resolve only a named anchor in this same paragraph. A distant
                 # mention or the source law itself is not sufficient evidence.
                 paragraph = text.rfind('\n',0,m.start()) + 1
-                anchors = [(b.start(),b[1]) for b in BRACKET.finditer(text,paragraph,m.start())]
+                anchors = [(b.start(),quoted_owner(text, b)[0]) for b in BRACKET.finditer(text,paragraph,m.start())]
                 anchors += [(c.span[0],c.law_name) for c in citations
                             if paragraph <= c.span[0] < m.start() and c.law_name and not c.relative]
                 if anchors:
@@ -255,8 +256,8 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                     before = text[start:m.start()]
                     matches = list(BRACKET.finditer(before))
                     # A remote law mention in the same paragraph is not an annex owner.
-                    direct = matches[-1] if matches and not before[matches[-1].end():].strip() else None
-                    name = direct[1] if direct else law['name']
+                    direct = matches[-1] if matches and not before[quoted_owner(before, matches[-1])[1]:].strip() else None
+                    name = quoted_owner(before, direct)[0] if direct else law['name']
                     prefix = re.search(r'(같은\s*법|같은\s*영|같은\s*규칙|법|영|규칙)\s*$',before)
                     if prefix:
                         token = ''.join(prefix[1].split())
@@ -264,7 +265,7 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                             prior = [b for b in brackets if b.end() <= m.start()]
                             if not prior:
                                 continue  # An unresolved 'same law' must not be assigned to this law.
-                            name = prior[-1][1]
+                            name = quoted_owner(text, prior[-1])[0]
                             if token in ('같은영','같은규칙'):
                                 name = resolve_deictic_law('영' if token == '같은영' else '규칙',name)
                         else:

@@ -10,6 +10,7 @@ DOMAINS = {
     'procurement': '조달·계약',
     'customs': '관세·통관',
     'forex': '외환',
+    'export_finance': '수출·해외사업 금융',
     'state_property': '국유재산',
     'public_institutions': '공공기관',
     'treasury': '국고·회계',

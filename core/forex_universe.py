@@ -5,7 +5,7 @@ from core.procurement_universe import documents,sector_graph,mark_sector,article
 from core.forex_collection import SECTORS
 
 BUNDLE=Path(__file__).resolve().parents[1]/'output/forex-universe/bundle.json'
-COVERAGE=('외국환거래법·시행령, 선정한 외환 관련 행정규칙 8종과 한국은행 세칙·절차 4종의 수집 본문을 분석합니다. '
+COVERAGE=('외국환거래법·한국투자공사법과 각 시행령, 선정한 외환 관련 행정규칙 8종과 한국은행 세칙·절차 4종의 수집 본문을 분석합니다. '
           '한국은행 자료는 공식 법규정보 목록과 PDF의 개정일·부칙 시행일을 대조합니다. '
           '업무 태그는 조문 제목·본문 키워드에 따른 탐색 보조 분류이며 법적 적용범위의 판정이 아닙니다. '
           '수집 본칙 중 조문번호를 식별할 수 있는 전체 조문의 명시적 인용을 분석하며, 별표·서식 본문·부칙의 인용과 상대 참조 일부는 미분석입니다. '

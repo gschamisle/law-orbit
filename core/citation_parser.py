@@ -1,6 +1,7 @@
 """인용·준용 규정 파싱 (regex 기반)."""
 import re
 from dataclasses import dataclass, field
+from core.quoted_law import QUOTED_PATTERN, QUOTED_RE, DERIVATIVE_PATTERN, quoted_owner
 
 # ── 패턴 ──────────────────────────────────────────────────────────────────
 # 한글 목은 호 바로 뒤에 붙는다. 캡처를 하나로 유지하여 아래 패턴의 기존
@@ -12,7 +13,7 @@ _HISTORICAL_EDITION = (r'\((?:법률|대통령령|총리령|[가-힣]+부령)\s*
                        r'[^()\n「」]*?개정되기\s*전의\s*것(?:을\s*말한다)?\)')
 HISTORICAL_EDITION_RE = re.compile(_HISTORICAL_EDITION)
 # 타법 인용: 「법령명」 제X조제Y항...  (최우선 파싱)
-_CROSS_LAW = r'「([^」]+)」\s*(?:' + _HISTORICAL_EDITION + r')?\s*제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?' + _MOK
+_CROSS_LAW = QUOTED_PATTERN + r'(?:' + DERIVATIVE_PATTERN + r')?\s*(?:' + _HISTORICAL_EDITION + r')?\s*제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?' + _MOK
 # 타법 인용: 법령명이 낫표 없이 직접 쓰인 경우 (예: 상속세 및 증여세법 제60조)
 _NAMED_LAW = r'([가-힣][가-힣\sㆍ·]{1,40}(?:법률|법|영|령|규칙))\s*제(\d+)조(?:의(\d+))?(?:(?:제|(?<=조))(\d+)항)?(?:제(\d+)호)?' + _MOK
 # 같은 법/령/영/규칙 인용: 같은 법 제X조제Y항...
@@ -149,7 +150,7 @@ def _preceded_by_buchik(text: str, pos: int, window: int = 8) -> bool:
     return "부칙" in text[max(0, pos - window):pos]
 
 
-_BRACKET_LAW_RE = re.compile(r"「([^」]+(?:법률|법|령|규칙))」")
+_BRACKET_LAW_RE = re.compile(QUOTED_PATTERN.replace('([^「」『』]+)', '([^「」『』]+(?:법률|법|령|규칙))'))
 
 
 def _last_bracket_law(text: str, start: int, end: int) -> str:
@@ -158,7 +159,7 @@ def _last_bracket_law(text: str, start: int, end: int) -> str:
     조번호 없이 쓰인 선행 법령(예: 「법인세법」(같은 법 …))도 잡기 위함.
     """
     matches = list(_BRACKET_LAW_RE.finditer(text, start, end))
-    return matches[-1].group(1) if matches else ""
+    return quoted_owner(text, matches[-1])[0] if matches else ""
 
 
 def _anchor_in_closed_bracket(text: str, anchor: int, end: int) -> bool:
@@ -435,9 +436,14 @@ def parse_citations(text: str) -> list[Citation]:
         if m.span() in seen:
             continue
         seen.add(m.span())
+        title = QUOTED_RE.match(text, m.start())
+        owner, owner_end = quoted_owner(text, title)
+        name = _single_box_law_name(m.group(1), text, m.span())
+        if owner_end > title.end():
+            name = owner
         results.append(Citation(
             raw=m.group(0),
-            law_name=_single_box_law_name(m.group(1), text, m.span()),
+            law_name=name,
             jo=m.group(2),
             jo_sub=m.group(3) or "",
             hang=m.group(4) or "",

@@ -38,6 +38,25 @@ def fixture():
 
 
 class UniverseTests(unittest.TestCase):
+    def test_outside_decree_suffix_preserves_owner_and_original_evidence(self):
+        body=article('2', [('제2조','제2조(검증)'),
+                          ('제2조제1항','① 「대외경제협력기금법」시행령에 따른다.'),
+                          ('제2조제2항','② 『대외경제협력기금법』 시행규칙 제4조를 따른다.'),
+                          ('제2조제3항','③ 「대외경제협력기금법」 시행령 별표 1을 따른다.'),
+                          ('제2조제4항','④ 「대외경제협력기금법」 및 시행령을 읽는다.')])
+        source=dict(built_at='fixture',laws=[law('세법','tax',[body])])
+        graph=build_universe(source,preserve_external=True)
+        refs=graph['external_references']
+        self.assertEqual({(e['source_ref'],e['target_law'],e['target_kind'],e['target_ref']) for e in refs}, {
+            ('제2조제1항','대외경제협력기금법 시행령','law','법령·정의 참조'),
+            ('제2조제2항','대외경제협력기금법 시행규칙','article','제4조'),
+            ('제2조제3항','대외경제협력기금법 시행령','annex','별표 1'),
+            ('제2조제4항','대외경제협력기금법','law','법령·정의 참조')})
+        for e in refs:
+            self.assertEqual(body['text'][e['source_start']:e['source_end']],e['cite_raw'])
+        self.assertEqual(next(e['cite_raw'] for e in refs if e['source_ref']=='제2조제1항'),
+                         '「대외경제협력기금법」시행령')
+
     def test_exact_evidence_scope_and_relative_law(self):
         source=fixture()
         graph=build_universe(source)

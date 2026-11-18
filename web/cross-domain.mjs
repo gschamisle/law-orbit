@@ -6,6 +6,8 @@ export const bridgePeers = {
   public_institutions: 'procurement',
 };
 export const bridgeNames = {
+  export_finance: '수출·해외사업 금융',
+  treasury: '국고·회계',
   forex: '외환',
   fsc: '금융',
   procurement: '조달·계약',
@@ -32,7 +34,12 @@ export function validateBridge(value, domain, manifest, catalog) {
   const peer = value.peer;
   const integrityPeer = domain === 'integrity' ? peer : peer === 'integrity' ? domain : '';
   const remedyPeer = domain === 'remedy' ? peer : peer === 'remedy' ? domain : '';
-  const kind = ['tax', 'customs', 'local_tax', 'labor', 'medical', 'privacy', 'public_institutions', 'ftc', 'housing', 'state_property'].includes(remedyPeer)
+  const exportPeer = domain === 'export_finance' ? peer : peer === 'export_finance' ? domain : '';
+  const kind = ['forex', 'fsc', 'tax', 'public_institutions', 'customs', 'treasury'].includes(exportPeer)
+    ? `export_finance-${exportPeer}-bridge`
+    : (domain === 'forex' && peer === 'tax' || domain === 'tax' && peer === 'forex')
+    ? 'forex-tax-bridge'
+    : ['tax', 'customs', 'local_tax', 'labor', 'medical', 'privacy', 'public_institutions', 'ftc', 'housing', 'state_property'].includes(remedyPeer)
     ? `remedy-${remedyPeer}-bridge`
     : ['procurement', 'public_institutions', 'subsidy'].includes(integrityPeer)
     ? `integrity-${integrityPeer}-bridge`
@@ -111,6 +118,27 @@ export function bridgeLabel(row) {
   return '분야 밖 관련 조문 · 금융' + (tags.length ? ' / ' + tags.join('·') : '');
 }
 
+function citationIdentity(row) {
+  if (!row.evidence_id || !row.source_url || !row.source_effective ||
+      !row.target_url || !row.target_effective) return null;
+  return JSON.stringify([
+    row.evidence_id, row.direction, row.broad || false,
+    row.source_url, row.source_effective, row.source_jo, row.source_ref,
+    row.source_start, row.source_end, row.source_scope?.scopes,
+    row.target_url, row.target_effective, row.target_ref, row.target_ref_recorded,
+    row.raw_scope?.scopes, row.neighbor_kind, row.neighbor_jo, row.neighbor_ref,
+  ]);
+}
+
+function appendPeerCitations(existing, incoming) {
+  // One official edition can appear in several fields. Keep its first
+  // reading route when the evidence and its precise scope are identical.
+  const prior = new Set(existing.map(citationIdentity).filter(Boolean));
+  for (const row of incoming) {
+    if (!prior.has(citationIdentity(row))) existing.push(row);
+  }
+}
+
 // Each pair retains its own source and target editions. The aggregate is only
 // a reading overlay; original catalogs and their selections are not modified.
 export async function loadBridgeGroup(value, domain, manifest, catalog, read) {
@@ -135,11 +163,11 @@ export async function loadBridgeGroup(value, domain, manifest, catalog, read) {
       out.laws[id] ||= {};
       for (const [jo, detail] of Object.entries(articles)) {
         const target = out.laws[id][jo] ||= { rows: [], suppressed: [], resolved_issues: [] };
-        target.rows.push(...detail.rows);
+        appendPeerCitations(target.rows, detail.rows);
         for (const key of ['suppressed', 'resolved_issues']) target[key] = [...new Set([...target[key], ...(detail[key] || [])])];
       }
     }
-    for (const [id, rows] of Object.entries(part.broad)) (out.broad[id] ||= []).push(...rows);
+    for (const [id, rows] of Object.entries(part.broad)) appendPeerCitations(out.broad[id] ||= [], rows);
   }
   out.entries = [...entries.values()];
   return out;

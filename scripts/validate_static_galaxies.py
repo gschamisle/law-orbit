@@ -13,7 +13,7 @@ def validate(root, *, allow_legacy_menu=False):
     legacy=['tax','procurement','fsc','local_tax','housing','environment']
     ids=[d['id'] for d in manifest['domains']]
     optional=['state_property','forex','public_institutions','customs','treasury','ftc','labor','constitution','medical','privacy','prices','subsidy','integrity','remedy']
-    supported=set(legacy+optional)
+    supported=set(DOMAINS)
     current=[domain for domain in DOMAINS if domain in ids]
     old=[domain for domain in legacy+optional if domain in ids]
     valid_order=ids==current or (allow_legacy_menu and ids==old)

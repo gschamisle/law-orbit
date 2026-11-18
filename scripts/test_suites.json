@@ -66,6 +66,7 @@
       "scripts/test_ftc.py",
       "scripts/test_mofe_reuse.py",
       "scripts/test_forex_finance_links.py",
+      "scripts/test_external_finance_collection.py",
       "scripts/test_ftc_ui.py",
       "scripts/test_mofe_domains.py",
       "scripts/test_labor.py",
@@ -111,7 +112,9 @@
       "scripts/test_law_overview.mjs",
       "scripts/test_edition_refresh.py",
       "scripts/test_edition_refresh_bridges.py",
-      "scripts/test_finance_guide.mjs"
+      "scripts/test_finance_guide.mjs",
+      "scripts/test_external_finance_guide.mjs",
+      "scripts/test_external_finance_site.py"
     ],
     "collected": [
       "scripts/test_procurement_ui.py",
@@ -132,6 +135,7 @@
     "api_local": "Manual local use only. These tests can send private input to an external AI service and must never enter an automatic test suite."
   },
   "dependencies": {
+    "scripts/test_external_finance_collection.py": "Synthetic official-list XML verifies current/future edition separation, required subordinate laws, KIC/export scope separation and destination guards. No API or collected corpus.",
     "scripts/test_tax_audit_verifier.py": "Synthetic mutation fixtures and mocked CLI; no collected corpus, network or AI.",
     "scripts/test_tax_reverse_verifier.py": "Synthetic reverse-source and click-destination mutation fixtures; no collected corpus, network or AI.",
     "scripts/test_tax_source_repairs.py": "Synthetic XML/text repair, edition/hash and offset fixtures; no collection or live API.",

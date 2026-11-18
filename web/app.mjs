@@ -1,5 +1,6 @@
 import { mountRemedyNotes } from './remedy.mjs';
 import { createFinanceGuide } from './finance-guide.mjs';
+import { createExternalFinanceGuide } from './external-finance-guide.mjs';
 import { lawNeighbors, lawOverview, loadLawPair } from './law-overview.mjs';
 import { createRendererChannel } from './renderer-channel.mjs';
 import { renderProcurementPdf } from './procurement-pdf.mjs';
@@ -116,7 +117,10 @@ const financeGuide = createFinanceGuide({
   }),
 });
 function financeMode() {
-  const active = domain === 'fsc', guide = active && state.financeView === 'guide';
+  const active = hasGuide(domain), guide = active && state.financeView === 'guide';
+  $('finance-menu').setAttribute('aria-label', '업무 길잡이와 법령 탐색');
+  $('finance-guide').setAttribute('aria-label', domain === 'forex' ? 'KIC 위탁·운용 길잡이' : '업무·제도 길잡이');
+  $('finance-guide-open').textContent = domain === 'forex' ? 'KIC 위탁·운용 길잡이' : '업무·제도 길잡이';
   $('finance-menu').hidden = !active;
   $('finance-guide').hidden = !guide;
   document.body.classList.toggle('finance-guide-active', guide);
@@ -125,11 +129,23 @@ function financeMode() {
   document.querySelector('.skip').href = guide ? '#finance-guide' : '#reader';
   document.querySelector('.skip').textContent = guide ? '업무 길잡이로 건너뛰기' : '조문 본문으로 건너뛰기';
 }
+const externalGuides = Object.fromEntries([['export_finance', 'export'], ['forex', 'kic']].map(([field, kind]) => [field,
+  createExternalFinanceGuide({
+    kind, host: $('finance-guide'), load: data,
+    read: async (id, jo) => {
+      await openReading(id, jo, '', []);
+      if (domain === field && reading?.entry.id === id && reading.requestedJo === jo)
+        $('reading-context').textContent = '업무·제도 길잡이 · 선택한 단계의 근거 조문';
+    },
+    explore: (id, jo) => navigate(field, { financeView: 'explore', sector: 'all', law: id, reference: readingLabel(jo), query: '' }),
+  })]));
+function hasGuide(id) { return id === 'fsc' || id === 'export_finance' || id === 'forex'; }
+function activeGuide(id) { return id === 'fsc' ? financeGuide : externalGuides[id]; }
 for (const [id, mode] of [['finance-guide-open', 'guide'], ['finance-explore-open', 'explore']])
   $(id).onclick = async () => {
-    if (domain !== 'fsc' || state.financeView === mode) return;
+    if (!hasGuide(domain) || state.financeView === mode) return;
     const restoreFocus = document.activeElement === $(id), request = epoch + 1;
-    await navigate('fsc', { financeView: mode });
+    await navigate(domain, { financeView: mode });
     if (restoreFocus && epoch === request && !$('finance-menu').hidden && document.activeElement === document.body)
       $(id).focus({ preventScroll: true });
   };
@@ -593,6 +609,7 @@ function domainButtons() {
 }
 async function navigate(id, overrides = {}) {
   financeGuide.reset();
+  Object.values(externalGuides).forEach((guide) => guide.reset());
   $('finance-menu').hidden = true;
   $('finance-guide').hidden = true;
   document.body.classList.remove('finance-guide-active');
@@ -606,6 +623,10 @@ async function navigate(id, overrides = {}) {
   cancelSave();
   persist();
   domain = id;
+  const previousState = { ...saved[id] };
+  // Older releases stored the finance-only default even in unrelated fields.
+  // Preserve a deliberate KIC choice, but do not reinterpret that old default.
+  if (id === 'forex' && previousState.guideSchema !== 1) delete previousState.financeView;
   state = {
     sector: 'all',
     region: '',
@@ -617,11 +638,12 @@ async function navigate(id, overrides = {}) {
     broad: false,
     cross: true,
     relation: 'all',
-    financeView: 'guide',
-    ...saved[id],
+    financeView: id === 'forex' ? 'explore' : 'guide',
+    ...previousState,
     ...overrides,
+    guideSchema: 1,
   };
-  if (id === 'fsc' && (overrides.law || overrides.reference)) state.financeView = 'explore';
+  if (hasGuide(id) && (overrides.law || overrides.reference)) state.financeView = 'explore';
   if (!['guide', 'explore'].includes(state.financeView)) state.financeView = 'guide';
   const token = ++epoch;
   busy(true);
@@ -646,7 +668,7 @@ async function navigate(id, overrides = {}) {
     if (token !== epoch) return;
     // Display a shared scope label without changing the collected catalog or its coverage.
     catalog = { ...loaded, sectors: { ...loaded.sectors, all: '전체 연결' } };
-    if (manifest.cross_domain?.[id] && !(id === 'fsc' && state.financeView === 'guide')) {
+    if (manifest.cross_domain?.[id] && !(hasGuide(id) && state.financeView === 'guide')) {
       try {
         const linked = await data(manifest.cross_domain[id]);
         if (token !== epoch) return;
@@ -676,6 +698,7 @@ async function navigate(id, overrides = {}) {
     document.querySelector('.page-head p').textContent =
       id === 'constitution'
         ? '헌법에서 출발해, 원칙을 구체화하는 법률을 읽습니다.'
+        : id === 'export_finance' ? '업무별 기준을 짚고, 필요한 법령과 조문을 함께 읽습니다.'
         : id === 'fsc' ? '업무의 흐름을 짚고, 필요한 법령과 조문을 함께 읽습니다.'
         : catalog.workbench?.entry_guide?.subtitle || '조문을 불러오면, 함께 살펴볼 법이 보입니다.';
     special = null;
@@ -701,12 +724,12 @@ async function navigate(id, overrides = {}) {
     $('broad').checked = state.broad;
     const choices = renderLaws();
     financeMode();
-    if (id === 'fsc' && state.financeView === 'guide') {
+    if (hasGuide(id) && state.financeView === 'guide') {
       // The guide needs selected source articles, not the 3D map or a default bank law.
       currentRows = [];
       overview = null;
       $('map-host').replaceChildren();
-      financeGuide.update(catalog);
+      activeGuide(id).update(catalog);
       persist();
       return;
     }
@@ -722,6 +745,7 @@ async function navigate(id, overrides = {}) {
       environment: '화학물질관리법',
       state_property: '국유재산법',
       forex: '외국환거래규정',
+      export_finance: '한국수출입은행법',
       public_institutions: '공공기관의 운영에 관한 법률',
       customs: '관세법',
       treasury: '국고금 관리법',
@@ -1692,8 +1716,8 @@ $('reading-explore').onclick = () => {
   const { entry, article } = reading;
   closeReading();
   if ($('special').open) $('special').close();
-  if (domain === 'fsc' && state.financeView === 'guide') {
-    navigate('fsc', { financeView: 'explore', sector: 'all', law: entry.id, reference: readingLabel(article.jo), query: '' });
+  if (hasGuide(domain) && state.financeView === 'guide') {
+    navigate(domain, { financeView: 'explore', sector: 'all', law: entry.id, reference: readingLabel(article.jo), query: '' });
     return;
   }
   follow(entry.id, article.jo, entry.region || '');

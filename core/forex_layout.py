@@ -2,7 +2,7 @@
 from copy import deepcopy
 import math
 from core.forex_collection import LAW, REGULATION
-COLORS={'common':'#a8baff','payment':'#68dfc4','capital':'#c09cff','market':'#f3be78','reporting':'#ef96bb'}
+COLORS={'common':'#a8baff','payment':'#68dfc4','capital':'#c09cff','market':'#f3be78','reporting':'#ef96bb','entrusted':'#e0cd83'}
 def layout(data,graph):
     if data.get('mode')!='overview':return data
     result=deepcopy(data);catalog={d['name']:d for d in graph['catalog']}
