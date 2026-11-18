@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 from core import procurement_universe, housing_universe, environment_universe, state_property_universe, forex_universe
 from core import public_institutions_universe, customs_universe, treasury_universe, ftc_universe
 from core import labor_universe, constitution_universe, medical_universe, privacy_universe, prices_universe, subsidy_universe, integrity_universe, remedy_universe
+from core import export_finance_universe
 from core.procurement_universe import documents, sector_graph, mark_sector, article_for, external_evidence
 APIS={'procurement':procurement_universe,'housing':housing_universe,'environment':environment_universe,'state_property':state_property_universe,'forex':forex_universe}
 APIS.update(public_institutions=public_institutions_universe,customs=customs_universe,treasury=treasury_universe)
@@ -14,6 +15,7 @@ APIS['labor']=labor_universe
 APIS['constitution']=constitution_universe
 APIS['medical']=medical_universe
 APIS.update(privacy=privacy_universe,prices=prices_universe,subsidy=subsidy_universe,integrity=integrity_universe,remedy=remedy_universe)
+APIS['export_finance']=export_finance_universe
 from ui.law_library_ui import render as render_library
 from core.ftc_text_citations import TEXT_DOMAINS
 from core.citation_scope import Provision

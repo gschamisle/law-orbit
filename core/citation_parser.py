@@ -1,7 +1,8 @@
 """인용·준용 규정 파싱 (regex 기반)."""
 import re
 from dataclasses import dataclass, field
-from core.quoted_law import QUOTED_PATTERN, QUOTED_RE, DERIVATIVE_PATTERN, quoted_owner
+from core.quoted_law import (QUOTED_PATTERN, QUOTED_RE, REVIEW_QUOTED_PATTERN,
+                             REVIEW_QUOTED_RE, DERIVATIVE_PATTERN, quoted_owner)
 
 # ── 패턴 ──────────────────────────────────────────────────────────────────
 # 한글 목은 호 바로 뒤에 붙는다. 캡처를 하나로 유지하여 아래 패턴의 기존
@@ -47,6 +48,7 @@ _BYEOLPYO = r"(별표|별지)\s*(?:제\s*)?(\d+)(?:\s*의\s*(\d+))?\s*(?:호\s*�
 _INTRA = r"제(\d+)(항|호|목)(?!까지)"
 
 CROSS_LAW_RE = re.compile(_CROSS_LAW)
+REVIEW_CROSS_LAW_RE = re.compile(_CROSS_LAW.replace(QUOTED_PATTERN, REVIEW_QUOTED_PATTERN, 1))
 NAMED_LAW_RE = re.compile(_NAMED_LAW)
 SAME_LAW_RE = re.compile(_SAME_LAW)
 SAME_JO_RE = re.compile(_SAME_JO)
@@ -426,17 +428,19 @@ def _single_box_law_name(name: str, text: str, span: tuple[int, int]) -> str:
     return normalized if normalized.endswith(('법', '법률', '시행령', '시행규칙')) else name
 
 
-def parse_citations(text: str) -> list[Citation]:
+def parse_citations(text: str, *, preserve_ambiguous_quotes: bool = False) -> list[Citation]:
     """텍스트에서 조문 인용 목록 추출."""
     results: list[Citation] = []
     seen: set[tuple[int, int]] = set()
 
     # 1. 타법 인용: 「법령명」 제X조... (가장 긴 패턴, 최우선)
-    for m in CROSS_LAW_RE.finditer(text):
+    cross_law_re = REVIEW_CROSS_LAW_RE if preserve_ambiguous_quotes else CROSS_LAW_RE
+    quoted_re = REVIEW_QUOTED_RE if preserve_ambiguous_quotes else QUOTED_RE
+    for m in cross_law_re.finditer(text):
         if m.span() in seen:
             continue
         seen.add(m.span())
-        title = QUOTED_RE.match(text, m.start())
+        title = quoted_re.match(text, m.start())
         owner, owner_end = quoted_owner(text, title)
         name = _single_box_law_name(m.group(1), text, m.span())
         if owner_end > title.end():

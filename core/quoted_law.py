@@ -10,6 +10,10 @@ import re
 # requires paired marks, so a mismatched 「...』 is not an explicit title.
 QUOTED_PATTERN = r'(?:(?=「[^「」『』]+」)|(?=『[^「」『』]+』))[「『]([^「」『』]+)[」』]'
 QUOTED_RE = re.compile(QUOTED_PATTERN)
+# Tax ingestion retains nested opening marks in the raw evidence so it can
+# show an unresolved title. The matching closing mark still has to be present.
+REVIEW_QUOTED_PATTERN = r'(?:(?=「[^」』]+」)|(?=『[^」』]+』))[「『]([^」』]+)[」』]'
+REVIEW_QUOTED_RE = re.compile(REVIEW_QUOTED_PATTERN)
 DERIVATIVE_PATTERN = (r'\s*(?:시행규칙|시행령)'
                       r'(?=$|\s|[^\w]|제\s*\d|별표|별지|'
                       r'(?:으로|에|의|을|과|와|은|는|이|도|만|상)(?![가-힣]))')
