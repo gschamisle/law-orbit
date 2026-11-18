@@ -5,6 +5,9 @@ from core.fsc_collection import CollectionError, norm, ymd
 from core.procurement_collection import authorities, record as common_record, discover_query, collect_sources
 
 LAW = '외국환거래법'
+KIC = '한국투자공사법'
+KIC_LAWS = (KIC, KIC + ' 시행령')
+LAWS = (LAW, LAW + ' 시행령', *KIC_LAWS)
 REGULATION = '외국환거래규정'
 RULES = {
     REGULATION: {'재정경제부','기획재정부'},
@@ -17,16 +20,16 @@ RULES = {
     '환전영업자 관리에 관한 고시': {'관세청'},
 }
 QUERIES = ('외국환','외환정보집중기관','환전영업자')
-SCOPE = 'foreign-exchange-law-and-decree; eight-exact-title-rules; four-BOK-official-rule-PDFs; all-collected-main-provisions'
+SCOPE = 'foreign-exchange-and-KIC-laws-and-decrees; eight-exact-title-rules; four-BOK-official-rule-PDFs; all-collected-main-provisions'
 SECTORS = {'all':'전체 연결','common':'기본체계','payment':'지급·송금','capital':'자본거래',
-           'market':'외국환업무·시장','reporting':'보고·검사'}
+           'market':'외국환업무·시장','reporting':'보고·검사','entrusted':'공적 외화자산 위탁·운용'}
 KEYWORDS = {'payment':('지급','송금','상계','환전','수령','영수'),
             'capital':('자본거래','예금','차입','대출','보증','담보','증권','부동산','투자','채권','파생'),
             'market':('외국환업무','외국환은행','외국금융기관','포지션','외환건전성','외환시장','중개','선도은행'),
             'reporting':('보고','신고','정보집중','검사','제재','자료제출','사후관리','모니터링')}
 
 def selected(name, authority, provider):
-    allowed = ({'재정경제부','기획재정부'} if provider=='eflaw' and norm(name) in {norm(LAW),norm(LAW+' 시행령')}
+    allowed = ({'재정경제부','기획재정부'} if provider=='eflaw' and norm(name) in {norm(n) for n in LAWS}
                else next((v for k,v in RULES.items() if norm(k)==norm(name)),set()) if provider=='admrul' else set())
     actual=authorities(authority)
     return bool(actual and actual.issubset(allowed))
@@ -36,7 +39,7 @@ def record(row, provider, as_of):
 
 def discover_inventory(request, as_of, progress=None):
     layers=[];current={};scheduled={}
-    for provider,queries in [('eflaw',(LAW,)),('admrul',QUERIES)]:
+    for provider,queries in [('eflaw',(LAW,KIC)),('admrul',QUERIES)]:
         for query in queries:
             layer=discover_query(request,provider,query,as_of,record_factory=record)
             for item in layer['records']:
@@ -46,16 +49,30 @@ def discover_inventory(request, as_of, progress=None):
                 target[ident]=item
             layers.append(layer)
             if progress:progress(provider,query,layer['received'],len(layer['records']))
-    required={norm(n) for n in (LAW,LAW+' 시행령',*RULES)}
+    required={norm(n) for n in (*LAWS,*RULES)}
     if required!={norm(d['name']) for d in current.values()}:raise CollectionError('forex-required-title-not-found')
     return dict(domain='forex',as_of=ymd(as_of),scope=SCOPE,layers=layers,
                 records=sorted([*current.values(),*scheduled.values()],key=lambda d:(d['name'],d['effective'])))
 
 def tags(name, text):
     # Navigation tags only: never used to omit source articles from analysis.
+    if norm(name) in {norm(n) for n in KIC_LAWS}:
+        return ['entrusted']
     value=norm(text)
     result=[tag for tag,words in KEYWORDS.items() if any(w in value for w in words)]
+    if any(w in value for w in ('한국투자공사','위탁자산')):
+        result.append('entrusted')
     return result or ['common']
+
+
+def tag_document(document, *, retain_existing=False):
+    """Apply the same navigation tags during collection and edition refresh."""
+    for article in document['articles']:
+        existing = article.get('sectors', []) if retain_existing else []
+        derived = tags(document['name'], article.get('title', '') + ' ' + article['text'])
+        article['sectors'] = list(dict.fromkeys(existing + derived))
+    document['sectors'] = list(dict.fromkeys(
+        sector for article in document['articles'] for sector in article['sectors']))
 
 def index_forex_rule(document):
     from core.fsc_administrative import index_rule, body_text, BOUNDARY, provision_blocks
@@ -109,10 +126,7 @@ def prepare_source(source):
     for d in result['laws']+result['administrative_rules']:
         if d['category']!='forex':raise ValueError('외환 분야에 다른 분야 자료가 섞였습니다.')
         if d['provider']=='eflaw' and not selected(d['name'],d['managing_authority'],d['provider']):raise ValueError('외환 법령 수집 범위 불일치')
-        d['sectors']=[]
-        for a in d['articles']:
-            a['sectors']=tags(d['name'],a['title']+' '+a['text'])
-            d['sectors']=list(dict.fromkeys(d['sectors']+a['sectors']))
+        tag_document(d)
         d['citation_names']=list(dict.fromkeys([d['name'],d.get('short_name') or d['name']]))
         d['display_name']={LAW:'외환법',LAW+' 시행령':'외환법 시행령',REGULATION:'외환규정',
             '외국 금융기관의 외국환업무에 관한 지침':'외국금융기관 지침','외국환감독업무시행세칙':'외환감독세칙',

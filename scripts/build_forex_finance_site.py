@@ -94,6 +94,44 @@ def attach_bridge(root, manifest, writer=None, *, pair=PAIR):
                 editions={d:snapshots[d]['built_at'] for d in pair})
 
 
+def attach_bridge_pairs(root, manifest, pairs, writer):
+    """Add several pairs to an unpacked build, keeping existing peer payloads."""
+    storage = Storage(root, {})
+    members = {}
+    peers = {}
+    for domain, ref in manifest.get('cross_domain', {}).items():
+        value = storage.read(ref)
+        refs = list(value['bridges']) if value.get('kind') == 'domain-bridge-set' else [ref]
+        members[domain] = refs
+        peers[domain] = {storage.read(r)['peer'] for r in refs}
+    domains = {d['id']: d for d in manifest['domains']}
+    snapshots = {}
+    reports = {}
+    for left, right in pairs:
+        if left not in domains or right not in domains:
+            continue
+        if right in peers.get(left, ()) or left in peers.get(right, ()):
+            raise ValueError(f'Bridge already exists for {left} / {right}')
+        print(f'Checking added bridge: {left} / {right}', flush=True)
+        pair = (left, right)
+        for domain in pair:
+            if domain not in snapshots:
+                snapshots[domain] = snapshot(root, domains[domain])
+        selected = {domain: snapshots[domain] for domain in pair}
+        result = bridge(selected, pair=pair)
+        reports['/'.join(pair)] = result['report']
+        if result['report']['edges']:
+            for domain, payload in payloads(result, selected).items():
+                members.setdefault(domain, []).append(writer.data(payload))
+                peers.setdefault(domain, set()).add(payload['peer'])
+    manifest['cross_domain'] = {
+        domain: refs[0] if len(refs) == 1 else writer.data(
+            dict(kind='domain-bridge-set', schema=1, domain=domain, bridges=refs))
+        for domain, refs in members.items()
+    }
+    return reports
+
+
 def build(base, destination):
     base, destination = base.resolve(), destination.resolve()
     if destination.exists():

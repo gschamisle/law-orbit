@@ -22,7 +22,7 @@ from core.law_galaxy import build as build_map
 from core.domain_navigation import DOMAINS
 
 ROOT=Path(__file__).resolve().parents[1]
-WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical','privacy','prices','subsidy','integrity','remedy')
+WORK_DOMAINS=('public_institutions','customs','treasury','labor','constitution','medical','privacy','prices','subsidy','integrity','remedy','export_finance')
 PALETTE=['#80b4ff','#68dfc4','#bea2ff','#f0b77e','#ef96bb','#83d0ed','#cedc80','#ffa58e','#91a1ff']
 LIMIT=24*1024*1024
 from core.annex_metadata import annex_index, annotate_annex
@@ -68,7 +68,7 @@ class EdgeIndex:
     omitted by older recorded target_ref values. Original edge order is retained.
     """
     def __init__(self,graph,documents):
-        self.graph=graph;self.hyphen=graph.get('domain') in ('fsc','forex')
+        self.graph=graph;self.hyphen=bool(graph.get('allow_hyphen')) or graph.get('domain') in ('fsc','forex')
         self.forward=defaultdict(set);self.reverse=defaultdict(set);self.broad=defaultdict(set)
         known=defaultdict(set)
         for d in documents:
@@ -315,7 +315,7 @@ def build(source,dest,previous_site=None):
             if domain in WORK_DOMAINS:
                 catalog['workbench']=workbench(bundle,ids)
                 from core.mofe_profiles import WORK_PROFILES
-                if domain in ('privacy','prices','subsidy','integrity','remedy'):
+                if domain in ('privacy','prices','subsidy','integrity','remedy','export_finance'):
                     catalog['default_laws']=WORK_PROFILES[domain]['default_laws']
                     catalog['default_refs']=WORK_PROFILES[domain]['default_refs']
                 from core.mofe_profiles import WORK_PROFILES
@@ -336,6 +336,10 @@ def build(source,dest,previous_site=None):
         from scripts.build_integrity_links_site import attach_selected_links
         from core.forex_finance_links import REMEDY_PAIRS
         bridge_report['remedy']=attach_selected_links(dest,manifest,REMEDY_PAIRS,'remedy',writer)
+    if any(d['id']=='export_finance' for d in manifest['domains']):
+        from core.forex_finance_links import EXTERNAL_FINANCE_PAIRS
+        from scripts.build_forex_finance_site import attach_bridge_pairs
+        bridge_report['external_finance']=attach_bridge_pairs(dest,manifest,EXTERNAL_FINANCE_PAIRS,writer)
     manifest['version']=hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()[:20]
     (dest/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
     report=dict(version=manifest['version'],data_files=len(writer.assets),data_bytes=sum(writer.assets.values()),largest_asset=max(writer.assets.values()),domains=manifest['domains'],cross_domain=bridge_report)

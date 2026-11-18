@@ -44,6 +44,11 @@ jobs:
         run: uv run --frozen python -m scripts.test_static_galaxies
       - name: Check related-article reading isolation
         run: node --test scripts/test_feedback.mjs scripts/test_reading.mjs scripts/test_law_overview.mjs scripts/test_finance_guide.mjs scripts/test_annex_reading.mjs scripts/test_annex_links.mjs scripts/test_pageviews.mjs scripts/test_cross_domain.mjs scripts/test_store.mjs
+      - name: Check external finance guide and collection
+        run: |
+          node --test scripts/test_external_finance_guide.mjs
+          uv run --frozen python -m scripts.test_external_finance_collection
+          uv run --frozen python -m scripts.test_external_finance_site
       - name: Check lossless small-file packing
         run: uv run --frozen python -m scripts.test_static_storage
       - name: Check mobile map interaction and scroll mode
@@ -54,6 +59,8 @@ jobs:
         run: uv run --frozen python -m scripts.fetch_static_release --destination _site
       - name: Verify finance guide against collected source editions
         run: node scripts/verify_finance_guide.mjs --site _site --report output/finance-guide-audit.json
+      - name: Verify external finance guides against collected source editions
+        run: node scripts/verify_external_finance_guide.mjs --site _site --if-present --report output/external-finance-guide-audit.json
       - name: Verify corrected citation ownership in both directions
         run: uv run --frozen python -m scripts.verify_citation_context_release --site _site --report output/citation-context-audit.json
       - name: Check ACRC ownership and official-source excerpts

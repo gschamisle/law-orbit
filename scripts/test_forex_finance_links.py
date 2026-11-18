@@ -43,6 +43,16 @@ def fixture():
 
 
 class BridgeTests(unittest.TestCase):
+    def test_export_bridge_can_read_hyphenated_peer_articles(self):
+        snapshots,fx,fin=fixture()
+        result=bridge(snapshots)
+        result['graph']['domain']='export_finance'
+        self.assertTrue(result['graph']['allow_hyphen'])
+        exported=payloads(result,snapshots)
+        self.assertIn('7-36',exported['forex']['laws'][fx['id']])
+        reverse=exported['fsc']['laws'][fin['id']]['5-1']['rows']
+        self.assertTrue(any(r['neighbor_jo']=='7-36' for r in reverse))
+
     def test_static_build_hook_keeps_original_domain_files_and_adds_reverse_links(self):
         s,fx,fin=fixture()
         with tempfile.TemporaryDirectory() as folder:

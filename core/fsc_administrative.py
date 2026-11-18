@@ -9,6 +9,7 @@ from html import unescape
 import re
 from core.citation_scope import Provision, parse_scope, scope_relation, parse_target
 from core.fsc_collection import norm, CollectionError
+from core.quoted_law import QUOTED_RE, QUOTED_PATTERN, quoted_owner
 
 NUMBER = r'\d+(?:\s*-\s*\d+)*'
 JO = rf'제\s*({NUMBER})\s*조(?:\s*의\s*(\d+)(?!\d|일|년|월|명|개|원|배|%))?'
@@ -17,7 +18,7 @@ ATOM = rf'(?:제\s*{NUMBER}\s*조(?:\s*의\s*\d+)?|제\s*\d+\s*(?:항|호)(?:\s*
 START = re.compile(JO)
 SUB = r'(?:\s*제\s*\d+\s*(?:항|호)(?:\s*의\s*\d+)?)*(?:\s*[가-하]\s*목)?'
 TAIL = re.compile(rf'\s*(?:부터|에서|내지|[~～∼]|및|또는|와|과|ㆍ|·|,)\s*{ATOM}{SUB}(?:\s*까지)?')
-QUOTED = re.compile(r'「([^」]+)」')
+QUOTED = QUOTED_RE
 DECL = re.compile(r'\s*\(이하\s*["“]([^"”]+)["”]\s*(?:이?라\s*한다|라\s*함)\)')
 SAME_DERIVATIVE = re.compile(r'같은\s*법\s*(시행령|시행규칙)')
 BOUNDARY = re.compile(r'(?m)^[ \t]*(?:부\s*칙|\[\s*별표\s*\d|\[\s*별지\s*제?\d)')
@@ -34,14 +35,15 @@ def aliases_from(text: str) -> tuple[dict, list]:
     definitions = []
     quotes = list(QUOTED.finditer(text))
     for m in quotes:
-        declaration = DECL.match(text, m.end())
+        owner, owner_end = quoted_owner(text, m)
+        declaration = DECL.match(text, owner_end)
         if declaration:
-            definitions.append((declaration[1], m[1], m.start(), declaration.end()))
+            definitions.append((declaration[1], owner, m.start(), declaration.end()))
     for m in SAME_DERIVATIVE.finditer(text):
         declaration = DECL.match(text, m.end())
         prior = [q for q in quotes if q.end() <= m.start()]
         if declaration and prior and m.start()-prior[-1].end() < 160:
-            base = re.sub(r'\s*시행(?:령|규칙)$','',prior[-1][1])
+            base = re.sub(r'\s*시행(?:령|규칙)$','',quoted_owner(text, prior[-1])[0])
             definitions.append((declaration[1],base+' '+m[1],prior[-1].start(),declaration.end()))
     aliases, evidence, conflicts = {}, [], set()
     for alias, name, start, end in definitions:
@@ -180,12 +182,12 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
             titled_range=re.match(r'\s*\([^()\n]*\)\s*(?:부터|내지|에서)\s*'+JO+r'(?:\s*\([^()\n]*\))?\s*까지',text[end:])
             if titled_range:end+=titled_range.end()
         before = text[:match.start()]
-        quote = re.search(r'「([^」]+)」(?:\s*\(이하\s*["“][^"”]+["”]\s*이?라\s*(?:한다|함)\))?\s*$',before)
-        if strict:quote=re.search(r'「([^」]+)」'+declaration+r'\s*$',before)
+        quote = re.search(QUOTED_PATTERN+r'(?:\s*\(이하\s*["“][^"”]+["”]\s*이?라\s*(?:한다|함)\))?\s*$',before)
+        if strict:quote=re.search(QUOTED_PATTERN+declaration+r'\s*$',before)
         derivative = None
         if law.get('category') == 'forex' or strict:
-            if not strict:quote = re.search(r'「([^」]+)」(?:\s*\(이하\s*["“][^"”]+["”]\s*이?\s*라\s*한\s*다\))?\s*$',before)
-            derivative = re.search(r'「([^」]+)」\s*(시행령|시행규칙)\s*$',before)
+            if not strict:quote = re.search(QUOTED_PATTERN+r'(?:\s*\(이하\s*["“][^"”]+["”]\s*이?\s*라\s*한\s*다\))?\s*$',before)
+            derivative = re.search(QUOTED_PATTERN+r'\s*(시행령|시행규칙)\s*$',before)
         named = prefix.search(before)
         same = re.search(r'같은\s*(법|영|시행령|규칙|시행규칙|규정|세칙|조례)\s*$',before)
         if strict:same=re.search(r'(?:같은|동)\s*(법\s*시행령|법\s*시행규칙|법|영|시행령|규칙|시행규칙|규정|세칙|조례)\s*$',before)
@@ -203,7 +205,7 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
                 # explanatory bracket. This differs from a bare enumeration.
                 owner = last_named_owner
                 anchors=list(QUOTED.finditer(before[:same.start()]))
-                if anchors and anchors[-1].start()>last_named_end:owner=anchors[-1][1]
+                if anchors and anchors[-1].start()>last_named_end:owner=quoted_owner(before, anchors[-1])[0]
             derivative_token=norm(same[1])
             if derivative_token in ('영','시행령','규칙','시행규칙','법시행령','법시행규칙') and owner:
                 owner = re.sub(r'\s*시행(?:령|규칙)$','',owner) + (' 시행령' if derivative_token in ('영','시행령','법시행령') else ' 시행규칙')
@@ -275,7 +277,8 @@ def adapter(law: dict, article: dict, corpus: list[dict]) -> list[dict]:
     # Keep document-level quoted references separate from definite article links.
     for q in QUOTED.finditer(text):
         if any(a<=q.start()<b for a,b in occupied): continue
-        outputs.append(dict(target_name=(names.get(norm(q[1]),{}).get('name',q[1]) if law.get('category') in ('procurement','housing','environment','forex','public_institutions','customs','treasury') else q[1]),target_ref='법령·정의 참조',raw=q[0],start=q.start(),end=q.end(),
+        owner, owner_end = quoted_owner(text, q)
+        outputs.append(dict(target_name=(names.get(norm(owner),{}).get('name',owner) if law.get('category') in ('procurement','housing','environment','forex','public_institutions','customs','treasury') else owner),target_ref='법령·정의 참조',raw=text[q.start():owner_end],start=q.start(),end=owner_end,
                             kind='law',relation='law_reference'))
     # Relative wording is reported explicitly, rather than guessed across sentences.
     for m in re.finditer(r'같은\s*(?:조|항|호)(?:\s*제\s*\d+\s*(?:항|호))?',text):

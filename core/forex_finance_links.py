@@ -17,7 +17,9 @@ INTEGRITY_PAIRS = tuple(('integrity', peer) for peer in ('procurement', 'public_
 from core.remedy_profile import PEERS as REMEDY_PEERS
 from core.domain_navigation import DOMAINS as DOMAIN_TITLES
 REMEDY_PAIRS = tuple(('remedy', peer) for peer in REMEDY_PEERS)
-PAIRS = (PAIR, ('procurement', 'public_institutions')) + INTEGRITY_PAIRS + REMEDY_PAIRS
+EXTERNAL_FINANCE_PAIRS = tuple(('export_finance', peer) for peer in
+    ('forex', 'fsc', 'tax', 'public_institutions', 'customs', 'treasury')) + (('forex', 'tax'),)
+PAIRS = (PAIR, ('procurement', 'public_institutions')) + INTEGRITY_PAIRS + REMEDY_PAIRS + EXTERNAL_FINANCE_PAIRS
 BRIDGE_KINDS = {PAIR: 'forex-finance-bridge', PAIRS[1]: 'procurement-public-bridge'}
 PAIR_LABELS = {PAIR: '외환·금융', PAIRS[1]: '조달·계약·공공기관'}
 for pair, label in zip(INTEGRITY_PAIRS, ('조달·계약', '공공기관', '보조금·지원사업')):
@@ -27,6 +29,10 @@ for pair, label in zip(INTEGRITY_PAIRS, ('조달·계약', '공공기관', '보�
 for pair in REMEDY_PAIRS:
     BRIDGE_KINDS[pair] = 'remedy-' + pair[1] + '-bridge'
     PAIR_LABELS[pair] = '행정구제·' + DOMAIN_TITLES[pair[1]]
+
+for pair in EXTERNAL_FINANCE_PAIRS:
+    BRIDGE_KINDS[pair] = '-'.join(pair) + '-bridge'
+    PAIR_LABELS[pair] = ' / '.join(DOMAIN_TITLES[d] for d in pair)
 
 
 def norm(value):
@@ -184,7 +190,7 @@ def bridge(snapshots, *, pair=PAIR):
                         resolved_issues[domain][entry['id']][article['jo']].add(c['raw'])
                         recovered.append(dict(source=entry['name'], jo=article['jo'], raw=c['raw'], target_ref=c['target_ref']))
     # Both domains use the same evidence edges, evaluated by the existing engine.
-    graph = dict(domain=pair[0], built_at=' / '.join(snapshots[d]['built_at'] for d in pair),
+    graph = dict(domain=pair[0], allow_hyphen=bool({'forex','fsc'}.intersection(pair)), built_at=' / '.join(snapshots[d]['built_at'] for d in pair),
                  laws=sorted({d['name'] for d in docs.values()}), edges=links, catalog=[],
                  coverage_note=PAIR_LABELS[pair]+' 수집 판본 사이의 명시적 인용만 대조합니다. 별표 본문·의미상 관계는 미분석입니다.')
     return dict(pair=pair, graph=graph, documents=list(docs.values()), entries=entries,

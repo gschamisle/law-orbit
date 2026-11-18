@@ -10,8 +10,9 @@ from urllib.parse import quote
 from core.citation_parser import parse_citations, effective_law_name, resolve_deictic_law
 from core.citation_scope import Provision, parse_scope, scope_relation
 from core.law_universe import GRAPH, SOURCES, norm
+from core.quoted_law import QUOTED_RE, REVIEW_QUOTED_RE, quoted_owner
 
-BRACKET = re.compile(r'「([^」]+)」')
+BRACKET = QUOTED_RE
 RELATIVE_LAW_ONLY = re.compile(r'같은\s*법(?=\s|[.,;()]|에|의|을|과|으로|상|$)'
                                r'(?!\s*(?:제\s*\d+\s*조|시행령|시행규칙|별표|별지))')
 ANNEX = re.compile(r'(별표|별지)\s*(?:제\s*)?(\d+)(?:\s*의\s*(\d+))?\s*(?:호\s*서식|호|서식)?')
@@ -31,12 +32,12 @@ def block_at(article, start):
                 {'ref': '제'+article['jo'].replace('의','조의')+('' if '의' in article['jo'] else '조'), 'text':article['text']})
 
 
-def resolved_name(cite, text, citations, own_law):
+def resolved_name(cite, text, citations, own_law, bracket=BRACKET):
     """A nearer quoted law without an article overrides an older numbered anchor."""
     name = effective_law_name(cite, own_law)
     same = re.match(r'같은\s*(법|영|령|규칙)', text[cite.span[0]:cite.span[1]])
     if same:
-        anchors = [(m.start(), m[1]) for m in BRACKET.finditer(text, 0, cite.span[0])]
+        anchors = [(m.start(), quoted_owner(text, m)[0]) for m in bracket.finditer(text, 0, cite.span[0])]
         anchors += [(c.span[0],c.law_name) for c in citations if c.span[0] < cite.span[0] and c.law_name and not c.relative]
         if not anchors:
             return ''
@@ -59,6 +60,7 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
     external_references = []
     context_issues = []
     samples = {}
+    bracket = REVIEW_QUOTED_RE if tax_reference_context else BRACKET
     def add(law, article, target_name, target_ref, raw, start, end, kind='article', relation='direct', **extra):
         if tax_reference_context and kind == 'law' and target_name == '주식회사의 외부감사에 관한 법률':
             # Act15022 explicitly changed this title; law-level identity only.
@@ -123,7 +125,7 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                 for citation in article_adapter(law, article, corpus):
                     add(law, article, **citation)
                 continue
-            citations = parse_citations(text)
+            citations = parse_citations(text, preserve_ambiguous_quotes=tax_reference_context)
             overrides = []
             if tax_reference_context:
                 from core.tax_citation_context import tax_article_overrides, tax_law_level_references
@@ -153,7 +155,7 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                     continue
                 if any(a <= cite.span[0] and cite.span[1] <= b for a,b in expanded_spans):
                     continue
-                target_name = resolved_name(cite,text,citations,law['name'])
+                target_name = resolved_name(cite,text,citations,law['name'],bracket)
                 # Scope parser retains ranges and item branches; enumerate only real target articles.
                 start, end = cite.span
                 # Legacy tokens stop at '제1호'; keep item branches and their mok.
@@ -205,24 +207,24 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                                      target_provision_status='historical-edition-not-verified',context_review=True)
                     add(law,article,target_name,reference,raw,start,end,
                         relation='junyo' if cite.is_junyo or re.match(r'\s*(?:을|를)?\s*준용',text[end:]) else 'direct', via_range=bool(article_ranges), **extra)
-            brackets = list(BRACKET.finditer(text))
+            brackets = list(bracket.finditer(text))
             for m in brackets:
                 if overridden(*m.span()):
                     continue
-                name = m[1]
+                name, owner_end = quoted_owner(text, m)
                 if norm(name) not in catalog and not preserve_external:
                     if law['category'] in focus_categories and name.endswith(('법','법률','시행령','시행규칙','규칙')):
                         outside[name] += 1
-                        samples.setdefault(name, law['name']+' '+block_at(article,m.start())['ref']+' · '+m[0])
+                        samples.setdefault(name, law['name']+' '+block_at(article,m.start())['ref']+' · '+text[m.start():owner_end])
                     continue
-                tail = text[m.end():m.end()+100]
+                tail = text[owner_end:owner_end+100]
                 if re.match(r'\s*제\s*\d+\s*조', tail) or re.match(r'\s*(?:별표|별지)',tail):
                     continue
                 if any(c.span[0] <= m.start() < c.span[1] for c in citations if c.jo):
                     continue
                 # Law-level wording does not prove a link to any particular article.
-                raw = m[0]
-                add(law,article,name,'법령·정의 참조',raw,m.start(),m.end(),kind='law',relation='law_reference')
+                raw = text[m.start():owner_end]
+                add(law,article,name,'법령·정의 참조',raw,m.start(),owner_end,kind='law',relation='law_reference')
             for m in RELATIVE_LAW_ONLY.finditer(text):
                 if overridden(*m.span()):
                     continue
@@ -233,7 +235,7 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                 # Resolve only a named anchor in this same paragraph. A distant
                 # mention or the source law itself is not sufficient evidence.
                 paragraph = text.rfind('\n',0,m.start()) + 1
-                anchors = [(b.start(),b[1]) for b in BRACKET.finditer(text,paragraph,m.start())]
+                anchors = [(b.start(),quoted_owner(text, b)[0]) for b in bracket.finditer(text,paragraph,m.start())]
                 anchors += [(c.span[0],c.law_name) for c in citations
                             if paragraph <= c.span[0] < m.start() and c.law_name and not c.relative]
                 if anchors:
@@ -253,10 +255,10 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                 for m in ANNEX.finditer(text):
                     start = max(text.rfind('\n',0,m.start()),text.rfind('。',0,m.start()))+1
                     before = text[start:m.start()]
-                    matches = list(BRACKET.finditer(before))
+                    matches = list(bracket.finditer(before))
                     # A remote law mention in the same paragraph is not an annex owner.
-                    direct = matches[-1] if matches and not before[matches[-1].end():].strip() else None
-                    name = direct[1] if direct else law['name']
+                    direct = matches[-1] if matches and not before[quoted_owner(before, matches[-1])[1]:].strip() else None
+                    name = quoted_owner(before, direct)[0] if direct else law['name']
                     prefix = re.search(r'(같은\s*법|같은\s*영|같은\s*규칙|법|영|규칙)\s*$',before)
                     if prefix:
                         token = ''.join(prefix[1].split())
@@ -264,7 +266,7 @@ def build_universe(source, *, focus_categories=("tax",), preserve_external=False
                             prior = [b for b in brackets if b.end() <= m.start()]
                             if not prior:
                                 continue  # An unresolved 'same law' must not be assigned to this law.
-                            name = prior[-1][1]
+                            name = quoted_owner(text, prior[-1])[0]
                             if token in ('같은영','같은규칙'):
                                 name = resolve_deictic_law('영' if token == '같은영' else '규칙',name)
                         else:
@@ -346,7 +348,7 @@ def build_tax_universe(source, *, annex_bodies=False):
         # and even its article numbers. Keep the source evidence for review,
         # without guessing a repaired law name or generating an official link.
         reason = ''
-        if re.search(r'[\u2500-\u257f「」]', row['target_law']):
+        if re.search(r'[\u2500-\u257f「」『』]', row['target_law']):
             reason = '표 구분선 또는 중첩 인용부호가 법령명에 포함되어 대상을 확정하지 않았습니다. 출처 원문에서 법령명과 조문 번호를 확인하세요.'
         elif re.fullmatch(r'(?:동법(?:시행령|시행규칙)?|동시행령|동시행규칙|(?:조|항|호|목|단서)(?:및|또는|와|과)?(?:동)?법)', norm(row['target_law'])):
             reason = '상대 참조 또는 조문 구분 문구에서 대상 법령명을 확정하지 못했습니다. 출처 원문에서 앞선 법령명과 인용 범위를 확인하세요.'

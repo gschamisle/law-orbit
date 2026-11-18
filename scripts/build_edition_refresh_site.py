@@ -70,6 +70,9 @@ def prepare_fresh(fresh, old_source, domain):
     elif domain=='local_tax':
         from core.local_tax_graph import prepare_document
         d=prepare_document(d)
+    elif domain=='forex':
+        from core.forex_collection import tag_document
+        tag_document(d)
     for a in d['articles']:
         a.setdefault('title','');a.setdefault('blocks',provision_blocks(a['text'],a['jo']))
     # Analyses are tied to attachment bytes and cannot be carried to a new edition.

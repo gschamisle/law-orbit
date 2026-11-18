@@ -77,6 +77,24 @@ def test_deictic_resolution() -> None:
     assert effective_law_name(c, "소득세법 시행령") == "소득세법"
 
 
+def test_quoted_outside_derivative() -> None:
+    for opening, closing in [('「', '」'), ('『', '』')]:
+        for gap in ('', ' ', '\n'):
+            for suffix in ('시행령', '시행규칙'):
+                owner = '대외경제협력기금법 ' + suffix
+                raw = opening + '대외경제협력기금법' + closing + gap + suffix + ' 제4조제1항'
+                text = '앞말 ' + raw + ' 및 제5조를 따른다.'
+                citations = parse_citations(text)
+                first = next(c for c in citations if c.jo == '4')
+                assert first.law_name == owner, first
+                assert first.raw == raw and text[slice(*first.span)] == raw
+                assert next(c for c in citations if c.jo == '5').law_name == owner
+    text = '「대외경제협력기금법」 시행령에 따른다. 같은 법 제4조를 읽는다.'
+    assert _one(text, jo='4').law_name == '대외경제협력기금법 시행령'
+    text = '「대외경제협력기금법」 및 시행령에 따른다. 같은 법 제4조를 읽는다.'
+    assert _one(text, jo='4').law_name == '대외경제협력기금법'
+
+
 def test_citation_matches_cross_law() -> None:
     c = parse_citations("법 제129조제1항의 세율을 적용한다.")[0]
     # 시행령 조문 안의 '법 제129조' → 소득세법 제129조 인용으로 매칭

@@ -1,7 +1,7 @@
 # 법의 궤도
 
 한 조문에서 시작하는 법령 연결 지도입니다. 법령·조문을 고르면 직접 인용과 역인용, 본문과 공식 출처를 함께 읽습니다.
-헌법과 19개 업무 분야를 제공하는 **실험적 베타**이며, 분야별 수집·분석 범위가 다릅니다.
+헌법과 20개 업무 분야를 제공하는 **실험적 베타**이며, 분야별 수집·분석 범위가 다릅니다.
 **[공개 사이트 열기](https://gschamisle.github.io/law-orbit/)** · [모바일 소개문](https://gschamisle.github.io/law-orbit/introduction.html)
 
 ![법의 궤도 브랜드 이미지](web/law-orbit-social-20260928.jpg)
@@ -23,7 +23,8 @@
 | 국세 | [법령·인용 탐색](docs/law-universe.md) |
 | 조달·계약 | [법령·예규·지침](docs/procurement-universe.md) |
 | 관세·통관 | [관세·FTA·통관 근거](docs/mofe-universes.md) |
-| 외환 | [법령·한국은행 세칙·절차](docs/forex-universe.md) |
+| 외환 | [법령·한국은행 세칙·절차](docs/forex-universe.md) · [KIC 위탁·운용 길잡이](docs/external-finance-sources.md) |
+| 수출·해외사업 금융 | [수출입 금융·보증, 해외사업·투자, 무역보험, 대외경제협력기금](docs/external-finance-sources.md) |
 | 국유재산 | [관리 근거·특례](docs/state-property-universe.md) |
 | 공공기관 | [정의·적용범위·지정 변경](docs/public-institution-scope.md) |
 | 국고·회계 | [집행·회계의 근거](docs/mofe-universes.md) |
@@ -39,6 +40,8 @@
 | 지방세 | [중앙 법령·지역 조례·규칙](docs/local-tax-universe.md) |
 | 국토·건축·주택 | [도시계획·건축·주택 관련 법령](docs/housing-universe.md) |
 | 환경·화학·안전 | [환경·화학·안전 관련 법령](docs/environment-universe.md) |
+
+수출·해외사업 금융은 기관 이름 대신 업무별로 묶었습니다. 한국투자공사는 외환 분야의 **공적 외화자산 위탁·운용 길잡이**에서 다루며, 위탁 주체·계약·운용 범위·감독·공시의 근거를 함께 읽습니다. 길잡이의 읽기 순서와 법령의 실제 인용 관계를 구분하고, 지원 가능 여부나 개별 투자 적법성을 자동 판정하지 않습니다.
 
 ## 행정구제 추가·보완 — 2026-10-13
 

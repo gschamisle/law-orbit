@@ -1,0 +1,8 @@
+.external-guide-topics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.external-guide-item{display:flex;min-width:0;align-items:stretch}
+.external-guide-item>.finance-node{flex:1}
+.external-guide-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.external-guide-arrow{display:flex;align-items:center;justify-content:center;flex:0 0 26px;color:#8cc8b3;font-size:22px}
+.external-finance-guide .finance-node-number{font-size:10px}
+@media(max-width:1000px){.external-guide-flow{grid-template-columns:1fr}.external-guide-flow .external-guide-item{flex-direction:column}.external-guide-arrow{transform:rotate(90deg);flex-basis:25px}.external-guide-topics .finance-node{display:flex;gap:7px}}
+@media(max-width:600px){.external-guide-topics{grid-template-columns:1fr;gap:10px}.external-guide-topics .finance-node{padding:15px 17px}.external-finance-guide .finance-node-number{font-size:10px}}

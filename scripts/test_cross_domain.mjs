@@ -70,3 +70,65 @@ await assert.rejects(loadBridgeGroup({...group,domain:'tax'},'procurement',multi
 await assert.rejects(loadBridgeGroup({...group,bridges:['new','new']},'procurement',multiManifest,multiCatalog,read));
 await assert.rejects(loadBridgeGroup(group,'procurement',multiManifest,multiCatalog,async ref=>ref==='old'?contract:{...integ,editions:{procurement:'20260919',integrity:'20250101'}}));
 assert.equal(await loadBridgeGroup(contract,'procurement',multiManifest,multiCatalog,read),contract);
+
+// Added work areas must be supported in both directions, with exact kind and edition guards.
+for (const [hub, peer] of [...['forex','fsc','tax','public_institutions','customs','treasury'].map(peer => ['export_finance',peer]), ['forex','tax']]) {
+  for (const [own,other] of [[hub,peer],[peer,hub]]) {
+    const value={...b,kind:`${hub}-${peer}-bridge`,domain:own,peer:other,
+      editions:{[own]:'20260921',[other]:'20260917'},entries:[{...entry,domain:other}],
+      laws:{fx:{'1':{rows:[{...row,neighbor_domain:other}],suppressed:[],resolved_issues:[]}}}};
+    const m={domains:[{id:own,built_at:'20260921'},{id:other,built_at:'20260917'}]};
+    assert.equal(validateBridge(value,own,m,catalog),value);
+    assert.throws(()=>validateBridge({...value,kind:'forex-finance-bridge'},own,m,catalog));
+    assert.throws(()=>validateBridge({...value,editions:{[own]:'20250101',[other]:'20260917'}},own,m,catalog));
+  }
+}
+
+// Multiple fields can collect the same official edition of a cited law.
+const sharedCitation = {
+  ...row, evidence_id: 'same-official-citation', source_jo: '1', source_start: 10, source_end: 30,
+  source_url: 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=1', source_effective: '20260921',
+  target_url: 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=2', target_effective: '20260917',
+  target_ref: '제2조', target_ref_recorded: '제2조',
+};
+const broadCitation = {
+  ...sharedCitation, evidence_id: 'same-whole-law-citation', direction: 'reverse', broad: true,
+  source_id: 'fi', target_id: 'fx', source_jo: '2', source_ref: '제2조',
+  source_url: sharedCitation.target_url, source_effective: sharedCitation.target_effective,
+  target_url: sharedCitation.source_url, target_effective: sharedCitation.source_effective,
+};
+const exportFinance = {
+  ...b, kind: 'export_finance-fsc-bridge', domain: 'export_finance', peer: 'fsc',
+  editions: { export_finance: '20260921', fsc: '20260917' },
+  laws: { fx: { '1': { rows: [sharedCitation], suppressed: ['old-fsc'], resolved_issues: [] } } },
+  broad: { fx: [broadCitation] },
+};
+const sharedTax = { ...sharedCitation, target_id: 'tax-law', neighbor_id: 'tax-law', neighbor_domain: 'tax' };
+const taxBroad = { ...broadCitation, source_id: 'tax-law', neighbor_id: 'tax-law', neighbor_domain: 'tax' };
+const differentCitations = [
+  { ...sharedTax, target_effective: '20260901', target_url: 'https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=3' },
+  { ...sharedTax, source_start: 40, source_end: 60 },
+  { ...sharedTax, neighbor_jo: '3', neighbor_ref: '제3조', target_ref: '제3조' },
+  { ...sharedTax, raw_scope: { scopes: [[['2', '1', '', ''], ['2', '1', '', ''], null]] } },
+  { ...sharedTax, direction: 'reverse', source_id: 'tax-law', target_id: 'fx' },
+];
+const exportTax = {
+  ...exportFinance, kind: 'export_finance-tax-bridge', peer: 'tax',
+  editions: { export_finance: '20260921', tax: '20260918' },
+  entries: [{ ...entry, id: 'tax-law', domain: 'tax' }],
+  laws: { fx: { '1': { rows: [sharedTax, ...differentCitations], suppressed: ['old-tax'], resolved_issues: [] } } },
+  broad: { fx: [taxBroad, { ...taxBroad, source_effective: '20260901' }] },
+};
+const exportManifest = { domains: [
+  { id: 'export_finance', built_at: '20260921' },
+  { id: 'fsc', built_at: '20260917' },
+  { id: 'tax', built_at: '20260918' },
+] };
+const exportGroup = await loadBridgeGroup(
+  { kind: 'domain-bridge-set', schema: 1, domain: 'export_finance', bridges: ['fsc', 'tax'] },
+  'export_finance', exportManifest, catalog, async (ref) => ref === 'fsc' ? exportFinance : exportTax,
+);
+assert.deepEqual(exportGroup.laws.fx['1'].rows, [sharedCitation, ...differentCitations]);
+assert.deepEqual(exportGroup.laws.fx['1'].suppressed, ['old-fsc', 'old-tax']);
+assert.deepEqual(exportGroup.broad.fx, [broadCitation, { ...taxBroad, source_effective: '20260901' }]);
+assert.deepEqual(exportGroup.entries.map((item) => item.id), ['fi', 'tax-law']);
